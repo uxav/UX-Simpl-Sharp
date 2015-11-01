@@ -13,19 +13,14 @@ namespace CDSimplSharpPro.SystemConfig
 {
     public class Config
     {
-        public Dictionary<uint, Room> Rooms;
         public Dictionary<uint, UserInterface> Interfaces;
         public bool Loaded;
 
-        public Config(CrestronControlSystem controlSystem, string configFilePath)
+        public Config(CrestronControlSystem controlSystem, Rooms rooms, UserInterfaces userInterfaces, string configFilePath)
         {
             // Init properties
             this.Loaded = false;
-            this.Rooms = new Dictionary<uint, Room>();
-            this.Interfaces = new Dictionary<uint, UserInterface>();
             string configString = "";
-
-            
 
             // Load config file if it exists
             if (File.Exists(configFilePath))
@@ -42,50 +37,30 @@ namespace CDSimplSharpPro.SystemConfig
                     ConfigData data = JsonConvert.DeserializeObject<ConfigData>(configString);
                     CrestronConsole.PrintLine("   System Type: {0}", data.system_type);
 
-                    List<RoomData> rooms = data.rooms.OrderBy(o => o.id).ToList();
+                    List<RoomData> configRooms = data.rooms.OrderBy(o => o.id).ToList();
 
-                    foreach (var room in rooms)
+                    foreach (var room in configRooms)
                     {
-                        Room newRoom;
-
                         if (room.parent_id == 0)
                         {
-                            newRoom = new Room(room.id);
-                        }
-                        else if (Rooms.ContainsKey(room.parent_id))
-                        {
-                            newRoom = new Room(room.id, Rooms[room.parent_id]);
+                            rooms.Add(room.id, room.name);
                         }
                         else
                         {
-                            newRoom = null;
-                            ErrorLog.Error("Adding room id: {0} was not done due to an issue with the parent id: {1}", room.id, room.parent_id);
+                            rooms.Add(room.id, room.name, room.parent_id);
                         }
 
-                        if (newRoom != null)
-                        {
-                            newRoom.Name = room.name;
-                            newRoom.Location = room.location;
-                            this.Rooms.Add(newRoom.ID, newRoom);
-                            CrestronConsole.PrintLine("   Room ID {0}, {1}", newRoom.ID, newRoom.Name);
-                        }
+                        CrestronConsole.PrintLine("   Room ID {0}, {1}", room.id, room.name);
                     }
 
                     foreach (UIData ui in data.interfaces)
                     {
-                        UserInterface newInterface = new UserInterface(controlSystem, ui.id, ui.ip_id, ui.type, Rooms[ui.default_room]);
-                        newInterface.Name = ui.name;
-                        if (newInterface.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
-                        {
-                            ErrorLog.Error("Could not register User Interface with ID: {0}, ipID: {1}", ui.id, ui.ip_id);
-                        }
-                        else
-                        {
-                            Interfaces.Add(newInterface.ID, newInterface);
-                            CrestronConsole.PrintLine("   User Interface ({0} - {1}) with ID {2}, {3}, assigned to Room: {4}",
-                                newInterface.Device.GetType(), newInterface.Device.ID, newInterface.ID, newInterface.Name, newInterface.Room.Name);
-                        }
+                        userInterfaces.Add(controlSystem, ui.id, ui.ip_id, ui.type, ui.name, rooms[ui.default_room]);
+                        CrestronConsole.PrintLine("   User Interface ({0} - {1}) with ID {2}, {3}, assigned to Room: {4}",
+                            userInterfaces[ui.id].Device.GetType(), userInterfaces[ui.id].Device.ID, ui.id, ui.name, rooms[ui.default_room].Name);
                     }
+
+                    this.Loaded = true;
                 }
                 catch (Exception e)
                 {

@@ -36,6 +36,11 @@ namespace CDSimplSharpPro
                     }
             }
 
+            if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+            {
+                ErrorLog.Error("Could not register User Interface with ID: {0}, ipID: {1}", this.ID, ipID);
+            }
+
             if (this.Device != null)
             {
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
