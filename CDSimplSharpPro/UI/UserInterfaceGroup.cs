@@ -6,9 +6,9 @@ using Crestron.SimplSharpPro;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UserInterfaces : Dictionary<uint, UserInterface>
+    public class UserInterfaceGroup : Dictionary<uint, UserInterface>
     {
-        public UserInterfaces()
+        public UserInterfaceGroup()
             : base()
         {
             

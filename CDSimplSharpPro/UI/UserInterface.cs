@@ -15,7 +15,7 @@ namespace CDSimplSharpPro.UI
         public string Name;
         public TswFt5ButtonSystem Device;
         public Room Room;
-        public UIPages<string> Pages;
+        public UIPageGroup<string> Pages;
         public UIButtonGroup Buttons;
 
         public UserInterface(CrestronControlSystem controlSystem, uint id, uint ipID, string type, Room defaultRoom)
@@ -46,7 +46,7 @@ namespace CDSimplSharpPro.UI
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
             }
 
-            this.Pages = new UIPages<string>();
+            this.Pages = new UIPageGroup<string>();
 
             this.Pages.Add("WELCOME", this.Device.BooleanInput[1]);
             this.Pages.Add("MAIN", this.Device.BooleanInput[2], "Home Menu", this.Device.StringInput[2]);

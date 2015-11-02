@@ -7,11 +7,11 @@ using Crestron.SimplSharpPro;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UIPages<TKey> : Dictionary<TKey, UIPage>
+    public class UIPageGroup<TKey> : Dictionary<TKey, UIPage>
     {
         BoolInputSigInterlock PageVisisbleJoinSigGroup;
 
-        public UIPages()
+        public UIPageGroup()
             : base()
         {
             this.PageVisisbleJoinSigGroup = new BoolInputSigInterlock();

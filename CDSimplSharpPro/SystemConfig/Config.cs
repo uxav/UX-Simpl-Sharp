@@ -17,7 +17,7 @@ namespace CDSimplSharpPro.SystemConfig
         public Dictionary<uint, UserInterface> Interfaces;
         public bool Loaded;
 
-        public Config(CrestronControlSystem controlSystem, Rooms rooms, UserInterfaces userInterfaces, string configFilePath)
+        public Config(CrestronControlSystem controlSystem, Rooms rooms, UserInterfaceGroup userInterfaces, string configFilePath)
         {
             // Init properties
             this.Loaded = false;
