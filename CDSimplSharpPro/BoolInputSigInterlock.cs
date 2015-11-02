@@ -10,6 +10,18 @@ namespace CDSimplSharpPro
     public class BoolInputSigInterlock
     {
         private Dictionary<uint, BoolInputSig> Sigs;
+        public BoolInputSig CurrentSig
+        {
+            get
+            {
+                foreach (BoolInputSig sig in this.Sigs.Values)
+                {
+                    if (sig.BoolValue) return sig;
+                }
+
+                return null;
+            }
+        }
 
         public BoolInputSigInterlock()
         {
