@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 
-namespace CDSimplSharpPro
+namespace CDSimplSharpPro.UI
 {
     public class UserInterfaces : Dictionary<uint, UserInterface>
     {

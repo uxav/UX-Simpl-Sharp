@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace CDSimplSharpPro
+namespace CDSimplSharpPro.UI
 {
     public class UIPage
     {

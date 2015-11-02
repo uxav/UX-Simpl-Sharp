@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace CDSimplSharpPro
+namespace CDSimplSharpPro.UI
 {
     public class UIButtonGroup : Dictionary<uint, UIButton>
     {

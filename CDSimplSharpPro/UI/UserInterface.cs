@@ -7,7 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace CDSimplSharpPro
+namespace CDSimplSharpPro.UI
 {
     public class UserInterface
     {

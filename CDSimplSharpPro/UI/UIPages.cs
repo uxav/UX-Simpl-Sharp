@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace CDSimplSharpPro
+namespace CDSimplSharpPro.UI
 {
     public class UIPages<TKey> : Dictionary<TKey, UIPage>
     {
