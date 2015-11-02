@@ -47,9 +47,9 @@ namespace CDSimplSharpPro
 
             Pages = new UIPages<string>();
 
-            Pages.Add("WELCOME", "Welcome Page", this.Device.BooleanInput[1]);
-            Pages.Add("MAIN", "Main Page", this.Device.BooleanInput[2]);
-            Pages.Add("SOURCE", "Source Page", this.Device.BooleanInput[3]);
+            Pages.Add("WELCOME", this.Device.BooleanInput[1]);
+            Pages.Add("MAIN", this.Device.BooleanInput[2], "Home Menu", this.Device.StringInput[2]);
+            Pages.Add("SOURCE", this.Device.BooleanInput[3], "Source Name", this.Device.StringInput[3]);
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)

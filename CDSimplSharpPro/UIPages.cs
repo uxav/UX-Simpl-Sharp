@@ -9,19 +9,32 @@ namespace CDSimplSharpPro
 {
     public class UIPages<TKey> : Dictionary<TKey, UIPage>
     {
-        BoolInputSigInterlock PageJoinSigGroup;
+        BoolInputSigInterlock PageVisisbleJoinSigGroup;
 
         public UIPages()
             : base()
         {
-            this.PageJoinSigGroup = new BoolInputSigInterlock();
+            this.PageVisisbleJoinSigGroup = new BoolInputSigInterlock();
         }
 
-        public void Add(TKey key, string name, BoolInputSig pageJoinSig)
+        public void Add(TKey key, BoolInputSig visibleJoinSig)
         {
             if (!this.ContainsKey(key))
             {
-                UIPage newPage = new UIPage(name, pageJoinSig, this.PageJoinSigGroup);
+                UIPage newPage = new UIPage(visibleJoinSig, this.PageVisisbleJoinSigGroup);
+                this.Add(key, newPage);
+            }
+            else
+            {
+                throw new Exception("Page with key value already exists");
+            }
+        }
+
+        public void Add(TKey key, BoolInputSig visibleJoinSig, string name, StringInputSig nameStringInputSig)
+        {
+            if (!this.ContainsKey(key))
+            {
+                UIPage newPage = new UIPage(visibleJoinSig, this.PageVisisbleJoinSigGroup, nameStringInputSig, name);
                 this.Add(key, newPage);
             }
             else
