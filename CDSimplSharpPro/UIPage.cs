@@ -9,7 +9,7 @@ namespace CDSimplSharpPro
 {
     public class UIPage
     {
-        string Name;
+        public string Name;
         BoolInputSig Join;
         BoolInputSigInterlock JoinGroup;
 

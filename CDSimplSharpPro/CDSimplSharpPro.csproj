@@ -92,6 +92,7 @@
     <Compile Include="SystemConfig\RoomData.cs" />
     <Compile Include="SystemConfig\UIData.cs" />
     <Compile Include="UIPage.cs" />
+    <Compile Include="UIPages.cs" />
     <Compile Include="UserInterface.cs" />
     <Compile Include="UserInterfaces.cs" />
     <None Include="Properties\ControlSystem.cfg" />
@@ -105,12 +106,10 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>01/11/2015 23:39:34</CompiledOn>
+        <CompiledOn>02/11/2015 09:33:21</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
-        <CopyTo>
-          <DebugAnyCPU />
-        </CopyTo>
+        <CopyTo />
         <OriginalReferenceSources />
       </FlavorProperties>
     </VisualStudio>

@@ -15,8 +15,7 @@ namespace CDSimplSharpPro
         public string Name;
         public TswFt5ButtonSystem Device;
         public Room Room;
-        private BoolInputSigInterlock PageJoins;
-        public Dictionary<uint, UIPage> Pages;
+        public UIPages<string> Pages;
 
         public UserInterface(CrestronControlSystem controlSystem, uint id, uint ipID, string type, Room defaultRoom)
         {
@@ -46,12 +45,11 @@ namespace CDSimplSharpPro
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
             }
 
-            PageJoins = new BoolInputSigInterlock();
-            Pages = new Dictionary<uint, UIPage>();
+            Pages = new UIPages<string>();
 
-            Pages.Add(1, new UIPage("Page 1", Device.BooleanInput[1], PageJoins));
-            Pages.Add(2, new UIPage("Page 2", Device.BooleanInput[2], PageJoins));
-            Pages.Add(3, new UIPage("Page 3", Device.BooleanInput[3], PageJoins));
+            Pages.Add("WELCOME", "Welcome Page", this.Device.BooleanInput[1]);
+            Pages.Add("MAIN", "Main Page", this.Device.BooleanInput[2]);
+            Pages.Add("SOURCE", "Source Page", this.Device.BooleanInput[3]);
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
@@ -64,9 +62,11 @@ namespace CDSimplSharpPro
                         {
                             CrestronConsole.PrintLine("{0} digital join {1} high", this.Name, args.Sig.Number);
 
-                            if (args.Sig.Number >= 1 && args.Sig.Number <= 3)
+                            switch (args.Sig.Number)
                             {
-                                Pages[args.Sig.Number].Show();
+                                case 1: Pages["WELCOME"].Show(); break;
+                                case 2: Pages["MAIN"].Show(); break;
+                                case 3: Pages["SOURCE"].Show(); break;
                             }
                         }
 
