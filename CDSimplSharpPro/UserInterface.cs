@@ -16,6 +16,7 @@ namespace CDSimplSharpPro
         public TswFt5ButtonSystem Device;
         public Room Room;
         public UIPages<string> Pages;
+        public UIButtonGroup Buttons;
 
         public UserInterface(CrestronControlSystem controlSystem, uint id, uint ipID, string type, Room defaultRoom)
         {
@@ -45,11 +46,28 @@ namespace CDSimplSharpPro
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
             }
 
-            Pages = new UIPages<string>();
+            this.Pages = new UIPages<string>();
 
-            Pages.Add("WELCOME", this.Device.BooleanInput[1]);
-            Pages.Add("MAIN", this.Device.BooleanInput[2], "Home Menu", this.Device.StringInput[2]);
-            Pages.Add("SOURCE", this.Device.BooleanInput[3], "Source Name", this.Device.StringInput[3]);
+            this.Pages.Add("WELCOME", this.Device.BooleanInput[1]);
+            this.Pages.Add("MAIN", this.Device.BooleanInput[2], "Home Menu", this.Device.StringInput[2]);
+            this.Pages.Add("SOURCE", this.Device.BooleanInput[3], "Source Name", this.Device.StringInput[3]);
+
+            this.Buttons = new UIButtonGroup("Menu Buttons");
+
+            this.Buttons.Add(this.Device, 1, 1, 2, 3);
+            this.Buttons.Add(this.Device, 4, 4, 5, 6);
+            this.Buttons.Add(this.Device, 7, 7, 8, 9);
+
+            this.Buttons.ButtonEvent += new UIButtonGroupEventHandler(Buttons_ButtonEvent);
+        }
+
+        void Buttons_ButtonEvent(UIButtonGroup group, UIButton button, UIButtonEventArgs args)
+        {
+            CrestronConsole.PrintLine("Button named '{0}' in '{1}' was {2}", button.Title, group.Name, args.EventType);
+            if (args.EventType == eUIButtonEventType.Held)
+            {
+                CrestronConsole.PrintLine("Button was held for {0} milliseconds", args.HoldTime);
+            }
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
@@ -58,18 +76,10 @@ namespace CDSimplSharpPro
             {
                 case eSigType.Bool:
                     {
-                        if (args.Sig.BoolValue) // digital join high
+                        if (Buttons.ContainsKey(args.Sig.Number))
                         {
-                            CrestronConsole.PrintLine("{0} digital join {1} high", this.Name, args.Sig.Number);
-
-                            switch (args.Sig.Number)
-                            {
-                                case 1: Pages["WELCOME"].Show(); break;
-                                case 2: Pages["MAIN"].Show(); break;
-                                case 3: Pages["SOURCE"].Show(); break;
-                            }
+                            Buttons[args.Sig.Number].Down = args.Sig.BoolValue;
                         }
-
                         break;
                     }
             }
