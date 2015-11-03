@@ -112,14 +112,26 @@ namespace CDSimplSharpPro.UI
 
         public event UIButtonEventHandler ButtonEvent;
 
-        public UIButton(BasicTriList device, uint digitalJoin, uint serialJoin, uint enableJoin, uint visibleJoin)
+        public UIButton(BasicTriList device, uint joinNumber)
         {
-            this._title = string.Format("Button {0}", digitalJoin);
+            this._title = string.Format("Button {0}", joinNumber);
             this.HoldTime = 500;
-            this.Join = device.BooleanInput[digitalJoin];
-            if (serialJoin > 0)
+            if (joinNumber > 0)
             {
-                this.SerialFeedbackJoin = device.StringInput[serialJoin];
+                this.Join = device.BooleanInput[joinNumber];
+                this.SerialFeedbackJoin = device.StringInput[joinNumber];
+                this.SerialFeedbackJoin.StringValue = this._title;
+            }
+        }
+
+        public UIButton(BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
+        {
+            this._title = string.Format("Button {0}", joinNumber);
+            this.HoldTime = 500;
+            if (joinNumber > 0)
+            {
+                this.Join = device.BooleanInput[joinNumber];
+                this.SerialFeedbackJoin = device.StringInput[joinNumber];
                 this.SerialFeedbackJoin.StringValue = this._title;
             }
             if (enableJoin > 0)

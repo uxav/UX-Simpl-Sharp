@@ -27,9 +27,16 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(BasicTriList device, uint digitalJoin, uint serialJoin, uint enableJoin, uint visibleJoin)
+        public void Add(BasicTriList device, uint join)
         {
-            UIButton newButton = new UIButton(device, digitalJoin, serialJoin, enableJoin, visibleJoin);
+            UIButton newButton = new UIButton(device, join);
+            base.Add(newButton.JoinNumber, newButton);
+            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+        }
+
+        public void Add(BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
+        {
+            UIButton newButton = new UIButton(device, join, enableJoin, visibleJoin);
             base.Add(newButton.JoinNumber, newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }

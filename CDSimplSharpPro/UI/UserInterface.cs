@@ -54,9 +54,9 @@ namespace CDSimplSharpPro.UI
 
             this.Buttons = new UIButtonGroup("Menu Buttons");
 
-            this.Buttons.Add(this.Device, 1, 1, 2, 3);
-            this.Buttons.Add(this.Device, 4, 4, 5, 6);
-            this.Buttons.Add(this.Device, 7, 7, 8, 9);
+            this.Buttons.Add(this.Device, 1, 2, 3);
+            this.Buttons.Add(this.Device, 4, 5, 6);
+            this.Buttons.Add(this.Device, 7, 8, 9);
 
             this.Buttons.ButtonEvent += new UIButtonGroupEventHandler(Buttons_ButtonEvent);
         }
