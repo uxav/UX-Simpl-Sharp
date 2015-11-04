@@ -36,18 +36,23 @@ namespace CDSimplSharpPro.UI
 
             this.Pages = new UIPageGroup();
 
-            this.Pages.Add("WELCOME", this.Device.BooleanInput[11]);
-            this.Pages.Add("MAIN", this.Device.BooleanInput[14], "Home Menu", this.Device.StringInput[11]);
-            this.Pages.Add("SOURCE", this.Device.BooleanInput[17], "Source Page", this.Device.StringInput[11]);
+            this.Pages.Add("WELCOME", this.Device.BooleanInput[11], "Welcome Page", this.Device.StringInput[11]);
+            this.Pages.Add("HOME", this.Device.BooleanInput[12], "Home Menu", this.Device.StringInput[11]);
+            this.Pages.Add("SOURCE", this.Device.BooleanInput[13], "Source Page", this.Device.StringInput[11]);
 
             this.Buttons = new UIButtonGroup("Menu Buttons");
 
-            this.Buttons.Add(this.Device, 1, 2, 3);
+            this.Buttons.Add("WELCOME", this.Device, 1);
             this.Buttons[1].Title = "Welcome";
-            this.Buttons.Add(this.Device, 4, 5, 6);
-            this.Buttons[4].Title = this.Pages["MAIN"].Name;
-            this.Buttons.Add(this.Device, 7, 8, 9);
-            this.Buttons[7].Title = this.Pages["SOURCE"].Name;
+            this.Buttons[1].PageToShowOnRelease = this.Pages["WELCOME"];
+
+            this.Buttons.Add("HOME", this.Device, 2);
+            this.Buttons[2].Title = this.Pages["HOME"].Name;
+            this.Buttons[2].PageToShowOnRelease = this.Pages["HOME"];
+
+            this.Buttons.Add("SOURCE", this.Device, 3);
+            this.Buttons[3].Title = this.Pages["SOURCE"].Name;
+            this.Buttons[3].PageToShowOnRelease = this.Pages["SOURCE"];
 
             this.Buttons.ButtonEvent += new UIButtonGroupEventHandler(Buttons_ButtonEvent);
 
@@ -67,14 +72,6 @@ namespace CDSimplSharpPro.UI
             if (args.EventType == eUIButtonEventType.Released)
             {
                 CrestronConsole.PrintLine("Button was held for {0} milliseconds", args.HoldTime);
-            }
-            else if (args.EventType == eUIButtonEventType.Tapped)
-            {
-                UIPage page = this.Pages[button.JoinNumber + 10];
-                if (page != null)
-                {
-                    page.Show();
-                }
             }
         }
 

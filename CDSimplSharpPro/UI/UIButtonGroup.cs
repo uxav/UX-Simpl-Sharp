@@ -13,6 +13,14 @@ namespace CDSimplSharpPro.UI
         private List<UIButton> Buttons;
         public string Name { get; private set; }
 
+        public UIButton this[string keyName]
+        {
+            get
+            {
+                return this.Buttons.FirstOrDefault(b => b.KeyName == keyName);
+            }
+        }
+
         public UIButton this[uint joinNumber]
         {
             get
@@ -44,16 +52,16 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(BasicTriList device, uint join)
+        public void Add(string keyName, BasicTriList device, uint join)
         {
-            UIButton newButton = new UIButton(device, join);
+            UIButton newButton = new UIButton(keyName, device, join);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
 
-        public void Add(BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
+        public void Add(string keyName, BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
         {
-            UIButton newButton = new UIButton(device, join, enableJoin, visibleJoin);
+            UIButton newButton = new UIButton(keyName, device, join, enableJoin, visibleJoin);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }

@@ -10,6 +10,7 @@ namespace CDSimplSharpPro.UI
 {
     public class UIButton
     {
+        public string KeyName { get; private set; }
         string _title;
         public string Title
         {
@@ -78,6 +79,11 @@ namespace CDSimplSharpPro.UI
                     if(this.HoldTimer != null)
                         this.HoldTimer.Dispose();
 
+                    if (this.PageToShowOnRelease != null)
+                    {
+                        this.PageToShowOnRelease.Show();
+                    }
+
                     if (this.ButtonEvent != null)
                     {
                         this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Released, this.CurrentHoldTime));
@@ -102,6 +108,8 @@ namespace CDSimplSharpPro.UI
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
+        public UIPage PageToShowOnRelease;
+
         public uint JoinNumber
         {
             get
@@ -112,8 +120,9 @@ namespace CDSimplSharpPro.UI
 
         public event UIButtonEventHandler ButtonEvent;
 
-        public UIButton(BasicTriList device, uint joinNumber)
+        public UIButton(string keyName, BasicTriList device, uint joinNumber)
         {
+            this.KeyName = keyName;
             this._title = string.Format("Button {0}", joinNumber);
             this.HoldTime = 500;
             if (joinNumber > 0)
@@ -124,8 +133,9 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIButton(BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
+        public UIButton(string keyName, BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
         {
+            this.KeyName = keyName;
             this._title = string.Format("Button {0}", joinNumber);
             this.HoldTime = 500;
             if (joinNumber > 0)
