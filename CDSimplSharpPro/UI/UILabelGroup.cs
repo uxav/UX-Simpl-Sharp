@@ -11,7 +11,6 @@ namespace CDSimplSharpPro.UI
     public class UILabelGroup : IEnumerable<UILabel>
     {
         private List<UILabel> Labels;
-        public string Name { get; private set; }
 
         public UILabel this[string keyName]
         {
@@ -37,10 +36,9 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UILabelGroup(string name)
+        public UILabelGroup()
         {
             this.Labels = new List<UILabel>();
-            this.Name = name;
         }
 
         public void Add(UILabel label)

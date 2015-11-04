@@ -14,7 +14,7 @@ namespace CDSimplSharpPro.UI
         public UserInterfaceWithSmartObject(uint id, BasicTriListWithSmartObject device, Room defaultRoom)
             : base(id, device, defaultRoom)
         {
-
+            this.Device = device;
         }
     }
 }

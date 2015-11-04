@@ -14,13 +14,15 @@ namespace CDSimplSharpPro.SystemConfig
 {
     public class Config
     {
-        public Dictionary<uint, UserInterface> Interfaces;
         public bool Loaded;
+        public ConfigData Data;
 
-        public Config(CrestronControlSystem controlSystem, Rooms rooms, UserInterfaceGroup userInterfaces, string configFilePath)
+        public Config(string configFilePath)
         {
             // Init properties
             this.Loaded = false;
+
+            // string for file contents
             string configString = "";
 
             // Load config file if it exists
@@ -35,46 +37,7 @@ namespace CDSimplSharpPro.SystemConfig
 
                 try
                 {
-                    ConfigData data = JsonConvert.DeserializeObject<ConfigData>(configString);
-                    CrestronConsole.PrintLine("   System Type: {0}", data.system_type);
-
-                    List<RoomData> configRooms = data.rooms.OrderBy(o => o.id).ToList();
-
-                    foreach (var room in configRooms)
-                    {
-                        if (room.parent_id == 0)
-                        {
-                            rooms.Add(room.id, room.name);
-                        }
-                        else
-                        {
-                            rooms.Add(room.id, room.name, room.parent_id);
-                        }
-
-                        CrestronConsole.PrintLine("   Room ID {0}, {1}", room.id, room.name);
-                    }
-
-                    foreach (UIData ui in data.interfaces)
-                    {
-                        BasicTriListWithSmartObject device;
-
-                        switch (ui.type.ToUpper())
-                        {
-                            case "TSW1050": device = new Tsw1050(ui.ip_id, controlSystem); break;
-                            case "TSW1052": device = new Tsw1052(ui.ip_id, controlSystem); break;
-                            default: device = null; break;
-                        }
-
-                        if (device != null)
-                        {
-                            UserInterfaceWithSmartObject newUI = new UserInterfaceWithSmartObject(ui.id, device, rooms[ui.default_room]);
-                            userInterfaces.Add(newUI);
-                            CrestronConsole.PrintLine("   User Interface ({0} - {1}) with ID {2}, {3}, assigned to Room: {4}",
-                                userInterfaces[ui.id].Device.GetType(),
-                                userInterfaces[ui.id].Device.ID, ui.id, ui.name, rooms[ui.default_room].Name);
-                        }
-                    }
-
+                    this.Data = JsonConvert.DeserializeObject<ConfigData>(configString);
                     this.Loaded = true;
                 }
                 catch (Exception e)

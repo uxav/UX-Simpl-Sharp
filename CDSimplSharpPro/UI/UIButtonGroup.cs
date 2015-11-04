@@ -11,7 +11,6 @@ namespace CDSimplSharpPro.UI
     public class UIButtonGroup : IEnumerable<UIButton>
     {
         private List<UIButton> Buttons;
-        public string Name { get; private set; }
 
         public UIButton this[string keyName]
         {
@@ -37,10 +36,9 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIButtonGroup(string name)
+        public UIButtonGroup()
         {
             this.Buttons = new List<UIButton>();
-            this.Name = name;
         }
 
         public void Add(UIButton button)
