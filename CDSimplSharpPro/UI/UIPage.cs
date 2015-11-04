@@ -19,12 +19,12 @@ namespace CDSimplSharpPro.UI
                 this._name = value;
 
                 // if the page has a serial join sig assigned for the Name:
-                if (this.NameSerialJoin != null)
+                if (this.TitleLabel != null)
                 {
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
                     if (this.IsShowing)
-                        this.NameSerialJoin.StringValue = this._name;
+                        this.TitleLabel.Text = this._name;
                 }
             }
             get
@@ -51,7 +51,7 @@ namespace CDSimplSharpPro.UI
 
         BoolInputSig VisibleJoin;
         BoolInputSigInterlock JoinGroup;
-        StringInputSig NameSerialJoin;
+        UILabel TitleLabel;
 
         public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup)
         {
@@ -62,14 +62,14 @@ namespace CDSimplSharpPro.UI
             pageVisibleJoinSigGroup.Add(this.VisibleJoin);
         }
 
-        public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, StringInputSig nameStringInputSig, string name)
+        public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, UILabel titleLabel, string name)
         {
             this.KeyName = key;
             this._name = name;
             this.VisibleJoin = visibleJoinSig;
             this.JoinGroup = pageVisibleJoinSigGroup;
             pageVisibleJoinSigGroup.Add(this.VisibleJoin);
-            this.NameSerialJoin = nameStringInputSig;
+            this.TitleLabel = titleLabel;
         }
 
         public void Show()
@@ -77,8 +77,8 @@ namespace CDSimplSharpPro.UI
             this.JoinGroup.Set(this.VisibleJoin);
 
             // If the page has a serial join sig then set the value to the name of the page
-            if (this.NameSerialJoin != null)
-                this.NameSerialJoin.StringValue = this._name;
+            if (this.TitleLabel != null)
+                this.TitleLabel.Text = this._name;
         }
     }
 }

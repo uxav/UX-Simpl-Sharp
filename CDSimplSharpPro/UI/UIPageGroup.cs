@@ -47,11 +47,11 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(string key, BoolInputSig visibleJoinSig, string name, StringInputSig nameStringInputSig)
+        public void Add(string key, BoolInputSig visibleJoinSig, string name, UILabel titleLabel)
         {
             if (!this.PageVisisbleJoinSigGroup.Contains(visibleJoinSig))
             {
-                UIPage newPage = new UIPage(key, visibleJoinSig, this.PageVisisbleJoinSigGroup, nameStringInputSig, name);
+                UIPage newPage = new UIPage(key, visibleJoinSig, this.PageVisisbleJoinSigGroup, titleLabel, name);
                 this.Pages.Add(newPage);
             }
             else

@@ -17,6 +17,7 @@ namespace CDSimplSharpPro.UI
         public Room Room;
         public UIPageGroup Pages;
         public UIButtonGroup Buttons;
+        public UILabelGroup Labels;
 
         public UserInterface(uint id, BasicTriList device, Room defaultRoom)
         {
@@ -34,11 +35,14 @@ namespace CDSimplSharpPro.UI
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
             }
 
+            this.Labels = new UILabelGroup("Main Labels");
             this.Pages = new UIPageGroup();
 
-            this.Pages.Add("WELCOME", this.Device.BooleanInput[11], "Welcome Page", this.Device.StringInput[11]);
-            this.Pages.Add("HOME", this.Device.BooleanInput[12], "Home Menu", this.Device.StringInput[11]);
-            this.Pages.Add("SOURCE", this.Device.BooleanInput[13], "Source Page", this.Device.StringInput[11]);
+            this.Labels.Add(new UILabel("PAGE_TITLE", this.Device, 11));
+
+            this.Pages.Add("WELCOME", this.Device.BooleanInput[11], "Welcome Page", this.Labels["PAGE_TITLE"]);
+            this.Pages.Add("HOME", this.Device.BooleanInput[12], "Home Menu", this.Labels["PAGE_TITLE"]);
+            this.Pages.Add("SOURCE", this.Device.BooleanInput[13], "Source Page", this.Labels["PAGE_TITLE"]);
 
             this.Buttons = new UIButtonGroup("Menu Buttons");
 
