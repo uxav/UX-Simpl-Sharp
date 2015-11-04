@@ -35,26 +35,32 @@ namespace CDSimplSharpPro.UI
                 return this.Join.BoolValue;
             }
         }
-        public bool Enable
+        public bool Enabled
         {
             set
             {
-                this.EnableJoin.BoolValue = value;
+                if (this.EnableJoin != null)
+                    this.EnableJoin.BoolValue = value;
             }
             get
             {
-                return this.EnableJoin.BoolValue;
+                if(this.EnableJoin != null)
+                    return this.EnableJoin.BoolValue;
+                return true;
             }
         }
         public bool Visible
         {
             set
             {
-                this.VisibleJoin.BoolValue = value;
+                if(this.VisibleJoin != null)
+                    this.VisibleJoin.BoolValue = value;
             }
             get
             {
-                return this.VisibleJoin.BoolValue;
+                if(this.VisibleJoin != null)
+                    return this.VisibleJoin.BoolValue;
+                return true;
             }
         }
         public bool Down
@@ -154,6 +160,26 @@ namespace CDSimplSharpPro.UI
                 this.VisibleJoin = device.BooleanInput[visibleJoin];
                 this.VisibleJoin.BoolValue = true;
             }
+        }
+
+        public void Show()
+        {
+            this.Visible = true;
+        }
+
+        public void Hide()
+        {
+            this.Visible = false;
+        }
+
+        public void Enable()
+        {
+            this.Enabled = true;
+        }
+
+        public void Disable()
+        {
+            this.Enabled = false;
         }
 
         private void HoldTimerUpdate(object obj)
