@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UILabelGroup : IEnumerable<UILabel>
+    public class UILabelCollection : IEnumerable<UILabel>
     {
         private List<UILabel> Labels;
 
@@ -36,7 +36,7 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UILabelGroup()
+        public UILabelCollection()
         {
             this.Labels = new List<UILabel>();
         }

@@ -15,9 +15,9 @@ namespace CDSimplSharpPro.UI
         public string Name;
         public BasicTriList Device;
         public Room Room;
-        public UIPageGroup Pages;
-        public UIButtonGroup Buttons;
-        public UILabelGroup Labels;
+        public UIPageCollection Pages;
+        public UIButtonCollection Buttons;
+        public UILabelCollection Labels;
 
         public UserInterface(uint id, BasicTriList device, Room defaultRoom)
         {
@@ -25,9 +25,9 @@ namespace CDSimplSharpPro.UI
             this.ID = id;
             this.Device = device;
 
-            this.Labels = new UILabelGroup();
-            this.Pages = new UIPageGroup();
-            this.Buttons = new UIButtonGroup();
+            this.Labels = new UILabelCollection();
+            this.Pages = new UIPageCollection();
+            this.Buttons = new UIButtonCollection();
 
             if (this.Device != null)
             {

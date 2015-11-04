@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace CDSimplSharpPro
 {
-    public class Rooms : IEnumerable<Room>
+    public class RoomCollection : IEnumerable<Room>
     {
         private List<Room> RoomList;
 
@@ -25,7 +25,7 @@ namespace CDSimplSharpPro
             }
         }
         
-        public Rooms()
+        public RoomCollection()
             : base()
         {
             this.RoomList = new List<Room>();

@@ -86,19 +86,19 @@
     <Compile Include="BoolInputSigInterlock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room.cs" />
-    <Compile Include="Rooms.cs" />
+    <Compile Include="RoomCollection.cs" />
     <Compile Include="SystemConfig\Config.cs" />
     <Compile Include="SystemConfig\ConfigData.cs" />
     <Compile Include="SystemConfig\RoomData.cs" />
     <Compile Include="SystemConfig\UIData.cs" />
     <Compile Include="UI\UIButton.cs" />
-    <Compile Include="UI\UIButtonGroup.cs" />
+    <Compile Include="UI\UIButtonCollection.cs" />
     <Compile Include="UI\UILabel.cs" />
-    <Compile Include="UI\UILabelGroup.cs" />
+    <Compile Include="UI\UILabelCollection.cs" />
     <Compile Include="UI\UIPage.cs" />
-    <Compile Include="UI\UIPageGroup.cs" />
+    <Compile Include="UI\UIPageCollection.cs" />
     <Compile Include="UI\UserInterface.cs" />
-    <Compile Include="UI\UserInterfaceGroup.cs" />
+    <Compile Include="UI\UserInterfaceCollection.cs" />
     <Compile Include="UI\UserInterfaceWithSmartObject.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
@@ -111,7 +111,7 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>04/11/2015 23:39:55</CompiledOn>
+        <CompiledOn>04/11/2015 23:59:34</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

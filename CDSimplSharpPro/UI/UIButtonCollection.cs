@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UIButtonGroup : IEnumerable<UIButton>
+    public class UIButtonCollection : IEnumerable<UIButton>
     {
         private List<UIButton> Buttons;
 
@@ -36,7 +36,7 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIButtonGroup()
+        public UIButtonCollection()
         {
             this.Buttons = new List<UIButton>();
         }
@@ -85,5 +85,5 @@ namespace CDSimplSharpPro.UI
         }
     }
 
-    public delegate void UIButtonGroupEventHandler(UIButtonGroup group, UIButton button, UIButtonEventArgs args);
+    public delegate void UIButtonGroupEventHandler(UIButtonCollection group, UIButton button, UIButtonEventArgs args);
 }

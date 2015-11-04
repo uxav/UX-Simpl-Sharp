@@ -7,7 +7,7 @@ using Crestron.SimplSharpPro;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UIPageGroup : IEnumerable<UIPage>
+    public class UIPageCollection : IEnumerable<UIPage>
     {
         private List<UIPage> Pages;
         BoolInputSigInterlock PageVisisbleJoinSigGroup;
@@ -28,7 +28,7 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIPageGroup()
+        public UIPageCollection()
         {
             this.Pages = new List<UIPage>();
             this.PageVisisbleJoinSigGroup = new BoolInputSigInterlock();
