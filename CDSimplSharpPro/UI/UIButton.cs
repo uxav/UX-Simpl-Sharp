@@ -152,8 +152,6 @@ namespace CDSimplSharpPro.UI
 
             if (this.CurrentHoldTime == this.HoldTime)
             {
-                this.HoldTimer.Dispose();
-
                 if (this.ButtonEvent != null)
                 {
                     this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Held, this.CurrentHoldTime));

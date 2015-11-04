@@ -7,48 +7,52 @@ using Crestron.SimplSharpPro;
 
 namespace CDSimplSharpPro
 {
-    public class BoolInputSigInterlock
+    public class BoolInputSigInterlock : IEnumerable<BoolInputSig>
     {
-        private Dictionary<uint, BoolInputSig> Sigs;
+        private List<BoolInputSig> Sigs;
+
         public BoolInputSig CurrentSig
         {
             get
             {
-                foreach (BoolInputSig sig in this.Sigs.Values)
-                {
-                    if (sig.BoolValue) return sig;
-                }
+                return Sigs.FirstOrDefault(s => s.BoolValue == true);
+            }
+        }
 
-                return null;
+        public BoolInputSig this[int index]
+        {
+            get
+            {
+                return this.Sigs[index];
             }
         }
 
         public BoolInputSigInterlock()
         {
-            Sigs = new Dictionary<uint, BoolInputSig>();
+            Sigs = new List<BoolInputSig>();
         }
 
         public BoolInputSigInterlock(SigCollectionBase<BoolInputSig> sigCollection, uint startSigNumber, uint count)
         {
-            Sigs = new Dictionary<uint, BoolInputSig>();
+            Sigs = new List<BoolInputSig>();
 
             for (uint n = startSigNumber; n <= startSigNumber + count - 1; n++)
             {
-                Sigs.Add(n, sigCollection[n]);
+                Sigs.Add(sigCollection[n]);
             }
         }
 
         public void Add(BoolInputSig sig)
         {
-            if (!this.Sigs.ContainsKey(sig.Number) && sig.Type == eSigType.Bool)
+            if (!this.Sigs.Contains(sig) && sig.Type == eSigType.Bool)
             {
-                Sigs.Add(sig.Number, sig);
+                Sigs.Add(sig);
             }
         }
 
         public void Set(uint sigNumber)
         {
-            foreach (BoolInputSig sig in Sigs.Values)
+            foreach (BoolInputSig sig in Sigs)
             {
                 if (sig.BoolValue && sig.Number != sigNumber)
                 {
@@ -56,22 +60,24 @@ namespace CDSimplSharpPro
                 }
             }
 
-            if (Sigs.ContainsKey(sigNumber))
+            BoolInputSig newSig = Sigs.FirstOrDefault(s => s.Number == sigNumber);
+
+            if (newSig != null)
             {
-                Sigs[sigNumber].BoolValue = true;
+                newSig.BoolValue = true;
             }
         }
 
         public void Set(BoolInputSig newSig)
         {
-            foreach (BoolInputSig sig in Sigs.Values)
+            foreach (BoolInputSig sig in Sigs)
             {
                 if (sig != newSig)
                 {
                     sig.BoolValue = false;
                 }
 
-                if (Sigs.Values.Contains<BoolInputSig>(newSig))
+                if (Sigs.Contains(newSig))
                 {
                     newSig.BoolValue = true;
                 }
@@ -80,10 +86,20 @@ namespace CDSimplSharpPro
 
         public void ClearBool()
         {
-            foreach (BoolInputSig sig in Sigs.Values)
+            foreach (BoolInputSig sig in Sigs)
             {
                 sig.BoolValue = false;
             }
+        }
+
+        public IEnumerator<BoolInputSig> GetEnumerator()
+        {
+            return this.Sigs.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
         }
     }
 }

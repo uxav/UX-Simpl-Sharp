@@ -7,17 +7,36 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UserInterfaceGroup : Dictionary<uint, UserInterface>
+    public class UserInterfaceGroup : IEnumerable<UserInterface>
     {
-        public UserInterfaceGroup()
-            : base()
+        private List<UserInterface> interfaces;
+
+        public UserInterface this[uint id]
         {
-            
+            get
+            {
+                return this.interfaces.FirstOrDefault(i => i.ID == id);
+            }
+        }
+
+        public UserInterfaceGroup()
+        {
+            this.interfaces = new List<UserInterface>();
         }
 
         public void Add(UserInterface ui)
         {
-            base.Add(ui.ID, ui);
+            this.interfaces.Add(ui);
+        }
+
+        public IEnumerator<UserInterface> GetEnumerator()
+        {
+            return this.interfaces.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
         }
     }
 }

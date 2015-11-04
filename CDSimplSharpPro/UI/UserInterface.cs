@@ -15,7 +15,7 @@ namespace CDSimplSharpPro.UI
         public string Name;
         public BasicTriList Device;
         public Room Room;
-        public UIPageGroup<string> Pages;
+        public UIPageGroup Pages;
         public UIButtonGroup Buttons;
 
         public UserInterface(uint id, BasicTriList device, Room defaultRoom)
@@ -34,27 +34,47 @@ namespace CDSimplSharpPro.UI
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
             }
 
-            this.Pages = new UIPageGroup<string>();
+            this.Pages = new UIPageGroup();
 
-            this.Pages.Add("WELCOME", this.Device.BooleanInput[1]);
-            this.Pages.Add("MAIN", this.Device.BooleanInput[2], "Home Menu", this.Device.StringInput[2]);
-            this.Pages.Add("SOURCE", this.Device.BooleanInput[3], "Source Name", this.Device.StringInput[3]);
+            this.Pages.Add("WELCOME", this.Device.BooleanInput[11]);
+            this.Pages.Add("MAIN", this.Device.BooleanInput[14], "Home Menu", this.Device.StringInput[11]);
+            this.Pages.Add("SOURCE", this.Device.BooleanInput[17], "Source Page", this.Device.StringInput[11]);
 
             this.Buttons = new UIButtonGroup("Menu Buttons");
 
             this.Buttons.Add(this.Device, 1, 2, 3);
+            this.Buttons[1].Title = "Welcome";
             this.Buttons.Add(this.Device, 4, 5, 6);
+            this.Buttons[4].Title = this.Pages["MAIN"].Name;
             this.Buttons.Add(this.Device, 7, 8, 9);
+            this.Buttons[7].Title = this.Pages["SOURCE"].Name;
 
             this.Buttons.ButtonEvent += new UIButtonGroupEventHandler(Buttons_ButtonEvent);
+
+            CrestronConsole.PrintLine("Setup {0} number of buttons", Buttons.NumberOfButtons);
+
+            foreach (UIButton button in this.Buttons)
+            {
+                CrestronConsole.PrintLine("Setup button with join {0}", button.JoinNumber);
+            }
+
+            CrestronConsole.PrintLine("Button with join 1 has a title of: {0}", Buttons[1].Title);
         }
 
         void Buttons_ButtonEvent(UIButtonGroup group, UIButton button, UIButtonEventArgs args)
         {
             CrestronConsole.PrintLine("Button named '{0}' in '{1}' was {2}", button.Title, group.Name, args.EventType);
-            if (args.EventType == eUIButtonEventType.Held)
+            if (args.EventType == eUIButtonEventType.Released)
             {
                 CrestronConsole.PrintLine("Button was held for {0} milliseconds", args.HoldTime);
+            }
+            else if (args.EventType == eUIButtonEventType.Tapped)
+            {
+                UIPage page = this.Pages[button.JoinNumber + 10];
+                if (page != null)
+                {
+                    page.Show();
+                }
             }
         }
 
@@ -64,9 +84,10 @@ namespace CDSimplSharpPro.UI
             {
                 case eSigType.Bool:
                     {
-                        if (Buttons.ContainsKey(args.Sig.Number))
+                        UIButton button = this.Buttons[args.Sig.Number];
+                        if (button != null)
                         {
-                            Buttons[args.Sig.Number].Down = args.Sig.BoolValue;
+                            button.Down = args.Sig.BoolValue;
                         }
                         break;
                     }

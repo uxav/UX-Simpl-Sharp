@@ -9,6 +9,7 @@ namespace CDSimplSharpPro.UI
 {
     public class UIPage
     {
+        public string KeyName { get; private set; }
         string _name;
         public string Name
         {
@@ -31,6 +32,13 @@ namespace CDSimplSharpPro.UI
                 return this._name;
             }
         }
+        public uint VisibleJoinNumber
+        {
+            get
+            {
+                return this.VisibleJoin.Number;
+            }
+        }
         public bool IsShowing
         {
             get
@@ -45,16 +53,18 @@ namespace CDSimplSharpPro.UI
         BoolInputSigInterlock JoinGroup;
         StringInputSig NameSerialJoin;
 
-        public UIPage(BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup)
+        public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup)
         {
+            this.KeyName = key;
             this.Name = "";
             this.VisibleJoin = visibleJoinSig;
             this.JoinGroup = pageVisibleJoinSigGroup;
             pageVisibleJoinSigGroup.Add(this.VisibleJoin);
         }
 
-        public UIPage(BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, StringInputSig nameStringInputSig, string name)
+        public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, StringInputSig nameStringInputSig, string name)
         {
+            this.KeyName = key;
             this._name = name;
             this.VisibleJoin = visibleJoinSig;
             this.JoinGroup = pageVisibleJoinSigGroup;
