@@ -11,17 +11,17 @@ namespace CDSimplSharpPro.UI
     public class UIButton
     {
         public string KeyName { get; private set; }
-        string _title;
+        string _Title;
         public string Title
         {
             set
             {
-                this._title = value;
-                this.SerialFeedbackJoin.StringValue = this._title;
+                this._Title = value;
+                this.SerialFeedbackJoin.StringValue = this._Title;
             }
             get
             {
-                return this._title;
+                return this._Title;
             }
         }
         public bool Feedback
@@ -129,26 +129,26 @@ namespace CDSimplSharpPro.UI
         public UIButton(string keyName, BasicTriList device, uint joinNumber)
         {
             this.KeyName = keyName;
-            this._title = string.Format("Button {0}", joinNumber);
+            this._Title = string.Format("Button {0}", joinNumber);
             this.HoldTime = 500;
             if (joinNumber > 0)
             {
                 this.Join = device.BooleanInput[joinNumber];
                 this.SerialFeedbackJoin = device.StringInput[joinNumber];
-                this.SerialFeedbackJoin.StringValue = this._title;
+                this.SerialFeedbackJoin.StringValue = this._Title;
             }
         }
 
         public UIButton(string keyName, BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
         {
             this.KeyName = keyName;
-            this._title = string.Format("Button {0}", joinNumber);
+            this._Title = string.Format("Button {0}", joinNumber);
             this.HoldTime = 500;
             if (joinNumber > 0)
             {
                 this.Join = device.BooleanInput[joinNumber];
                 this.SerialFeedbackJoin = device.StringInput[joinNumber];
-                this.SerialFeedbackJoin.StringValue = this._title;
+                this.SerialFeedbackJoin.StringValue = this._Title;
             }
             if (enableJoin > 0)
             {
