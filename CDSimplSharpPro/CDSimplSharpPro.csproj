@@ -97,6 +97,7 @@
     <Compile Include="UI\UIPageGroup.cs" />
     <Compile Include="UI\UserInterface.cs" />
     <Compile Include="UI\UserInterfaceGroup.cs" />
+    <Compile Include="UI\UserInterfaceWithSmartObject.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
@@ -108,7 +109,7 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>03/11/2015 08:45:34</CompiledOn>
+        <CompiledOn>03/11/2015 22:13:29</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

@@ -13,32 +13,20 @@ namespace CDSimplSharpPro.UI
     {
         public uint ID { get; private set; }
         public string Name;
-        public TswFt5ButtonSystem Device;
+        public BasicTriList Device;
         public Room Room;
         public UIPageGroup<string> Pages;
         public UIButtonGroup Buttons;
 
-        public UserInterface(CrestronControlSystem controlSystem, uint id, uint ipID, string type, Room defaultRoom)
+        public UserInterface(uint id, BasicTriList device, Room defaultRoom)
         {
             this.Room = defaultRoom;
             this.ID = id;
-            switch (type)
-            {
-                case "TSW1052":
-                    {
-                        this.Device = new Tsw1052(ipID, controlSystem);
-                        break;
-                    }
-                default:
-                    {
-                        ErrorLog.Error("Could not assign interface type '{0}' to new object", type);
-                        break;
-                    }
-            }
+            this.Device = device;
 
             if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
             {
-                ErrorLog.Error("Could not register User Interface with ID: {0}, ipID: {1}", this.ID, ipID);
+                ErrorLog.Error("Could not register User Interface with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
             }
 
             if (this.Device != null)

@@ -56,9 +56,23 @@ namespace CDSimplSharpPro.SystemConfig
 
                     foreach (UIData ui in data.interfaces)
                     {
-                        userInterfaces.Add(controlSystem, ui.id, ui.ip_id, ui.type, ui.name, rooms[ui.default_room]);
-                        CrestronConsole.PrintLine("   User Interface ({0} - {1}) with ID {2}, {3}, assigned to Room: {4}",
-                            userInterfaces[ui.id].Device.GetType(), userInterfaces[ui.id].Device.ID, ui.id, ui.name, rooms[ui.default_room].Name);
+                        BasicTriListWithSmartObject device;
+
+                        switch (ui.type.ToUpper())
+                        {
+                            case "TSW1050": device = new Tsw1050(ui.ip_id, controlSystem); break;
+                            case "TSW1052": device = new Tsw1052(ui.ip_id, controlSystem); break;
+                            default: device = null; break;
+                        }
+
+                        if (device != null)
+                        {
+                            UserInterfaceWithSmartObject newUI = new UserInterfaceWithSmartObject(ui.id, device, rooms[ui.default_room]);
+                            userInterfaces.Add(newUI);
+                            CrestronConsole.PrintLine("   User Interface ({0} - {1}) with ID {2}, {3}, assigned to Room: {4}",
+                                userInterfaces[ui.id].Device.GetType(),
+                                userInterfaces[ui.id].Device.ID, ui.id, ui.name, rooms[ui.default_room].Name);
+                        }
                     }
 
                     this.Loaded = true;
