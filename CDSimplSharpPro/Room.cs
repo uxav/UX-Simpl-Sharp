@@ -21,7 +21,9 @@ namespace CDSimplSharpPro
             set
             {
                 this._Name = value;
-                this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
+                
+                if(this.RoomDetailsChange != null)
+                    this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
             }
         }
         private string _Location;
@@ -34,7 +36,9 @@ namespace CDSimplSharpPro
             set
             {
                 this._Location = value;
-                this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
+                
+                if(this.RoomDetailsChange != null)
+                    this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
             }
         }
         public Room ParentRoom { get; private set; }
