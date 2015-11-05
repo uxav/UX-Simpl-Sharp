@@ -63,12 +63,15 @@ namespace CDSimplSharpPro.UI
                 return true;
             }
         }
+        private bool _Down;
         public bool Down
         {
             set
             {
-                if (value == true)
+                if (value == true && this._Down == false)
                 {
+                    this._Down = value;
+
                     if (this.HoldTime > 0 && this.HoldTimer == null || this.HoldTimer.Disposed)
                     {
                         this.CurrentHoldTime = 0;
@@ -80,8 +83,10 @@ namespace CDSimplSharpPro.UI
                         this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Pressed, this.CurrentHoldTime));
                     }
                 }
-                else if (value == false)
+                else if (value == false && this._Down == true)
                 {
+                    this._Down = value;
+
                     if(this.HoldTimer != null)
                         this.HoldTimer.Dispose();
 
