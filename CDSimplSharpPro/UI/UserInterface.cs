@@ -18,6 +18,7 @@ namespace CDSimplSharpPro.UI
         public UIPageCollection Pages;
         public UIButtonCollection Buttons;
         public UILabelCollection Labels;
+        public UIDateTime Time;
 
         public UserInterface(uint id, BasicTriList device, Room defaultRoom)
         {
@@ -29,8 +30,13 @@ namespace CDSimplSharpPro.UI
             this.Pages = new UIPageCollection();
             this.Buttons = new UIButtonCollection();
 
-            this.Labels.Add(new UILabel("ROOM_NAME", this.Device, 1));
+            this.Labels.Add(new UILabel("TIME", this.Device, 1));
+            this.Labels.Add(new UILabel("DATE", this.Device, 2));
+            this.Labels.Add(new UILabel("ROOM_NAME", this.Device, 10));
+            this.Labels["ROOM_NAME"].Text = this.Room.Name;
 
+            this.Time = new UIDateTime(this.Labels["DATE"], this.Labels["TIME"]);
+            
             if (this.Device != null)
             {
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
