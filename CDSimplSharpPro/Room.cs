@@ -11,8 +11,32 @@ namespace CDSimplSharpPro
     public class Room
     {
         public uint ID { get; private set; }
-        public string Name;
-        public string Location;
+        private string _Name;
+        public string Name
+        {
+            get
+            {
+                return this._Name;
+            }
+            set
+            {
+                this._Name = value;
+                this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
+            }
+        }
+        private string _Location;
+        public string Location
+        {
+            get
+            {
+                return this._Location;
+            }
+            set
+            {
+                this._Location = value;
+                this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
+            }
+        }
         public Room ParentRoom { get; private set; }
         public Room MasterRoom { get; private set; }
         public Room ChildRoom { get; private set; }
@@ -99,6 +123,8 @@ namespace CDSimplSharpPro
         {
             // Room created with no parent so give it the id and init other properties.
             this.ID = id;
+            this._Name = "";
+            this._Location = "";
             this.ParentRoom = null;
             this.MasterRoom = null;
             this.ChildRoom = null;
@@ -108,6 +134,8 @@ namespace CDSimplSharpPro
         {
             // Room created with parent!
             this.ID = id;
+            this._Name = "";
+            this._Location = "";
             this.ParentRoom = parentRoom;
             this.ParentRoom.ChildRoom = this;
 
@@ -130,6 +158,19 @@ namespace CDSimplSharpPro
             {
                 ErrorLog.Error("Room ID: {0}, {1}, Could not register a Fusion Room instance", this.ID, this.Name);
             }
+        }
+
+        public event RoomDetailsChangeEventHandler RoomDetailsChange;
+    }
+
+    public delegate void RoomDetailsChangeEventHandler(Room room, RoomDetailsChangeEventArgs args);
+
+    public class RoomDetailsChangeEventArgs : EventArgs
+    {
+        public RoomDetailsChangeEventArgs()
+            : base()
+        {
+
         }
     }
 }

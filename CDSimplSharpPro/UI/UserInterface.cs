@@ -14,7 +14,7 @@ namespace CDSimplSharpPro.UI
         public uint ID { get; private set; }
         public string Name;
         public BasicTriList Device;
-        public Room Room;
+        public Room Room { get; private set; }
         public UIPageCollection Pages;
         public UIButtonCollection Buttons;
         public UILabelCollection Labels;
@@ -29,6 +29,8 @@ namespace CDSimplSharpPro.UI
             this.Pages = new UIPageCollection();
             this.Buttons = new UIButtonCollection();
 
+            this.Labels.Add(new UILabel("ROOM_NAME", this.Device, 1));
+
             if (this.Device != null)
             {
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
@@ -42,6 +44,13 @@ namespace CDSimplSharpPro.UI
             {
                 ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
             }
+
+            this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+        }
+
+        void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
+        {
+            this.Labels["ROOM_NAME"].Text = room.Name;
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
@@ -58,6 +67,19 @@ namespace CDSimplSharpPro.UI
                         break;
                     }
             }
+        }
+
+        public void ChangeRoom(Room newRoom)
+        {
+            // Unsubscribe from existing room events
+            this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+
+            // Make this.Room the new room
+            this.Room = newRoom;
+            this.Labels["ROOM_NAME"].Text = this.Room.Name;
+
+            // Subscribe to new rooms events
+            this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
         }
     }
 }
