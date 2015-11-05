@@ -19,8 +19,8 @@ namespace CDSimplSharpPro.UI
 
         public event UIDateTimeChangeEventHandler TimeHasChanged;
 
-        private UILabel DateLabel;
-        private UILabel TimeLabel;
+        private UIDateTimeLabel DateLabel;
+        private UIDateTimeLabel TimeLabel;
 
         public UIDateTime()
         {
@@ -28,7 +28,7 @@ namespace CDSimplSharpPro.UI
             this.TimeChangeTimer = new CTimer(this.TimeSetup, secondsUntilNextMinute * 1000);
         }
 
-        public UIDateTime(UILabel dateLabel, UILabel timeLabel)
+        public UIDateTime(UIDateTimeLabel dateLabel, UIDateTimeLabel timeLabel)
         {
             this.DateLabel = dateLabel;
             this.TimeLabel = timeLabel;
@@ -57,11 +57,11 @@ namespace CDSimplSharpPro.UI
 
         public void UpdateLabels()
         {
-            if(this.DateLabel != null)
-                this.DateLabel.Text = this.TimeNow.ToString("MM/dd/yy");
+            if (this.DateLabel != null)
+                this.DateLabel.DateTime = this.TimeNow;
 
-            if(this.TimeLabel != null)
-                this.TimeLabel.Text = this.TimeNow.ToString("HH:mm");
+            if (this.TimeLabel != null)
+                this.TimeLabel.DateTime = this.TimeNow;
         }
     }
 

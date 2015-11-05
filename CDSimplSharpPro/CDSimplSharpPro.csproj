@@ -93,6 +93,7 @@
     <Compile Include="SystemConfig\UIData.cs" />
     <Compile Include="UI\UIButton.cs" />
     <Compile Include="UI\UIButtonCollection.cs" />
+    <Compile Include="UI\UIDateTimeLabel.cs" />
     <Compile Include="UI\UIDateTime.cs" />
     <Compile Include="UI\UILabel.cs" />
     <Compile Include="UI\UILabelCollection.cs" />
@@ -112,7 +113,7 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>05/11/2015 13:40:31</CompiledOn>
+        <CompiledOn>05/11/2015 14:26:48</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

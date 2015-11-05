@@ -208,6 +208,7 @@ namespace CDSimplSharpPro.UI
         public eUIButtonEventType EventType;
         public long HoldTime;
         public UIButtonEventArgs(eUIButtonEventType type, long holdTime)
+            : base()
         {
             this.EventType = type;
             this.HoldTime = holdTime;
