@@ -56,7 +56,7 @@ namespace CDSimplSharpPro.UI
 
         void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
         {
-            this.Labels["ROOM_NAME"].Text = room.Name;
+            this.Labels[UILabelKeys.RoomName].Text = room.Name;
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
@@ -85,7 +85,7 @@ namespace CDSimplSharpPro.UI
 
             // Make this.Room the new room
             this.Room = newRoom;
-            this.Labels["ROOM_NAME"].Text = this.Room.Name;
+            this.Labels[UILabelKeys.RoomName].Text = this.Room.Name;
 
             // Subscribe to new rooms events
             this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
