@@ -87,10 +87,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="RoomCollection.cs" />
-    <Compile Include="SystemConfig\Config.cs" />
-    <Compile Include="SystemConfig\ConfigData.cs" />
-    <Compile Include="SystemConfig\RoomData.cs" />
-    <Compile Include="SystemConfig\UIData.cs" />
     <Compile Include="UI\UIButton.cs" />
     <Compile Include="UI\UIButtonCollection.cs" />
     <Compile Include="UI\UIButtonKeys.cs" />
