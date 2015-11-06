@@ -63,5 +63,23 @@ namespace CDSimplSharpPro.UI
         {
             return this.GetEnumerator();
         }
+
+        private UIButton _CloseButton;
+        public UIButton CloseButton
+        {
+            set
+            {
+                this._CloseButton = value;
+                this._CloseButton.ButtonEvent += new UIButtonEventHandler(_CloseButton_ButtonEvent);
+            }
+        }
+
+        void _CloseButton_ButtonEvent(UIButton button, UIButtonEventArgs args)
+        {
+            if (args.EventType == eUIButtonEventType.Released)
+            {
+                this.Close();
+            }
+        }
     }
 }
