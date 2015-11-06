@@ -99,6 +99,12 @@
     <Compile Include="UI\UILabelCollection.cs" />
     <Compile Include="UI\UIPage.cs" />
     <Compile Include="UI\UIPageCollection.cs" />
+    <Compile Include="UI\UISubPage.cs" />
+    <Compile Include="UI\UISubPageCollection.cs" />
+    <Compile Include="UI\UISubPageModal.cs" />
+    <Compile Include="UI\UISubPageModalCollection.cs" />
+    <Compile Include="UI\UITimeOut.cs" />
+    <Compile Include="UI\UIViewBase.cs" />
     <Compile Include="UI\UserInterface.cs" />
     <Compile Include="UI\UserInterfaceCollection.cs" />
     <Compile Include="UI\UserInterfaceWithSmartObject.cs" />
@@ -113,7 +119,7 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>05/11/2015 14:26:48</CompiledOn>
+        <CompiledOn>06/11/2015 01:01:02</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

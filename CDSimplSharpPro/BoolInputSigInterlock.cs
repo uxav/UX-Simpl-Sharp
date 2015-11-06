@@ -84,7 +84,7 @@ namespace CDSimplSharpPro
             }
         }
 
-        public void ClearBool()
+        public void Clear()
         {
             foreach (BoolInputSig sig in Sigs)
             {

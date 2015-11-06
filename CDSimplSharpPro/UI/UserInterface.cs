@@ -16,6 +16,7 @@ namespace CDSimplSharpPro.UI
         public BasicTriList Device;
         public Room Room { get; private set; }
         public UIPageCollection Pages;
+        public UISubPageModalCollection Modals;
         public UIButtonCollection Buttons;
         public UILabelCollection Labels;
         
@@ -27,11 +28,13 @@ namespace CDSimplSharpPro.UI
             
             this.Labels = new UILabelCollection();
             this.Pages = new UIPageCollection();
+            this.Modals = new UISubPageModalCollection();
             this.Buttons = new UIButtonCollection();
 
             if (this.Device != null)
             {
                 this.Device.SigChange += new SigEventHandler(Device_SigChange);
+                this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
 
                 if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
                 {
@@ -46,6 +49,11 @@ namespace CDSimplSharpPro.UI
             this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
         }
 
+        void Device_IpInformationChange(GenericBase currentDevice, ConnectedIpEventArgs args)
+        {
+            
+        }
+
         void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
         {
             this.Labels["ROOM_NAME"].Text = room.Name;
@@ -53,6 +61,9 @@ namespace CDSimplSharpPro.UI
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
         {
+#if (DEBUG)
+            CrestronConsole.PrintLine("**Sig Change** {0}", args.Sig.ToString());
+#endif
             switch (args.Sig.Type)
             {
                 case eSigType.Bool:

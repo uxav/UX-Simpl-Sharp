@@ -7,78 +7,41 @@ using Crestron.SimplSharpPro;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UIPage
+    public class UIPage : UIViewBase
     {
-        public string KeyName { get; private set; }
-        string _name;
-        public string Name
+        BoolInputSigInterlock JoinGroup;
+
+        public override bool Visible
         {
+            get
+            {
+                return this.VisibleJoin.BoolValue;
+            }
             set
             {
-                // Set the value
-                this._name = value;
+                if (value == true)
+                    this.JoinGroup.Set(this.VisibleJoin);
+                else
+                    this.VisibleJoin.BoolValue = false;
 
-                // if the page has a serial join sig assigned for the Name:
-                if (this.TitleLabel != null)
-                {
-                    // set the string value of the serial join only if the page is showing
-                    // this allows for you to use the same serial join number as it sends updates the name when a page is shown
-                    if (this.IsShowing)
-                        this.TitleLabel.Text = this._name;
-                }
-            }
-            get
-            {
-                return this._name;
+                // If the page has a serial join sig then set the value to the name of the page
+                if (value == true && this.TitleLabel != null)
+                    this.TitleLabel.Text = this.Name;
             }
         }
-        public uint VisibleJoinNumber
-        {
-            get
-            {
-                return this.VisibleJoin.Number;
-            }
-        }
-        public bool IsShowing
-        {
-            get
-            {
-                if (this.JoinGroup.CurrentSig == this.VisibleJoin)
-                    return true;
-                return false;
-            }
-        }
-
-        BoolInputSig VisibleJoin;
-        BoolInputSigInterlock JoinGroup;
-        UILabel TitleLabel;
-
+ 
         public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup)
+            : base(key, visibleJoinSig)
         {
-            this.KeyName = key;
-            this.Name = "";
-            this.VisibleJoin = visibleJoinSig;
             this.JoinGroup = pageVisibleJoinSigGroup;
-            pageVisibleJoinSigGroup.Add(this.VisibleJoin);
+            this.JoinGroup.Add(visibleJoinSig);
         }
 
         public UIPage(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, UILabel titleLabel, string name)
+            : base(key, visibleJoinSig, titleLabel, name)
         {
-            this.KeyName = key;
-            this._name = name;
-            this.VisibleJoin = visibleJoinSig;
             this.JoinGroup = pageVisibleJoinSigGroup;
-            pageVisibleJoinSigGroup.Add(this.VisibleJoin);
-            this.TitleLabel = titleLabel;
-        }
-
-        public void Show()
-        {
-            this.JoinGroup.Set(this.VisibleJoin);
-
-            // If the page has a serial join sig then set the value to the name of the page
-            if (this.TitleLabel != null)
-                this.TitleLabel.Text = this._name;
+            this.JoinGroup.Add(visibleJoinSig);
         }
     }
 }
