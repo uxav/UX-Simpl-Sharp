@@ -17,7 +17,8 @@ namespace CDSimplSharpPro.UI
             set
             {
                 this._Title = value;
-                this.SerialFeedbackJoin.StringValue = this._Title;
+                if (this.SerialInputJoin != null)
+                    this.SerialInputJoin.StringValue = this._Title;
             }
             get
             {
@@ -28,11 +29,14 @@ namespace CDSimplSharpPro.UI
         {
             set
             {
-                this.Join.BoolValue = value;
+                if (this.DigitalInputJoin != null)
+                    this.DigitalInputJoin.BoolValue = value;
             }
             get
             {
-                return this.Join.BoolValue;
+                if (this.DigitalInputJoin != null)
+                    return this.DigitalInputJoin.BoolValue;
+                return false;
             }
         }
         public bool Enabled
@@ -61,6 +65,13 @@ namespace CDSimplSharpPro.UI
                 if(this.VisibleJoin != null)
                     return this.VisibleJoin.BoolValue;
                 return true;
+            }
+        }
+        public GenericBase Owner
+        {
+            get
+            {
+                return this.DigitalOutputJoin.Owner;
             }
         }
         private bool _Down;
@@ -114,8 +125,9 @@ namespace CDSimplSharpPro.UI
         private long CurrentHoldTime;
         public long HoldTime;
 
-        BoolInputSig Join;
-        StringInputSig SerialFeedbackJoin;
+        BoolOutputSig DigitalOutputJoin;
+        BoolInputSig DigitalInputJoin;
+        StringInputSig SerialInputJoin;
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
@@ -125,46 +137,55 @@ namespace CDSimplSharpPro.UI
         {
             get
             {
-                return this.Join.Number;
+                return this.DigitalOutputJoin.Number;
             }
         }
 
         public event UIButtonEventHandler ButtonEvent;
 
-        public UIButton(string keyName, BasicTriList device, uint joinNumber)
+        public UIButton(string keyName, BoolOutputSig digitalPressJoin)
         {
             this.KeyName = keyName;
-            this._Title = string.Format("Button {0}", joinNumber);
+            this._Title = this.KeyName;
             this.HoldTime = 500;
-            if (joinNumber > 0)
-            {
-                this.Join = device.BooleanInput[joinNumber];
-                this.SerialFeedbackJoin = device.StringInput[joinNumber];
-                this.SerialFeedbackJoin.StringValue = this._Title;
-            }
+            this.DigitalOutputJoin = digitalPressJoin;
         }
 
-        public UIButton(string keyName, BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
+        public UIButton(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
         {
             this.KeyName = keyName;
-            this._Title = string.Format("Button {0}", joinNumber);
+            this._Title = this.KeyName;
             this.HoldTime = 500;
-            if (joinNumber > 0)
-            {
-                this.Join = device.BooleanInput[joinNumber];
-                this.SerialFeedbackJoin = device.StringInput[joinNumber];
-                this.SerialFeedbackJoin.StringValue = this._Title;
-            }
-            if (enableJoin > 0)
-            {
-                this.EnableJoin = device.BooleanInput[enableJoin];
-                this.EnableJoin.BoolValue = true;
-            }
-            if (visibleJoin > 0)
-            {
-                this.VisibleJoin = device.BooleanInput[visibleJoin];
-                this.VisibleJoin.BoolValue = true;
-            }
+            this.DigitalOutputJoin = digitalPressJoin;
+            this.DigitalInputJoin = digitalFeedbackJoin;
+        }
+        
+        public UIButton(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+            StringInputSig serialJoinSig)
+        {
+            this.KeyName = keyName;
+            this._Title = this.KeyName;
+            this.HoldTime = 500;
+            this.DigitalOutputJoin = digitalPressJoin;
+            this.DigitalInputJoin = digitalFeedbackJoin;
+            this.SerialInputJoin = serialJoinSig;
+            this.SerialInputJoin.StringValue = this._Title;
+        }
+
+        public UIButton(string keyName, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
+            StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
+        {
+            this.KeyName = keyName;
+            this._Title = this.KeyName;
+            this.HoldTime = 500;
+            this.DigitalOutputJoin = digitalOutputJoin;
+            this.DigitalInputJoin = digitalFeedbackJoin;
+            this.SerialInputJoin = serialJoinSig;
+            this.SerialInputJoin.StringValue = this._Title;
+            this.EnableJoin = enableJoinSig;
+            this.EnableJoin.BoolValue = true;
+            this.VisibleJoin = visibleJoinSig;
+            this.VisibleJoin.BoolValue = true;
         }
 
         public void Show()

@@ -99,6 +99,8 @@
     <Compile Include="UI\UILabelKeys.cs" />
     <Compile Include="UI\UIPage.cs" />
     <Compile Include="UI\UIPageCollection.cs" />
+    <Compile Include="UI\UISmartObject.cs" />
+    <Compile Include="UI\UISmartObjectList.cs" />
     <Compile Include="UI\UISubPage.cs" />
     <Compile Include="UI\UISubPageCollection.cs" />
     <Compile Include="UI\UISubPageModal.cs" />
@@ -119,7 +121,7 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>06/11/2015 16:49:10</CompiledOn>
+        <CompiledOn>07/11/2015 20:06:02</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

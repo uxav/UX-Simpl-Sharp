@@ -50,16 +50,33 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(string keyName, BasicTriList device, uint join)
+        public void Add(string keyName, BoolOutputSig digitalPressJoin)
         {
-            UIButton newButton = new UIButton(keyName, device, join);
+            UIButton newButton = new UIButton(keyName, digitalPressJoin);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
 
-        public void Add(string keyName, BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
+        public void Add(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
         {
-            UIButton newButton = new UIButton(keyName, device, join, enableJoin, visibleJoin);
+            UIButton newButton = new UIButton(keyName, digitalPressJoin, digitalFeedbackJoin);
+            this.Buttons.Add(newButton);
+            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+        }
+
+        public void Add(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+            StringInputSig serialJoinSig)
+        {
+            UIButton newButton = new UIButton(keyName, digitalPressJoin, digitalFeedbackJoin, serialJoinSig);
+            this.Buttons.Add(newButton);
+            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+        }
+
+        public void Add(string keyName, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
+            StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
+        {
+            UIButton newButton = new UIButton(keyName, digitalOutputJoin, digitalFeedbackJoin,
+                serialJoinSig, enableJoinSig, visibleJoinSig);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }

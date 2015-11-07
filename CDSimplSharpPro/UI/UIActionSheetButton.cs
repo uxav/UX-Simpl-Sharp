@@ -12,8 +12,9 @@ namespace CDSimplSharpPro.UI
     {
         public eActionSheetButtonAction Action;
 
-        public UIActionSheetButton(string keyName, BasicTriList device, uint joinNumber, eActionSheetButtonAction action)
-            : base(keyName, device, joinNumber)
+        public UIActionSheetButton(string keyName, BoolOutputSig digitalPressJoin,
+            BoolInputSig digitalFeedbackJoin, StringInputSig serialJoinSig, eActionSheetButtonAction action)
+            : base(keyName, digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
         {
             this.Action = action;
         }
