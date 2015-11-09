@@ -65,18 +65,18 @@ namespace CDSimplSharpPro.UI
         }
 
         public void Add(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
-            StringInputSig serialJoinSig)
+            StringInputSig titleJoinSig)
         {
-            UIButton newButton = new UIButton(keyName, digitalPressJoin, digitalFeedbackJoin, serialJoinSig);
+            UIButton newButton = new UIButton(keyName, digitalPressJoin, digitalFeedbackJoin, titleJoinSig);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
 
         public void Add(string keyName, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
-            StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
+            StringInputSig titleJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
         {
             UIButton newButton = new UIButton(keyName, digitalOutputJoin, digitalFeedbackJoin,
-                serialJoinSig, enableJoinSig, visibleJoinSig);
+                titleJoinSig, enableJoinSig, visibleJoinSig);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
@@ -91,7 +91,7 @@ namespace CDSimplSharpPro.UI
             return this.GetEnumerator();
         }
 
-        public event UIButtonGroupEventHandler ButtonEvent;
+        public event UIButtonCollectionEventHandler ButtonEvent;
 
         void ButtonEventHandler(UIButton button, UIButtonEventArgs args)
         {
@@ -102,5 +102,5 @@ namespace CDSimplSharpPro.UI
         }
     }
 
-    public delegate void UIButtonGroupEventHandler(UIButtonCollection group, UIButton button, UIButtonEventArgs args);
+    public delegate void UIButtonCollectionEventHandler(UIButtonCollection group, UIButton button, UIButtonEventArgs args);
 }

@@ -11,6 +11,7 @@ namespace CDSimplSharpPro.UI
     public class UIButton
     {
         public string KeyName { get; private set; }
+        public object LinkedObject;
         string _Title;
         public string Title
         {

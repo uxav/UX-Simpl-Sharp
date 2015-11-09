@@ -12,54 +12,77 @@ namespace CDSimplSharpPro.UI
     {
         public string KeyName { get; private set; }
         public SmartObject DeviceSmartObject;
-        UIButtonCollection Buttons;
+        public UISmartObjectButtonCollection Buttons;
         public event UISmartObjectButtonEventHandler ButtonEvent;
+        BoolInputSig EnableJoin;
+        BoolInputSig VisibleJoin;
 
         public UISmartObject(string keyName, SmartObject smartObject)
         {
             this.KeyName = keyName;
-            this.Buttons = new UIButtonCollection();
+            this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
-            this.Buttons.ButtonEvent += new UIButtonGroupEventHandler(Buttons_ButtonEvent);
+            this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.DeviceSmartObject.SigChange += new SmartObjectSigChangeEventHandler(DeviceSmartObject_SigChange);
         }
 
-        void Buttons_ButtonEvent(UIButtonCollection group, UIButton button, UIButtonEventArgs args)
+        public UISmartObject(string keyName, SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
+        {
+            this.KeyName = keyName;
+            this.Buttons = new UISmartObjectButtonCollection();
+            this.DeviceSmartObject = smartObject;
+            this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+            this.DeviceSmartObject.SigChange += new SmartObjectSigChangeEventHandler(DeviceSmartObject_SigChange);
+            EnableJoin = objectEnableJoin;
+            if (EnableJoin != null)
+                EnableJoin.BoolValue = true;
+            VisibleJoin = objectVisibleJoin;
+            if (VisibleJoin != null)
+                VisibleJoin.BoolValue = true;
+        }
+
+        public void Buttons_ButtonEvent(UISmartObjectButton button, UIButtonEventArgs args)
         {
             this.ButtonEvent(this, new UISmartObjectButtonEventArgs(button, args.EventType, args.HoldTime));
         }
 
-        public void AddButton(UIButton button)
+        public void AddButton(UISmartObjectButton button)
         {
             this.Buttons.Add(button);
         }
 
-        public void AddButton(string digitalPressSigNam, string digitalFeedbackSigName, string serialFeedbackSigName)
+        public void AddButton(uint itemIndex, string digitalPressSigNam, string digitalFeedbackSigName)
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UIButton newButton = new UIButton(
-                    digitalPressSigNam,
-                    this.DeviceSmartObject.BooleanOutput[digitalPressSigNam],
-                    this.DeviceSmartObject.BooleanInput[digitalFeedbackSigName],
-                    this.DeviceSmartObject.StringInput[serialFeedbackSigName]
+                UISmartObjectButton newButton = new UISmartObjectButton(
+                    itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName
                     );
                 this.Buttons.Add(newButton);
             }
         }
 
-        public void AddButton(string digitalPressSigNam, string digitalFeedbackSigName, string serialFeedbackSigName,
-            string enableSigName, string visibleSigName)
+        public void AddButton(uint itemIndex, string digitalPressSigNam, string digitalFeedbackSigName,
+            string titleFeedbackSigName, string iconFeedbackSigName)
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UIButton newButton = new UIButton(
-                    digitalPressSigNam,
-                    this.DeviceSmartObject.BooleanOutput[digitalPressSigNam],
-                    this.DeviceSmartObject.BooleanInput[digitalFeedbackSigName],
-                    this.DeviceSmartObject.StringInput[serialFeedbackSigName],
-                    this.DeviceSmartObject.BooleanInput[enableSigName],
-                    this.DeviceSmartObject.BooleanInput[visibleSigName]
+                UISmartObjectButton newButton = new UISmartObjectButton(
+                    itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName,
+                    titleFeedbackSigName, iconFeedbackSigName
+                    );
+                this.Buttons.Add(newButton);
+            }
+        }
+
+        public void AddButton(uint itemIndex, string digitalPressSigNam, string digitalFeedbackSigName,
+            string titleFeedbackSigName, string iconFeedbackSigName, string enableSigName, string visibleSigName)
+        {
+            if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
+            {
+                UISmartObjectButton newButton = new UISmartObjectButton(
+                    itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName,
+                    titleFeedbackSigName, iconFeedbackSigName, enableSigName, visibleSigName
                     );
                 this.Buttons.Add(newButton);
             }
@@ -71,7 +94,7 @@ namespace CDSimplSharpPro.UI
             {
                 case eSigType.Bool:
                     {
-                        UIButton button = this.Buttons[args.Sig.Number];
+                        UIButton button = this.Buttons.UISmartObjectButtonBySigNumber(args.Sig.Number);
                         if (button != null)
                         {
                             button.Down = args.Sig.BoolValue;
@@ -80,6 +103,55 @@ namespace CDSimplSharpPro.UI
                     }
             }
         }
+
+        public bool Enabled
+        {
+            set
+            {
+                if (this.EnableJoin != null)
+                    this.EnableJoin.BoolValue = value;
+            }
+            get {
+                if (this.EnableJoin != null)
+                    return this.EnableJoin.BoolValue;
+                return false;
+            }
+        }
+
+        public bool Visible
+        {
+            set
+            {
+                if (this.VisibleJoin != null)
+                    this.VisibleJoin.BoolValue = value;
+            }
+            get
+            {
+                if (this.VisibleJoin != null)
+                    return this.VisibleJoin.BoolValue;
+                return false;
+            }
+        }
+
+        public void Show()
+        {
+            this.Visible = true;
+        }
+
+        public void Hide()
+        {
+            this.Visible = false;
+        }
+
+        public void Enable()
+        {
+            this.Enabled = true;
+        }
+
+        public void Disable()
+        {
+            this.Enabled = false;
+        }
     }
 
     public delegate void UISmartObjectButtonEventHandler(UISmartObject sObject, UISmartObjectButtonEventArgs args);
@@ -87,11 +159,13 @@ namespace CDSimplSharpPro.UI
     public class UISmartObjectButtonEventArgs : EventArgs
     {
         public eUIButtonEventType EventType;
-        public UIButton Button;
+        public uint ButtonIndex;
+        public UISmartObjectButton Button;
         public long HoldTime;
-        public UISmartObjectButtonEventArgs(UIButton button, eUIButtonEventType type, long holdTime)
+        public UISmartObjectButtonEventArgs(UISmartObjectButton button, eUIButtonEventType type, long holdTime)
             : base()
         {
+            this.ButtonIndex = button.ItemIndex;
             this.Button = button;
             this.EventType = type;
             this.HoldTime = holdTime;

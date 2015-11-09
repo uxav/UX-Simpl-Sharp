@@ -20,7 +20,7 @@ namespace CDSimplSharpPro.UI
             this.SubPage = subPage;
             this.SubTitleLabel = subTitleLabel;
             this.Buttons = new UIButtonCollection();
-            this.Buttons.ButtonEvent += new UIButtonGroupEventHandler(Buttons_ButtonEvent);
+            this.Buttons.ButtonEvent += new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.Title = title;
             this.SubTitle = subTitle;
             this.CallBack = callBack;

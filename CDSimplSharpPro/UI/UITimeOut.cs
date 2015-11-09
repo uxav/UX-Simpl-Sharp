@@ -20,7 +20,7 @@ namespace CDSimplSharpPro.UI
             this.TimeOutObject = timeOutObject;
             this.TimeOutInSeconds = timeOutInSeconds;
             this.ResetTimeOutButtonGroup = resetTimeOutButtonGroup;
-            this.ResetTimeOutButtonGroup.ButtonEvent += new UIButtonGroupEventHandler(ResetTimeOutButtonGroup_ButtonEvent);
+            this.ResetTimeOutButtonGroup.ButtonEvent += new UIButtonCollectionEventHandler(ResetTimeOutButtonGroup_ButtonEvent);
         }
 
         public void Set()

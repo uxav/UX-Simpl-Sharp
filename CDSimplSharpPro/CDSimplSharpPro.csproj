@@ -84,6 +84,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoolInputSigInterlock.cs" />
+    <Compile Include="ListData.cs" />
+    <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="RoomCollection.cs" />
@@ -100,6 +102,8 @@
     <Compile Include="UI\UIPage.cs" />
     <Compile Include="UI\UIPageCollection.cs" />
     <Compile Include="UI\UISmartObject.cs" />
+    <Compile Include="UI\UISmartObjectButton.cs" />
+    <Compile Include="UI\UISmartObjectButtonCollection.cs" />
     <Compile Include="UI\UISmartObjectList.cs" />
     <Compile Include="UI\UISubPage.cs" />
     <Compile Include="UI\UISubPageCollection.cs" />
@@ -121,7 +125,7 @@
         <Programmer />
         <ArchiveFilename>Z:\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>07/11/2015 20:06:02</CompiledOn>
+        <CompiledOn>09/11/2015 13:47:51</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />
