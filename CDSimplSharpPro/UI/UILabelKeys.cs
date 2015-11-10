@@ -8,11 +8,9 @@ namespace CDSimplSharpPro.UI
 {
     public class UILabelKeys
     {
-        public const string RoomName = "RoomName";
-        public const string PageTitle = "PageTitle";
-        public const string Date = "Date";
-        public const string Time = "Time";
-        public const string ModalTitle = "ModalTitle";
-        public const string ModalSubTitle = "ModalSubTitle";
+        public static UIKey RoomName = new UIKey("RoomName", 10);
+        public static UIKey PageTitle = new UIKey("PageTitle", 11);
+        public static UIKey Date = new UIKey("Date", 7);
+        public static UIKey Time = new UIKey("Time", 6);
     }
 }

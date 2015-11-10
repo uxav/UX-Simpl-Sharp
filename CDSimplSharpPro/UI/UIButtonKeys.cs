@@ -8,11 +8,10 @@ namespace CDSimplSharpPro.UI
 {
     public class UIButtonKeys
     {
-        public const string Power = "Power";
-        public const string Home = "Home";
-        public const string Lights = "Lights";
-        public const string Up = "Up";
-        public const string Down = "Down";
-        public const string CloseModal = "CloseModal";
+        public static UIKey Power = new UIKey(@"Power", 1);
+        public static UIKey Home = new UIKey(@"Home", 2);
+        public static UIKey Lights = new UIKey(@"Lights", 3);
+        public static UIKey Up = new UIKey(@"Up", 4);
+        public static UIKey Down = new UIKey(@"Down", 5);
     }
 }

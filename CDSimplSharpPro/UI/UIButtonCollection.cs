@@ -12,11 +12,19 @@ namespace CDSimplSharpPro.UI
     {
         private List<UIButton> Buttons;
 
+        public UIButton this[UIKey key]
+        {
+            get
+            {
+                return this.Buttons.FirstOrDefault(b => b.Key == key);
+            }
+        }
+
         public UIButton this[string keyName]
         {
             get
             {
-                return this.Buttons.FirstOrDefault(b => b.KeyName == keyName);
+                return this.Buttons.FirstOrDefault(b => b.Key.Name == keyName);
             }
         }
 
@@ -50,32 +58,32 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(string keyName, BoolOutputSig digitalPressJoin)
+        public void Add(UIKey key, BoolOutputSig digitalPressJoin)
         {
-            UIButton newButton = new UIButton(keyName, digitalPressJoin);
+            UIButton newButton = new UIButton(key, digitalPressJoin);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
 
-        public void Add(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
+        public void Add(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
         {
-            UIButton newButton = new UIButton(keyName, digitalPressJoin, digitalFeedbackJoin);
+            UIButton newButton = new UIButton(key, digitalPressJoin, digitalFeedbackJoin);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
 
-        public void Add(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+        public void Add(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig titleJoinSig)
         {
-            UIButton newButton = new UIButton(keyName, digitalPressJoin, digitalFeedbackJoin, titleJoinSig);
+            UIButton newButton = new UIButton(key, digitalPressJoin, digitalFeedbackJoin, titleJoinSig);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
         }
 
-        public void Add(string keyName, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
+        public void Add(UIKey key, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig titleJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
         {
-            UIButton newButton = new UIButton(keyName, digitalOutputJoin, digitalFeedbackJoin,
+            UIButton newButton = new UIButton(key, digitalOutputJoin, digitalFeedbackJoin,
                 titleJoinSig, enableJoinSig, visibleJoinSig);
             this.Buttons.Add(newButton);
             newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);

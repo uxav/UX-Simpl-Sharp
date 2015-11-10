@@ -9,7 +9,7 @@ namespace CDSimplSharpPro.UI
 {
     public class UIViewBase
     {
-        public string KeyName { get; private set; }
+        public UIKey Key { get; private set; }
         public BoolInputSig VisibleJoin { get; private set; }
         public UILabel TitleLabel;
         string _name;
@@ -57,16 +57,16 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIViewBase(string key, BoolInputSig visibleJoinSig)
+        public UIViewBase(UIKey key, BoolInputSig visibleJoinSig)
         {
-            this.KeyName = key;
+            this.Key = key;
             this.Name = "";
             this.VisibleJoin = visibleJoinSig;
         }
 
-        public UIViewBase(string key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name)
+        public UIViewBase(UIKey key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name)
         {
-            this.KeyName = key;
+            this.Key = key;
             this._name = name;
             this.VisibleJoin = visibleJoinSig;
             this.TitleLabel = titleLabel;

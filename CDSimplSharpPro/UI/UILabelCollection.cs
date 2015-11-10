@@ -12,11 +12,11 @@ namespace CDSimplSharpPro.UI
     {
         private List<UILabel> Labels;
 
-        public UILabel this[string keyName]
+        public UILabel this[UIKey key]
         {
             get
             {
-                return this.Labels.FirstOrDefault(b => b.KeyName == keyName);
+                return this.Labels.FirstOrDefault(b => b.Key == key);
             }
         }
 
@@ -49,15 +49,15 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(string keyName, BasicTriList device, uint join)
+        public void Add(UIKey key, BasicTriList device, uint join)
         {
-            UILabel newLabel = new UILabel(keyName, device, join);
+            UILabel newLabel = new UILabel(key, device, join);
             this.Labels.Add(newLabel);
         }
 
-        public void Add(string keyName, BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
+        public void Add(UIKey key, BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
         {
-            UILabel newLabel = new UILabel(keyName, device, join, enableJoin, visibleJoin);
+            UILabel newLabel = new UILabel(key, device, join, enableJoin, visibleJoin);
             this.Labels.Add(newLabel);
         }
 

@@ -37,21 +37,21 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UISubPageModal(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup)
+        public UISubPageModal(UIKey key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup)
             : base (key, visibleJoinSig)
         {
             this.JoinGroup = pageVisibleJoinSigGroup;
             this.JoinGroup.Add(visibleJoinSig);
         }
 
-        public UISubPageModal(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, UILabel titleLabel, string name)
+        public UISubPageModal(UIKey key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, UILabel titleLabel, string name)
             : base (key, visibleJoinSig, titleLabel, name)
         {
             this.JoinGroup = pageVisibleJoinSigGroup;
             this.JoinGroup.Add(visibleJoinSig);
         }
 
-        public UISubPageModal(string key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, UILabel titleLabel, string name, UITimeOut timeOut)
+        public UISubPageModal(UIKey key, BoolInputSig visibleJoinSig, BoolInputSigInterlock pageVisibleJoinSigGroup, UILabel titleLabel, string name, UITimeOut timeOut)
             : base(key, visibleJoinSig, titleLabel, name)
         {
             this.JoinGroup = pageVisibleJoinSigGroup;

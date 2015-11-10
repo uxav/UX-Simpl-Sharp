@@ -10,7 +10,7 @@ namespace CDSimplSharpPro.UI
 {
     public class UILabel
     {
-        public string KeyName { get; private set; }
+        public UIKey Key { get; private set; }
         string _Text;
         public string Text
         {
@@ -66,9 +66,9 @@ namespace CDSimplSharpPro.UI
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
-        public UILabel(string keyName, BasicTriList device, uint joinNumber)
+        public UILabel(UIKey key, BasicTriList device, uint joinNumber)
         {
-            this.KeyName = keyName;
+            this.Key = key;
             this._Text = "Label";
             if (joinNumber > 0)
             {
@@ -77,9 +77,9 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UILabel(string keyName, BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
+        public UILabel(UIKey key, BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
         {
-            this.KeyName = keyName;
+            this.Key = key;
             this._Text = "Label";
             if (joinNumber > 0)
             {

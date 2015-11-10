@@ -10,7 +10,7 @@ namespace CDSimplSharpPro.UI
 {
     public class UIButton
     {
-        public string KeyName { get; private set; }
+        public UIKey Key { get; private set; }
         public object LinkedObject;
         string _Title;
         public string Title
@@ -144,28 +144,28 @@ namespace CDSimplSharpPro.UI
 
         public event UIButtonEventHandler ButtonEvent;
 
-        public UIButton(string keyName, BoolOutputSig digitalPressJoin)
+        public UIButton(UIKey key, BoolOutputSig digitalPressJoin)
         {
-            this.KeyName = keyName;
-            this._Title = this.KeyName;
+            this.Key = key;
+            this._Title = this.Key.Name;
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
         }
 
-        public UIButton(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
+        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
         {
-            this.KeyName = keyName;
-            this._Title = this.KeyName;
+            this.Key = key;
+            this._Title = this.Key.Name;
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
         }
         
-        public UIButton(string keyName, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig)
         {
-            this.KeyName = keyName;
-            this._Title = this.KeyName;
+            this.Key = key;
+            this._Title = this.Key.Name;
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
@@ -173,11 +173,11 @@ namespace CDSimplSharpPro.UI
             this.SerialInputJoin.StringValue = this._Title;
         }
 
-        public UIButton(string keyName, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButton(UIKey key, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
         {
-            this.KeyName = keyName;
-            this._Title = this.KeyName;
+            this.Key = key;
+            this._Title = this.Key.Name;
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalOutputJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;

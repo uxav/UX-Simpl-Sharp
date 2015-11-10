@@ -20,11 +20,11 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIPage this[string keyName]
+        public UIPage this[UIKey key]
         {
             get
             {
-                return this.Pages.FirstOrDefault(p => p.KeyName == keyName);
+                return this.Pages.FirstOrDefault(p => p.Key == key);
             }
         }
 
@@ -34,7 +34,7 @@ namespace CDSimplSharpPro.UI
             this.PageVisisbleJoinSigGroup = new BoolInputSigInterlock();
         }
 
-        public void Add(string key, BoolInputSig visibleJoinSig)
+        public void Add(UIKey key, BoolInputSig visibleJoinSig)
         {
             if (!this.PageVisisbleJoinSigGroup.Contains(visibleJoinSig))
             {
@@ -47,7 +47,7 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(string key, BoolInputSig visibleJoinSig, string name, UILabel titleLabel)
+        public void Add(UIKey key, BoolInputSig visibleJoinSig, string name, UILabel titleLabel)
         {
             if (!this.PageVisisbleJoinSigGroup.Contains(visibleJoinSig))
             {

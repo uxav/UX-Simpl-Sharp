@@ -11,11 +11,11 @@ namespace CDSimplSharpPro.UI
     {
         private List<UISmartObjectButton> Buttons;
 
-        public UISmartObjectButton this[string keyName]
+        public UISmartObjectButton this[UIKey key]
         {
             get
             {
-                return this.Buttons.FirstOrDefault(b => b.KeyName == keyName);
+                return this.Buttons.FirstOrDefault(b => b.Key == key);
             }
         }
 

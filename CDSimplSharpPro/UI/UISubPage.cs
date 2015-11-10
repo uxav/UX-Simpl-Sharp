@@ -35,19 +35,19 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UISubPage(string key, BoolInputSig visibleJoinSig)
+        public UISubPage(UIKey key, BoolInputSig visibleJoinSig)
             : base (key, visibleJoinSig)
         {
             
         }
 
-        public UISubPage(string key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name)
+        public UISubPage(UIKey key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name)
             : base (key, visibleJoinSig, titleLabel, name)
         {
 
         }
 
-        public UISubPage(string key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name, UITimeOut timeOut)
+        public UISubPage(UIKey key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name, UITimeOut timeOut)
             : base(key, visibleJoinSig, titleLabel, name)
         {
             this.TimeOut = timeOut;

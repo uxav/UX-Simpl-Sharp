@@ -19,11 +19,11 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UISubPage this[string keyName]
+        public UISubPage this[UIKey key]
         {
             get
             {
-                return this.SubPages.FirstOrDefault(p => p.KeyName == keyName);
+                return this.SubPages.FirstOrDefault(p => p.Key == key);
             }
         }
 
@@ -34,13 +34,13 @@ namespace CDSimplSharpPro.UI
 
         public void Add(UISubPage page)
         {
-            if (!this.SubPages.Exists(p => p.KeyName == page.KeyName))
+            if (!this.SubPages.Exists(p => p.Key == page.Key))
             {
                 this.SubPages.Add(page);
             }
             else
             {
-                throw new Exception(string.Format("SubPage with key name '{0}' already exists", page.KeyName));
+                throw new Exception(string.Format("SubPage with key name '{0}' already exists", page.Key.Name));
             }
         }
 
