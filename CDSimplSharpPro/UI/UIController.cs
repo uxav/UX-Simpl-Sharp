@@ -9,7 +9,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UserInterface
+    public class UIController
     {
         public uint ID { get; private set; }
         public string Name;
@@ -20,7 +20,7 @@ namespace CDSimplSharpPro.UI
         public UIButtonCollection Buttons;
         public UILabelCollection Labels;
         
-        public UserInterface(uint id, BasicTriList device, Room defaultRoom)
+        public UIController(uint id, BasicTriList device, Room defaultRoom)
         {
             this.Room = defaultRoom;
             this.ID = id;

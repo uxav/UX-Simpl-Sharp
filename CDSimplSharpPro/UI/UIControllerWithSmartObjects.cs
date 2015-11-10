@@ -7,11 +7,11 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UserInterfaceWithSmartObject : UserInterface
+    public class UIControllerWithSmartObjects : UIController
     {
         public new BasicTriListWithSmartObject Device;
 
-        public UserInterfaceWithSmartObject(uint id, BasicTriListWithSmartObject device, Room defaultRoom)
+        public UIControllerWithSmartObjects(uint id, BasicTriListWithSmartObject device, Room defaultRoom)
             : base(id, device, defaultRoom)
         {
             this.Device = device;

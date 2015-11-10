@@ -113,9 +113,9 @@
     <Compile Include="UI\UISubPageModalCollection.cs" />
     <Compile Include="UI\UITimeOut.cs" />
     <Compile Include="UI\UIViewBase.cs" />
-    <Compile Include="UI\UserInterface.cs" />
-    <Compile Include="UI\UserInterfaceCollection.cs" />
-    <Compile Include="UI\UserInterfaceWithSmartObject.cs" />
+    <Compile Include="UI\UIController.cs" />
+    <Compile Include="UI\UIControllerCollection.cs" />
+    <Compile Include="UI\UIControllerWithSmartObjects.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

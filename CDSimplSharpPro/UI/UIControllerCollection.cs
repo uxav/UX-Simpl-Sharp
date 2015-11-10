@@ -7,11 +7,11 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UserInterfaceCollection : IEnumerable<UserInterface>
+    public class UIControllerCollection : IEnumerable<UIController>
     {
-        private List<UserInterface> interfaces;
+        private List<UIController> interfaces;
 
-        public UserInterface this[uint id]
+        public UIController this[uint id]
         {
             get
             {
@@ -19,17 +19,17 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UserInterfaceCollection()
+        public UIControllerCollection()
         {
-            this.interfaces = new List<UserInterface>();
+            this.interfaces = new List<UIController>();
         }
 
-        public void Add(UserInterface ui)
+        public void Add(UIController ui)
         {
             this.interfaces.Add(ui);
         }
 
-        public IEnumerator<UserInterface> GetEnumerator()
+        public IEnumerator<UIController> GetEnumerator()
         {
             return this.interfaces.GetEnumerator();
         }
