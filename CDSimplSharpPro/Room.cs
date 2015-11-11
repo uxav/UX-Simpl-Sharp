@@ -45,6 +45,26 @@ namespace CDSimplSharpPro
         public Room MasterRoom { get; private set; }
         public Room ChildRoom { get; private set; }
         public FusionRoom FusionRoom;
+        Source _Source;
+        public Source Source
+        {
+            set
+            {
+                if (_Source != value)
+                {
+                    Source oldSource = _Source;
+                    _Source = value;
+                    if (SourceChange != null)
+                    {
+                        this.SourceChange(this, new RoomSourceChangeEventArgs(oldSource, _Source));
+                    }
+                }
+            }
+            get
+            {
+                return _Source;
+            }
+        }
 
         public bool IsParent
         {
@@ -165,9 +185,11 @@ namespace CDSimplSharpPro
         }
 
         public event RoomDetailsChangeEventHandler RoomDetailsChange;
+        public event RoomSourceChangeEventHandler SourceChange;
     }
 
     public delegate void RoomDetailsChangeEventHandler(Room room, RoomDetailsChangeEventArgs args);
+    public delegate void RoomSourceChangeEventHandler(Room room, RoomSourceChangeEventArgs args);
 
     public class RoomDetailsChangeEventArgs : EventArgs
     {
@@ -175,6 +197,18 @@ namespace CDSimplSharpPro
             : base()
         {
 
+        }
+    }
+
+    public class RoomSourceChangeEventArgs : EventArgs
+    {
+        public Source PreviousSource;
+        public Source NewSource;
+        public RoomSourceChangeEventArgs(Source previousSource, Source newSource)
+            : base()
+        {
+            this.PreviousSource = previousSource;
+            this.NewSource = newSource;
         }
     }
 }

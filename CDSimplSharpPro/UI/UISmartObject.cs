@@ -10,25 +10,25 @@ namespace CDSimplSharpPro.UI
 {
     public class UISmartObject
     {
-        public string KeyName { get; private set; }
+        public UIKey Key { get; private set; }
         public SmartObject DeviceSmartObject;
         public UISmartObjectButtonCollection Buttons;
         public event UISmartObjectButtonEventHandler ButtonEvent;
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
-        public UISmartObject(string keyName, SmartObject smartObject)
+        public UISmartObject(UIKey key, SmartObject smartObject)
         {
-            this.KeyName = keyName;
+            this.Key = key;
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.DeviceSmartObject.SigChange += new SmartObjectSigChangeEventHandler(DeviceSmartObject_SigChange);
         }
 
-        public UISmartObject(string keyName, SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
+        public UISmartObject(UIKey key, SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
         {
-            this.KeyName = keyName;
+            this.Key = key;
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);

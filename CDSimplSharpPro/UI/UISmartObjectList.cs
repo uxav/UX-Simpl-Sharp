@@ -43,8 +43,8 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UISmartObjectList(string keyName, SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
-            : base(keyName, smartObject, enableJoin, visibleJoin)
+        public UISmartObjectList(UIKey key, SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
+            : base(key, smartObject, enableJoin, visibleJoin)
         {
             uint item = 1;
             this.Data = listData;
@@ -119,6 +119,11 @@ namespace CDSimplSharpPro.UI
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = false;
             }
+        }
+
+        public object LinkedObjectForButton(uint buttonIndex)
+        {
+            return this.Buttons[buttonIndex].LinkedObject;
         }
 
         void DeviceSmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)

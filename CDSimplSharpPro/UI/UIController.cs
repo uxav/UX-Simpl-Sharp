@@ -14,7 +14,32 @@ namespace CDSimplSharpPro.UI
         public uint ID { get; private set; }
         public string Name;
         public BasicTriList Device;
-        public Room Room { get; private set; }
+        Room _Room;
+        public Room Room
+        {
+            set
+            {
+                if (_Room != value && value != null)
+                {
+                    // Unsubscribe from existing room events
+                    this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                    this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
+
+                    // Set the Room Name label
+                    this.Labels[UILabelKeys.RoomName].Text = this.Room.Name;
+
+                    // Subscribe to new rooms events
+                    this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                    this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+
+                    this.RoomHasChanged(value);
+                }
+            }
+            get
+            {
+                return _Room;
+            }
+        }
         public UIPageCollection Pages;
         public UISubPageModalCollection Modals;
         public UIButtonCollection Buttons;
@@ -22,10 +47,10 @@ namespace CDSimplSharpPro.UI
         
         public UIController(uint id, BasicTriList device, Room defaultRoom)
         {
-            this.Room = defaultRoom;
+            _Room = defaultRoom;
             this.ID = id;
             this.Device = device;
-            
+
             this.Labels = new UILabelCollection();
             this.Pages = new UIPageCollection();
             this.Modals = new UISubPageModalCollection();
@@ -47,6 +72,25 @@ namespace CDSimplSharpPro.UI
             }
 
             this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+            this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+        }
+
+        public virtual void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
+        {
+            string previousSourceName;
+            string newSourceName;
+
+            if (args.PreviousSource != null)
+                previousSourceName = args.PreviousSource.Name;
+            else
+                previousSourceName = "No Source";
+
+            if (args.NewSource != null)
+                newSourceName = args.NewSource.Name;
+            else
+                newSourceName = "No Source";
+            
+            CrestronConsole.PrintLine("UIController base class source changed from {0} to {1}", previousSourceName, newSourceName);
         }
 
         void Device_IpInformationChange(GenericBase currentDevice, ConnectedIpEventArgs args)
@@ -78,17 +122,9 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void ChangeRoom(Room newRoom)
+        public virtual void RoomHasChanged(Room newRoom)
         {
-            // Unsubscribe from existing room events
-            this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
 
-            // Make this.Room the new room
-            this.Room = newRoom;
-            this.Labels[UILabelKeys.RoomName].Text = this.Room.Name;
-
-            // Subscribe to new rooms events
-            this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
         }
     }
 }
