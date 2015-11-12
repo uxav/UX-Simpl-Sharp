@@ -63,9 +63,9 @@ namespace CDSimplSharpPro.UI
             this.Device = device;
 
             this.Labels = new UILabelCollection();
-            this.Pages = new UIPageCollection();
             this.Modals = new UISubPageModalCollection();
             this.Buttons = new UIButtonCollection();
+            this.Pages = new UIPageCollection(new UITimeOut(this, 30, this.Buttons));
 
             if (this.Device != null)
             {

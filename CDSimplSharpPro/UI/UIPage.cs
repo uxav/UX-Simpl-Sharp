@@ -10,6 +10,7 @@ namespace CDSimplSharpPro.UI
     public class UIPage : UIViewBase
     {
         BoolInputSigInterlock JoinGroup;
+        public event UIPageEventHandler PageChange;
 
         public override bool Visible
         {
@@ -19,6 +20,8 @@ namespace CDSimplSharpPro.UI
             }
             set
             {
+                bool previousValue = this.VisibleJoin.BoolValue;
+
                 if (value == true)
                     this.JoinGroup.Set(this.VisibleJoin);
                 else
@@ -27,6 +30,11 @@ namespace CDSimplSharpPro.UI
                 // If the page has a serial join sig then set the value to the name of the page
                 if (value == true && this.TitleLabel != null)
                     this.TitleLabel.Text = this.Name;
+
+                if (previousValue != this.VisibleJoin.BoolValue && this.PageChange != null)
+                {
+                    this.PageChange(this, new UIPageEventArgs());
+                }
             }
         }
  
@@ -42,6 +50,16 @@ namespace CDSimplSharpPro.UI
         {
             this.JoinGroup = pageVisibleJoinSigGroup;
             this.JoinGroup.Add(visibleJoinSig);
+        }
+
+        public delegate void UIPageEventHandler(UIPage page, UIPageEventArgs args);
+    }
+
+    public class UIPageEventArgs : EventArgs
+    {
+        public UIPageEventArgs()
+        {
+
         }
     }
 }
