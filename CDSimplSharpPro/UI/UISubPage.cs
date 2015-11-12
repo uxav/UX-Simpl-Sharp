@@ -19,7 +19,7 @@ namespace CDSimplSharpPro.UI
             }
             set
             {
-                if (this.VisibleJoin.BoolValue && !value)
+                if (this.VisibleJoin.BoolValue && !value && this.TimeOut != null)
                     this.TimeOut.Cancel();
                 else if (!this.VisibleJoin.BoolValue && value)
                 {
@@ -28,6 +28,10 @@ namespace CDSimplSharpPro.UI
                     {
                         this.TimeOut.Set();
                     }
+                }
+                else
+                {
+                    this.VisibleJoin.BoolValue = value;
                 }
                 // If the page has a serial join sig then set the value to the name of the page
                 if (value == true && this.TitleLabel != null)
