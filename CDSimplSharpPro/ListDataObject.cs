@@ -12,6 +12,7 @@ namespace CDSimplSharpPro
         public string Title;
         public string Icon;
         public object DataObject;
+        public bool IsSelected;
 
         public ListDataObject(string keyName, string title, object dataObject)
         {
@@ -19,6 +20,7 @@ namespace CDSimplSharpPro
             this.Title = title;
             this.Icon = "";
             this.DataObject = dataObject;
+            this.IsSelected = false;
         }
 
         public ListDataObject(string keyName, string title, string icon, object dataObject)
@@ -27,6 +29,7 @@ namespace CDSimplSharpPro
             this.Title = title;
             this.Icon = icon;
             this.DataObject = dataObject;
+            this.IsSelected = false;
         }
     }
 }

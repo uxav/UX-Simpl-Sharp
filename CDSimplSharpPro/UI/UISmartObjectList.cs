@@ -119,6 +119,14 @@ namespace CDSimplSharpPro.UI
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = false;
             }
+            else if (args.EventType == eListDataChangeEventType.ItemSelectionHasChanged)
+            {
+                for (uint item = 1; item <= this.NumberOfItems; item++)
+                {
+                    int listDataIndex = (int)item - 1;
+                    this.Buttons[item].Feedback = listData[listDataIndex].IsSelected;
+                }
+            }
         }
 
         public object LinkedObjectForButton(uint buttonIndex)

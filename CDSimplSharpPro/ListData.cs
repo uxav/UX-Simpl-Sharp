@@ -100,6 +100,49 @@ namespace CDSimplSharpPro
             if (this.DataChange != null)
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.HasLoaded));
         }
+
+        public void SelectSingleItem(int index)
+        {
+            foreach (ListDataObject dataObject in Data)
+            {
+                if(dataObject != Data[index])
+                    dataObject.IsSelected = false;
+            }
+
+            Data[index].IsSelected = true;
+            
+            if (this.DataChange != null)
+                this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+        }
+
+        public void SelectItemWithLinkedObject(object linkedObject)
+        {
+            ListDataObject item = Data.FirstOrDefault(o => o.DataObject == linkedObject);
+            if (item != null)
+            {
+                foreach (ListDataObject dataObject in Data)
+                {
+                    if (dataObject != item)
+                        dataObject.IsSelected = false;
+                }
+
+                item.IsSelected = true;
+            }
+
+            if(this.DataChange != null)
+                this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+        }
+
+        public void SelectClearAll()
+        {
+            foreach (ListDataObject dataObject in Data)
+            {
+                dataObject.IsSelected = false;
+            }
+
+            if (this.DataChange != null)
+                this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+        }
         
         public IEnumerator<ListDataObject> GetEnumerator()
         {
@@ -128,6 +171,7 @@ namespace CDSimplSharpPro
     {
         IsStartingToLoad,
         HasLoaded,
-        HasCleared
+        HasCleared,
+        ItemSelectionHasChanged
     }
 }
