@@ -40,6 +40,17 @@ namespace CDSimplSharpPro.UI
                 return _Room;
             }
         }
+        public Source Source
+        {
+            get
+            {
+                return this.Room.Source;
+            }
+            set
+            {
+                this.Room.Source = value;
+            }
+        }
         public UIPageCollection Pages;
         public UISubPageModalCollection Modals;
         public UIButtonCollection Buttons;
@@ -77,20 +88,10 @@ namespace CDSimplSharpPro.UI
 
         public virtual void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
         {
-            string previousSourceName;
-            string newSourceName;
-
-            if (args.PreviousSource != null)
-                previousSourceName = args.PreviousSource.Name;
-            else
-                previousSourceName = "No Source";
-
-            if (args.NewSource != null)
-                newSourceName = args.NewSource.Name;
-            else
-                newSourceName = "No Source";
-            
-            CrestronConsole.PrintLine("UIController base class source changed from {0} to {1}", previousSourceName, newSourceName);
+            if (this.Room == room)
+            {
+                SourceHasChanged(args.PreviousSource, args.NewSource);
+            }
         }
 
         void Device_IpInformationChange(GenericBase currentDevice, ConnectedIpEventArgs args)
@@ -123,6 +124,11 @@ namespace CDSimplSharpPro.UI
         }
 
         public virtual void RoomHasChanged(Room newRoom)
+        {
+
+        }
+
+        public virtual void SourceHasChanged(Source previousSource, Source newSource)
         {
 
         }
