@@ -44,6 +44,48 @@ namespace CDSimplSharpPro.UI
             }
         }
 
+        public void ShowAll()
+        {
+            foreach (UISubPage subPage in SubPages)
+            {
+                subPage.Show();
+            }
+        }
+
+        public void ShowOnly(UIKey key)
+        {
+            foreach (UISubPage subPage in SubPages)
+            {
+                if (subPage.Key != key)
+                {
+                    subPage.Hide();
+                }
+            }
+
+            this[key].Show();
+        }
+
+        public void ShowOnlyWithIndex(uint index)
+        {
+            for (uint n = 1; n <= SubPages.Count; n++)
+            {
+                if (n != index)
+                {
+                    SubPages[(int)n - 1].Hide();
+                }
+            }
+
+            SubPages[(int)index - 1].Show();
+        }
+
+        public void HideAll()
+        {
+            foreach (UISubPage subPage in SubPages)
+            {
+                subPage.Hide();
+            }
+        }
+
         public IEnumerator<UISubPage> GetEnumerator()
         {
             return this.SubPages.GetEnumerator();
