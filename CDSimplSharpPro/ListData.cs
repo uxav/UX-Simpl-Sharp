@@ -89,13 +89,13 @@ namespace CDSimplSharpPro
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.HasCleared));
         }
 
-        public void DataLoading()
+        public void OnDataLoadStart()
         {
             if (this.DataChange != null)
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.IsStartingToLoad));
         }
 
-        public void DataLoaded()
+        public void OnDataLoadComplete()
         {
             if (this.DataChange != null)
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.HasLoaded));

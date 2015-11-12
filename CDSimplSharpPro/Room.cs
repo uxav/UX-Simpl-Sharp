@@ -182,6 +182,27 @@ namespace CDSimplSharpPro
             {
                 ErrorLog.Error("Room ID: {0}, {1}, Could not register a Fusion Room instance", this.ID, this.Name);
             }
+            else
+            {
+                this.FusionRoom.FusionStateChange += new FusionStateEventHandler(FusionRoom_FusionStateChange);
+                this.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+                this.FusionRoom.OnlineStatusChange += new OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+            }
+        }
+
+        void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            
+        }
+
+        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        {
+            
+        }
+
+        void FusionRoom_FusionStateChange(FusionBase device, FusionStateEventArgs args)
+        {
+            
         }
 
         public event RoomDetailsChangeEventHandler RoomDetailsChange;
