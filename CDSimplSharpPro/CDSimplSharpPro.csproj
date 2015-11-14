@@ -113,6 +113,7 @@
     <Compile Include="UI\UISubPageCollection.cs" />
     <Compile Include="UI\UISubPageModal.cs" />
     <Compile Include="UI\UISubPageModalCollection.cs" />
+    <Compile Include="UI\UITextField.cs" />
     <Compile Include="UI\UITimeOut.cs" />
     <Compile Include="UI\UIViewBase.cs" />
     <Compile Include="UI\UIController.cs" />
