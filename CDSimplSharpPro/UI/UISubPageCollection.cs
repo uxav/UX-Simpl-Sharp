@@ -62,7 +62,10 @@ namespace CDSimplSharpPro.UI
                 }
             }
 
-            this[key].Show();
+            if (this.ContainsSubPageWithKey(key))
+                this[key].Show();
+            else
+                ErrorLog.Error("Cannot ShowOnly subpage as UIKey: {0} does not exist in the collection", key);
         }
 
         public void ShowOnlyWithIndex(uint index)
@@ -75,7 +78,8 @@ namespace CDSimplSharpPro.UI
                 }
             }
 
-            SubPages[(int)index - 1].Show();
+            if ((int)index <= SubPages.Count)
+                SubPages[(int)index - 1].Show();
         }
 
         public void HideAll()
@@ -84,6 +88,11 @@ namespace CDSimplSharpPro.UI
             {
                 subPage.Hide();
             }
+        }
+
+        public bool ContainsSubPageWithKey(UIKey key)
+        {
+            return this.SubPages.Exists(p => p.Key == key);
         }
 
         public IEnumerator<UISubPage> GetEnumerator()
