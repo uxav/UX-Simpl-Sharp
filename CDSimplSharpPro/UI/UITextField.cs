@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.CrestronThread;
 
 namespace CDSimplSharpPro.UI
 {
@@ -21,6 +22,8 @@ namespace CDSimplSharpPro.UI
         StringOutputSig TextJoinFromDevice;
         BasicTriList Device;
         UIButton ClearButton;
+
+        public event UItextFieldEventHandler TextFieldEvent;
 
         public bool Visible
         {
@@ -61,6 +64,8 @@ namespace CDSimplSharpPro.UI
                         ClearButton.Visible = true;
                     else if (ClearButton != null)
                         ClearButton.Visible = false;
+                    if (this.TextFieldEvent != null)
+                        this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.TextChanged, this.HasFocus, this.Text));
                 }
             }
             get
@@ -81,11 +86,20 @@ namespace CDSimplSharpPro.UI
                     _HasFocus = value;
                     if (value)
                     {
+                        if (this.TextFieldEvent != null)
+                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.WillGoOnFocus, true, this.Text));
+                        Thread.Sleep(200);
                         SetFocusJoinOn.Pulse();
                         PreviousValue = String.Copy(this.Text);
+                        if (this.TextFieldEvent != null)
+                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.OnFocus, true, this.Text));
                     }
                     else
+                    {
                         SetFocusJoinOff.Pulse();
+                        if (this.TextFieldEvent != null)
+                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.OffFocus, true, this.Text));
+                    }
                 }
             }
             get
@@ -119,8 +133,12 @@ namespace CDSimplSharpPro.UI
 
         void ClearButton_ButtonEvent(UIButton button, UIButtonEventArgs args)
         {
-            if(args.EventType == eUIButtonEventType.Pressed)
+            if (args.EventType == eUIButtonEventType.Pressed)
+            {
                 this.Text = "";
+                if (this.TextFieldEvent != null)
+                    this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.ClearedByUser, this.HasFocus, this.Text));
+            }
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
@@ -134,18 +152,22 @@ namespace CDSimplSharpPro.UI
                     }
                     break;
                 case eSigType.Bool:
-                    if (args.Sig == HasFocusJoin && args.Sig.BoolValue)
+                    if (args.Sig == HasFocusJoin)
                     {
-                        this.HasFocus = true;
+                        this.HasFocus = args.Sig.BoolValue;
                     }
                     else if (args.Sig == EnterJoin && args.Sig.BoolValue)
                     {
                         this.HasFocus = false;
+                        if (this.TextFieldEvent != null)
+                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.Entered, this.HasFocus, this.Text));
                     }
                     else if (args.Sig == EscJoin && args.Sig.BoolValue)
                     {
                         this.HasFocus = false;
                         this.Text = PreviousValue;
+                        if (this.TextFieldEvent != null)
+                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.Escaped, this.HasFocus, this.Text));
                     }
                     else if (args.Sig.Number == ClearButton.JoinNumber)
                     {
@@ -159,5 +181,32 @@ namespace CDSimplSharpPro.UI
         {
             this.Text = this.Text + textToAppend;
         }
+    }
+
+    public delegate void UItextFieldEventHandler(UITextField textField, UITextFieldEventArgs args);
+
+    public class UITextFieldEventArgs : EventArgs
+    {
+        public eUITextFieldEventType EventType;
+        public string CurrentText;
+        public bool HasFocus;
+        public UITextFieldEventArgs(eUITextFieldEventType type, bool hasFocus, string currentText)
+            : base()
+        {
+            this.EventType = type;
+            this.HasFocus = hasFocus;
+            this.CurrentText = currentText;
+        }
+    }
+
+    public enum eUITextFieldEventType
+    {
+        WillGoOnFocus,
+        OnFocus,
+        OffFocus,
+        Escaped,
+        Entered,
+        TextChanged,
+        ClearedByUser
     }
 }
