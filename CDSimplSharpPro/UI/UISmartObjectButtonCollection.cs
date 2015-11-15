@@ -61,11 +61,11 @@ namespace CDSimplSharpPro.UI
 
         public event UISmartObjectButtonCollectionEventHandler ButtonEvent;
 
-        void ButtonEventHandler(UIButton button, UIButtonEventArgs args)
+        void ButtonEventHandler(UIButtonBase button, UIButtonEventArgs args)
         {
             if (this.ButtonEvent != null)
             {
-                this.ButtonEvent(button as UISmartObjectButton, args);
+                this.ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(button as UISmartObjectButton, args.EventType, args.HoldTime));
             }
         }
 
@@ -75,5 +75,19 @@ namespace CDSimplSharpPro.UI
         }
     }
 
-    public delegate void UISmartObjectButtonCollectionEventHandler(UISmartObjectButton button, UIButtonEventArgs args);
+    public delegate void UISmartObjectButtonCollectionEventHandler(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args);
+
+    public class UISmartObjectButtonCollectionEventArgs : EventArgs
+    {
+        public eUIButtonEventType EventType;
+        public UISmartObjectButton Button;
+        public long HoldTime;
+        public UISmartObjectButtonCollectionEventArgs(UISmartObjectButton button, eUIButtonEventType type, long holdTime)
+            : base()
+        {
+            this.Button = button;
+            this.EventType = type;
+            this.HoldTime = holdTime;
+        }
+    }
 }

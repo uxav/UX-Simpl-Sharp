@@ -7,7 +7,7 @@ using Crestron.SimplSharpPro;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UISmartObjectButton : UIButton
+    public class UISmartObjectButton : UIButtonBase
     {
         public SmartObject SmartObject;
         StringInputSig IconJoin;
@@ -34,6 +34,7 @@ namespace CDSimplSharpPro.UI
         {
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
+            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
         }
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
@@ -43,6 +44,7 @@ namespace CDSimplSharpPro.UI
         {
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
+            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
         }
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
@@ -52,6 +54,7 @@ namespace CDSimplSharpPro.UI
         {
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
+            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
         }
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
@@ -62,6 +65,7 @@ namespace CDSimplSharpPro.UI
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
             this.IconJoin = smartObject.StringInput[iconJoinSigName];
+            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
         }
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
@@ -74,6 +78,15 @@ namespace CDSimplSharpPro.UI
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
             this.IconJoin = smartObject.StringInput[iconJoinSigName];
+            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
+        }
+
+        void SmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
+        {
+            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.JoinNumber)
+            {
+                this.Down = args.Sig.BoolValue;
+            }
         }
     }
 }

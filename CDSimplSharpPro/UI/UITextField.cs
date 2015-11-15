@@ -14,14 +14,15 @@ namespace CDSimplSharpPro.UI
         BoolOutputSig HasFocusJoin;
         BoolInputSig SetFocusJoinOn;
         BoolInputSig SetFocusJoinOff;
-        BoolOutputSig EnterJoin;
-        BoolOutputSig EscJoin;
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
         StringInputSig TextJoinToDevice;
         StringOutputSig TextJoinFromDevice;
         BasicTriList Device;
-        UIButton ClearButton;
+        UILabel TitleLabel;
+        public UIButton EnterButton;
+        public UIButton EscButton;
+        public UIButton ClearButton;
 
         public event UItextFieldEventHandler TextFieldEvent;
 
@@ -108,14 +109,28 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UITextField(BoolOutputSig hasFocusJoin, BoolInputSig setFocusJoinOn, BoolInputSig setFocusJoinOff, BoolOutputSig enterJoin, BoolOutputSig escJoin,
-            BoolInputSig enableJoin, BoolInputSig visibleJoin, StringInputSig textJoinToDevice, StringOutputSig textJoinFromDevice, UIButton clearButton)
+        public string Title
+        {
+            set
+            {
+                if (TitleLabel != null)
+                    TitleLabel.Text = value;
+            }
+            get
+            {
+                if (TitleLabel != null)
+                    return TitleLabel.Text;
+                return "";
+            }
+        }
+
+        public UITextField(BoolOutputSig hasFocusJoin, BoolInputSig setFocusJoinOn, BoolInputSig setFocusJoinOff,
+            BoolInputSig enableJoin, BoolInputSig visibleJoin, StringInputSig textJoinToDevice,
+            StringOutputSig textJoinFromDevice, UILabel titleLabel, UIButton enterButton, UIButton escButton, UIButton clearButton)
         {
             HasFocusJoin = hasFocusJoin;
             SetFocusJoinOn = setFocusJoinOn;
             SetFocusJoinOff = setFocusJoinOff;
-            EnterJoin = enterJoin;
-            EscJoin = escJoin;
             EnableJoin = enableJoin;
             if (EnableJoin != null)
                 EnableJoin.BoolValue = true;
@@ -125,15 +140,63 @@ namespace CDSimplSharpPro.UI
             TextJoinToDevice = textJoinToDevice;
             TextJoinFromDevice = textJoinFromDevice;
             Device = hasFocusJoin.Owner as BasicTriList;
-            ClearButton = clearButton;
+            TitleLabel = titleLabel;
+            this.EnterButton = enterButton;
+            if (EnterButton != null)
+            {
+                this.EnterButton.Title = "Enter";
+                this.EnterButton.ButtonEvent += new UIButtonEventHandler(EnterButton_ButtonEvent);
+            }
+            this.EscButton = escButton;
+            if (EscButton != null)
+            {
+                this.EscButton.Title = "Escape";
+                this.EscButton.ButtonEvent += new UIButtonEventHandler(EscButton_ButtonEvent);
+            }
+            this.ClearButton = clearButton;
             if (ClearButton != null)
-                ClearButton.ButtonEvent += new UIButtonEventHandler(ClearButton_ButtonEvent);
+                this.ClearButton.ButtonEvent += new UIButtonEventHandler(ClearButton_ButtonEvent);
             Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
-        void ClearButton_ButtonEvent(UIButton button, UIButtonEventArgs args)
+        public void Setup(string title, string startText)
         {
-            if (args.EventType == eUIButtonEventType.Pressed)
+            this.Title = title;
+            this.Text = startText;
+        }
+
+        public void Setup(string title, string startText, string enterButtonTitle, string escButtonTitle)
+        {
+            this.Title = title;
+            this.Text = startText;
+            this.EnterButton.Title = enterButtonTitle;
+            this.EscButton.Title = escButtonTitle;
+        }
+
+        void EnterButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
+        {
+            if (args.EventType == eUIButtonEventType.Tapped)
+            {
+                this.HasFocus = false;
+                if (this.TextFieldEvent != null)
+                    this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.Entered, this.HasFocus, this.Text));
+            }
+        }
+
+        void EscButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
+        {
+            if (args.EventType == eUIButtonEventType.Tapped)
+            {
+                this.HasFocus = false;
+                this.Text = PreviousValue;
+                if (this.TextFieldEvent != null)
+                    this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.Escaped, this.HasFocus, this.Text));
+            }
+        }
+
+        void ClearButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
+        {
+            if (args.EventType == eUIButtonEventType.Tapped)
             {
                 this.Text = "";
                 if (this.TextFieldEvent != null)
@@ -149,29 +212,14 @@ namespace CDSimplSharpPro.UI
                     if (args.Sig == TextJoinFromDevice)
                     {
                         this.Text = args.Sig.StringValue;
+                        return;
                     }
                     break;
                 case eSigType.Bool:
                     if (args.Sig == HasFocusJoin)
                     {
                         this.HasFocus = args.Sig.BoolValue;
-                    }
-                    else if (args.Sig == EnterJoin && args.Sig.BoolValue)
-                    {
-                        this.HasFocus = false;
-                        if (this.TextFieldEvent != null)
-                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.Entered, this.HasFocus, this.Text));
-                    }
-                    else if (args.Sig == EscJoin && args.Sig.BoolValue)
-                    {
-                        this.HasFocus = false;
-                        this.Text = PreviousValue;
-                        if (this.TextFieldEvent != null)
-                            this.TextFieldEvent(this, new UITextFieldEventArgs(eUITextFieldEventType.Escaped, this.HasFocus, this.Text));
-                    }
-                    else if (args.Sig.Number == ClearButton.JoinNumber)
-                    {
-                        ClearButton.Down = args.Sig.BoolValue;
+                        return;
                     }
                     break;
             }
@@ -180,6 +228,14 @@ namespace CDSimplSharpPro.UI
         public void AppendText(string textToAppend)
         {
             this.Text = this.Text + textToAppend;
+        }
+
+        public void BackSpace()
+        {
+            if (this.Text.Length > 0)
+            {
+                this.Text = this.Text.Remove(this.Text.Length - 1, 1);
+            }
         }
     }
 

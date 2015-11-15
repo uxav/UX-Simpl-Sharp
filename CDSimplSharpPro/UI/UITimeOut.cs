@@ -3,24 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
     public class UITimeOut
     {
-        public UIButtonCollection ResetTimeOutButtonGroup;
+        BasicTriList Device;
         public int TimeOutInSeconds;
         private CTimer TimeOutTimer;
         public object TimeOutObject;
 
         public event UITimeOutEventHandler TimedOut;
 
-        public UITimeOut(object timeOutObject, int timeOutInSeconds, UIButtonCollection resetTimeOutButtonGroup)
+        public UITimeOut(object timeOutObject, int timeOutInSeconds, BasicTriList device)
         {
             this.TimeOutObject = timeOutObject;
             this.TimeOutInSeconds = timeOutInSeconds;
-            this.ResetTimeOutButtonGroup = resetTimeOutButtonGroup;
-            this.ResetTimeOutButtonGroup.ButtonEvent += new UIButtonCollectionEventHandler(ResetTimeOutButtonGroup_ButtonEvent);
+            Device = device;
+            Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
         public void Set()
@@ -56,10 +57,9 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        void ResetTimeOutButtonGroup_ButtonEvent(UIButtonCollection group, UIButton button, UIButtonEventArgs args)
+        void Device_SigChange(BasicTriList currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
         {
-            if(args.EventType == eUIButtonEventType.Pressed || args.EventType == eUIButtonEventType.Released)
-                this.Reset();
+            this.Reset();
         }
     }
 

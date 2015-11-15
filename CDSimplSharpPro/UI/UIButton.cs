@@ -8,240 +8,46 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UIButton
+    public class UIButton : UIButtonBase
     {
-        public UIKey Key { get; private set; }
-        public object LinkedObject;
-        string _Title;
-        public string Title
-        {
-            set
-            {
-                this._Title = value;
-                if (this.SerialInputJoin != null)
-                    this.SerialInputJoin.StringValue = this._Title;
-            }
-            get
-            {
-                return this._Title;
-            }
-        }
-        public bool Feedback
-        {
-            set
-            {
-                if (this.DigitalInputJoin != null)
-                    this.DigitalInputJoin.BoolValue = value;
-            }
-            get
-            {
-                if (this.DigitalInputJoin != null)
-                    return this.DigitalInputJoin.BoolValue;
-                return false;
-            }
-        }
-        public bool Enabled
-        {
-            set
-            {
-                if (this.EnableJoin != null)
-                    this.EnableJoin.BoolValue = value;
-            }
-            get
-            {
-                if(this.EnableJoin != null)
-                    return this.EnableJoin.BoolValue;
-                return true;
-            }
-        }
-        public bool Visible
-        {
-            set
-            {
-                if(this.VisibleJoin != null)
-                    this.VisibleJoin.BoolValue = value;
-            }
-            get
-            {
-                if(this.VisibleJoin != null)
-                    return this.VisibleJoin.BoolValue;
-                return true;
-            }
-        }
-        public GenericBase Owner
-        {
-            get
-            {
-                return this.DigitalOutputJoin.Owner;
-            }
-        }
-        private bool _Down;
-        public bool Down
-        {
-            set
-            {
-                if (value == true && this._Down == false)
-                {
-                    this._Down = value;
-
-                    if (this.HoldTime > 0 && this.HoldTimer == null || this.HoldTimer.Disposed)
-                    {
-                        this.CurrentHoldTime = 0;
-                        this.HoldTimer = new CTimer(HoldTimerUpdate, null, 100, 100);
-                    }
-
-                    if (this.ButtonEvent != null)
-                    {
-                        this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Pressed, this.CurrentHoldTime));
-                    }
-                }
-                else if (value == false && this._Down == true)
-                {
-                    this._Down = value;
-
-                    if(this.HoldTimer != null)
-                        this.HoldTimer.Dispose();
-
-                    if (this.PageToShowOnRelease != null)
-                    {
-                        this.PageToShowOnRelease.Show();
-                    }
-
-                    if (this.ButtonEvent != null)
-                    {
-                        this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Released, this.CurrentHoldTime));
-                    }
-
-                    if (this.CurrentHoldTime < this.HoldTime)
-                    {
-                        if (this.ButtonEvent != null)
-                        {
-                            this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Tapped, this.CurrentHoldTime));
-                        }
-                    }
-                }
-            }
-        }
-        private CTimer HoldTimer;
-        private long CurrentHoldTime;
-        public long HoldTime;
-
-        BoolOutputSig DigitalOutputJoin;
-        BoolInputSig DigitalInputJoin;
-        StringInputSig SerialInputJoin;
-        BoolInputSig EnableJoin;
-        BoolInputSig VisibleJoin;
-
-        public UIPage PageToShowOnRelease;
-
-        public uint JoinNumber
-        {
-            get
-            {
-                return this.DigitalOutputJoin.Number;
-            }
-        }
-
-        public event UIButtonEventHandler ButtonEvent;
-
         public UIButton(UIKey key, BoolOutputSig digitalPressJoin)
+            : base(key, digitalPressJoin)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
-            this.HoldTime = 500;
-            this.DigitalOutputJoin = digitalPressJoin;
+            this.Device.SigChange += new SigEventHandler(Device_SigChange);
+        }
+
+        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, StringInputSig serialJoinSig)
+            : base(key, digitalPressJoin, serialJoinSig)
+        {
+            this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
         public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
+            : base(key, digitalPressJoin, digitalFeedbackJoin)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
-            this.HoldTime = 500;
-            this.DigitalOutputJoin = digitalPressJoin;
-            this.DigitalInputJoin = digitalFeedbackJoin;
+            this.Device.SigChange +=new SigEventHandler(Device_SigChange);
         }
         
         public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig)
+            : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
-            this.HoldTime = 500;
-            this.DigitalOutputJoin = digitalPressJoin;
-            this.DigitalInputJoin = digitalFeedbackJoin;
-            this.SerialInputJoin = serialJoinSig;
-            this.SerialInputJoin.StringValue = this._Title;
+            this.Device.SigChange +=new SigEventHandler(Device_SigChange);
         }
 
-        public UIButton(UIKey key, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
+            : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig, enableJoinSig, visibleJoinSig)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
-            this.HoldTime = 500;
-            this.DigitalOutputJoin = digitalOutputJoin;
-            this.DigitalInputJoin = digitalFeedbackJoin;
-            this.SerialInputJoin = serialJoinSig;
-            this.SerialInputJoin.StringValue = this._Title;
-            this.EnableJoin = enableJoinSig;
-            this.EnableJoin.BoolValue = true;
-            this.VisibleJoin = visibleJoinSig;
-            this.VisibleJoin.BoolValue = true;
+            this.Device.SigChange +=new SigEventHandler(Device_SigChange);
         }
 
-        public void Show()
+        void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
         {
-            this.Visible = true;
-        }
-
-        public void Hide()
-        {
-            this.Visible = false;
-        }
-
-        public void Enable()
-        {
-            this.Enabled = true;
-        }
-
-        public void Disable()
-        {
-            this.Enabled = false;
-        }
-
-        private void HoldTimerUpdate(object obj)
-        {
-            this.CurrentHoldTime = this.CurrentHoldTime + 100;
-
-            if (this.CurrentHoldTime == this.HoldTime)
+            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.JoinNumber)
             {
-                if (this.ButtonEvent != null)
-                {
-                    this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Held, this.CurrentHoldTime));
-                }
+                this.Down = args.Sig.BoolValue;
             }
         }
-    }
-
-    public delegate void UIButtonEventHandler(UIButton button, UIButtonEventArgs args);
-
-    public class UIButtonEventArgs : EventArgs
-    {
-        public eUIButtonEventType EventType;
-        public long HoldTime;
-        public UIButtonEventArgs(eUIButtonEventType type, long holdTime)
-            : base()
-        {
-            this.EventType = type;
-            this.HoldTime = holdTime;
-        }
-    }
-
-    public enum eUIButtonEventType
-    {
-        Pressed,
-        Tapped,
-        Held,
-        Released
     }
 }

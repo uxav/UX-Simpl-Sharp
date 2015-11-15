@@ -101,14 +101,28 @@ namespace CDSimplSharpPro.UI
 
         public event UIButtonCollectionEventHandler ButtonEvent;
 
-        void ButtonEventHandler(UIButton button, UIButtonEventArgs args)
+        void ButtonEventHandler(UIButtonBase button, UIButtonEventArgs args)
         {
             if (this.ButtonEvent != null)
             {
-                this.ButtonEvent(this, button, args);
+                this.ButtonEvent(this, new UIButtonCollectionEventArgs(button as UIButton, args.EventType, args.HoldTime));
             }
         }
     }
 
-    public delegate void UIButtonCollectionEventHandler(UIButtonCollection group, UIButton button, UIButtonEventArgs args);
+    public delegate void UIButtonCollectionEventHandler(UIButtonCollection buttonCollection, UIButtonCollectionEventArgs args);
+
+    public class UIButtonCollectionEventArgs : EventArgs
+    {
+        public eUIButtonEventType EventType;
+        public UIButton Button;
+        public long HoldTime;
+        public UIButtonCollectionEventArgs(UIButton button, eUIButtonEventType type, long holdTime)
+            : base()
+        {
+            this.Button = button;
+            this.EventType = type;
+            this.HoldTime = holdTime;
+        }
+    }
 }

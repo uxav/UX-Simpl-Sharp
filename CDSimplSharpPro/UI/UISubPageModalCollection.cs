@@ -74,7 +74,7 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        void _CloseButton_ButtonEvent(UIButton button, UIButtonEventArgs args)
+        void _CloseButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
         {
             if (args.EventType == eUIButtonEventType.Released)
             {

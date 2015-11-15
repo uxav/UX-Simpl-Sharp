@@ -23,7 +23,6 @@ namespace CDSimplSharpPro.UI
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
-            this.DeviceSmartObject.SigChange += new SmartObjectSigChangeEventHandler(DeviceSmartObject_SigChange);
         }
 
         public UISmartObject(UIKey key, SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
@@ -32,7 +31,6 @@ namespace CDSimplSharpPro.UI
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
-            this.DeviceSmartObject.SigChange += new SmartObjectSigChangeEventHandler(DeviceSmartObject_SigChange);
             EnableJoin = objectEnableJoin;
             if (EnableJoin != null)
                 EnableJoin.BoolValue = true;
@@ -41,9 +39,9 @@ namespace CDSimplSharpPro.UI
                 VisibleJoin.BoolValue = true;
         }
 
-        public void Buttons_ButtonEvent(UISmartObjectButton button, UIButtonEventArgs args)
+        public void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
         {
-            this.ButtonEvent(this, new UISmartObjectButtonEventArgs(button, args.EventType, args.HoldTime));
+            this.ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
         }
 
         public void AddButton(UISmartObjectButton button)
@@ -85,22 +83,6 @@ namespace CDSimplSharpPro.UI
                     titleFeedbackSigName, iconFeedbackSigName, enableSigName, visibleSigName
                     );
                 this.Buttons.Add(newButton);
-            }
-        }
-
-        void DeviceSmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
-        {
-            switch (args.Sig.Type)
-            {
-                case eSigType.Bool:
-                    {
-                        UIButton button = this.Buttons.UISmartObjectButtonBySigNumber(args.Sig.Number);
-                        if (button != null)
-                        {
-                            button.Down = args.Sig.BoolValue;
-                        }
-                        break;
-                    }
             }
         }
 

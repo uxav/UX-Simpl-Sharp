@@ -26,11 +26,11 @@ namespace CDSimplSharpPro.UI
             this.CallBack = callBack;
         }
 
-        void Buttons_ButtonEvent(UIButtonCollection group, UIButton button, UIButtonEventArgs args)
+        void Buttons_ButtonEvent(UIButtonCollection group, UIButtonCollectionEventArgs args)
         {
             if (args.EventType == eUIButtonEventType.Released)
             {
-                UIActionSheetButton responseButton = button as UIActionSheetButton;
+                UIActionSheetButton responseButton = args.Button as UIActionSheetButton;
                 this.SubPage.Hide();
                 this.CallBack(responseButton.Action);
             }

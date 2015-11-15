@@ -66,6 +66,14 @@ namespace CDSimplSharpPro.UI
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
+        public UILabel(UIKey key, StringInputSig stringInputSig)
+        {
+            this.Key = key;
+            this._Text = "Label";
+            this.SerialFeedbackJoin = stringInputSig;
+            this.SerialFeedbackJoin.StringValue = this._Text;
+        }
+
         public UILabel(UIKey key, BasicTriList device, uint joinNumber)
         {
             this.Key = key;

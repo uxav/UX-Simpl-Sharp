@@ -65,11 +65,10 @@ namespace CDSimplSharpPro.UI
             this.Labels = new UILabelCollection();
             this.Modals = new UISubPageModalCollection();
             this.Buttons = new UIButtonCollection();
-            this.Pages = new UIPageCollection(new UITimeOut(this, 30, this.Buttons));
+            this.Pages = new UIPageCollection(new UITimeOut(this, 30, this.Device));
 
             if (this.Device != null)
             {
-                this.Device.SigChange += new SigEventHandler(Device_SigChange);
                 this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
 
                 if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
@@ -102,25 +101,6 @@ namespace CDSimplSharpPro.UI
         void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
         {
             this.Labels[UILabelKeys.RoomName].Text = room.Name;
-        }
-
-        void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
-        {
-#if (DEBUG)
-            CrestronConsole.PrintLine("**Sig Change** {0}", args.Sig.ToString());
-#endif
-            switch (args.Sig.Type)
-            {
-                case eSigType.Bool:
-                    {
-                        UIButton button = this.Buttons[args.Sig.Number];
-                        if (button != null)
-                        {
-                            button.Down = args.Sig.BoolValue;
-                        }
-                        break;
-                    }
-            }
         }
 
         public virtual void RoomHasChanged(Room newRoom)
