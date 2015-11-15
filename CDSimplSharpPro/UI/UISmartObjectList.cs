@@ -17,11 +17,14 @@ namespace CDSimplSharpPro.UI
         {
             set
             {
-                this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
+                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
+                    this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
             }
             get
             {
-                return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
+                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
+                    return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
+                return this.MaxNumberOfItems;
             }
         }
 
@@ -49,7 +52,6 @@ namespace CDSimplSharpPro.UI
             uint item = 1;
             this.Data = listData;
             this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
-            this.DeviceSmartObject.SigChange +=new SmartObjectSigChangeEventHandler(DeviceSmartObject_SigChange);
             try
             {
                 while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Pressed", item)))
@@ -132,21 +134,6 @@ namespace CDSimplSharpPro.UI
         public object LinkedObjectForButton(uint buttonIndex)
         {
             return this.Buttons[buttonIndex].LinkedObject;
-        }
-
-        void DeviceSmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
-        {
-            switch (args.Sig.Type)
-            {
-                case eSigType.Bool:
-                    {
-                        if (args.Sig.Name == "Is Moving")
-                        {
-                            //
-                        }
-                        break;
-                    }
-            }
         }
 
         public void LoadingSubPageOverlayAssign(BoolInputSig loadingSubPageOverlaySig)

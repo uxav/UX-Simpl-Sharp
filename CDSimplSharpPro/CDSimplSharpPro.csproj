@@ -94,6 +94,7 @@
     <Compile Include="UI\UIActionSheet.cs" />
     <Compile Include="UI\UIActionSheetButton.cs" />
     <Compile Include="UI\UIButton.cs" />
+    <Compile Include="UI\UIButtonBase.cs" />
     <Compile Include="UI\UIButtonCollection.cs" />
     <Compile Include="UI\UIButtonKeys.cs" />
     <Compile Include="UI\UIDateTimeLabel.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="UI\UISmartObject.cs" />
     <Compile Include="UI\UISmartObjectButton.cs" />
     <Compile Include="UI\UISmartObjectButtonCollection.cs" />
+    <Compile Include="UI\UISmartObjectCheckboxList.cs" />
     <Compile Include="UI\UISmartObjectList.cs" />
     <Compile Include="UI\UISubPage.cs" />
     <Compile Include="UI\UISubPageCollection.cs" />
