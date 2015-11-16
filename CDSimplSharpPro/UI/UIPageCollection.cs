@@ -10,7 +10,6 @@ namespace CDSimplSharpPro.UI
     public class UIPageCollection : IEnumerable<UIPage>
     {
         private List<UIPage> Pages;
-        BoolInputSigInterlock PageVisisbleJoinSigGroup;
         public UITimeOut PageTimeOut;
 
         public UIPage this[uint joinNumber]
@@ -18,14 +17,6 @@ namespace CDSimplSharpPro.UI
             get
             {
                 return this.Pages.FirstOrDefault(p => p.VisibleJoinNumber == joinNumber);
-            }
-        }
-
-        public UIPage this[UIKey key]
-        {
-            get
-            {
-                return this.Pages.FirstOrDefault(p => p.Key == key);
             }
         }
 
@@ -40,47 +31,30 @@ namespace CDSimplSharpPro.UI
         public UIPageCollection()
         {
             this.Pages = new List<UIPage>();
-            this.PageVisisbleJoinSigGroup = new BoolInputSigInterlock();
         }
 
         public UIPageCollection(UITimeOut timeout)
         {
             this.Pages = new List<UIPage>();
-            this.PageVisisbleJoinSigGroup = new BoolInputSigInterlock();
             this.PageTimeOut = timeout;
         }
 
-        public void Add(UIKey key, BoolInputSig visibleJoinSig)
+        public void Add(UIPage newPage)
         {
-            if (!this.PageVisisbleJoinSigGroup.Contains(visibleJoinSig))
+            if (!this.Pages.Exists(p => p.VisibleJoin == newPage.VisibleJoin))
             {
-                UIPage newPage = new UIPage(key, visibleJoinSig, this.PageVisisbleJoinSigGroup);
                 this.Pages.Add(newPage);
-                newPage.PageChange += new UIPage.UIPageEventHandler(Page_PageChange);
+                newPage.VisibilityChange += new UIViewBaseVisibitlityEventHandler(Page_VisibilityChange);
             }
             else
             {
-                throw new Exception("Page with visible join value already exists");
+                throw new Exception("Cannot Add page to page collection... Page with visible join value already exists!");
             }
         }
 
-        public void Add(UIKey key, BoolInputSig visibleJoinSig, string name, UILabel titleLabel)
+        void Page_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
         {
-            if (!this.PageVisisbleJoinSigGroup.Contains(visibleJoinSig))
-            {
-                UIPage newPage = new UIPage(key, visibleJoinSig, this.PageVisisbleJoinSigGroup, titleLabel, name);
-                this.Pages.Add(newPage);
-                newPage.PageChange += new UIPage.UIPageEventHandler(Page_PageChange);
-            }
-            else
-            {
-                throw new Exception("Page with visible join value already exists");
-            }
-        }
-
-        void Page_PageChange(UIPage page, UIPageEventArgs args)
-        {
-            if (page.Visible)
+            if (sender.Visible && this.PageTimeOut != null)
             {
                 this.PageTimeOut.Set();
             }
@@ -94,6 +68,19 @@ namespace CDSimplSharpPro.UI
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        public void Dispose()
+        {
+            this.PageTimeOut.Dispose();
+
+            foreach (UIPage page in Pages)
+            {
+                page.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(Page_VisibilityChange);
+                page.Dispose();
+            }
+
+            this.Pages = null;
         }
     }
 }

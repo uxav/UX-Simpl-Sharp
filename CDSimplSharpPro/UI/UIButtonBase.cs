@@ -10,37 +10,33 @@ namespace CDSimplSharpPro.UI
 {
     public class UIButtonBase
     {
-        public UIButtonBase(UIKey key, BoolOutputSig digitalPressJoin)
+        public UIButtonBase(BoolOutputSig digitalPressJoin)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
+            this._Title = string.Format("Button {0}", digitalPressJoin.Number);
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
         }
-        public UIButtonBase(UIKey key, BoolOutputSig digitalPressJoin, StringInputSig serialJoinSig)
+        public UIButtonBase(BoolOutputSig digitalPressJoin, StringInputSig serialJoinSig)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
+            this._Title = string.Format("Button {0}", digitalPressJoin.Number);
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
             this.SerialInputJoin = serialJoinSig;
             this.SerialInputJoin.StringValue = this._Title;
         }
 
-        public UIButtonBase(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
+        public UIButtonBase(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
+            this._Title = string.Format("Button {0}", digitalPressJoin.Number);
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
         }
         
-        public UIButtonBase(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButtonBase(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
+            this._Title = string.Format("Button {0}", digitalPressJoin.Number);
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
@@ -48,11 +44,10 @@ namespace CDSimplSharpPro.UI
             this.SerialInputJoin.StringValue = this._Title;
         }
 
-        public UIButtonBase(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButtonBase(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
         {
-            this.Key = key;
-            this._Title = this.Key.Name;
+            this._Title = string.Format("Button {0}", digitalPressJoin.Number);
             this.HoldTime = 500;
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
@@ -64,7 +59,10 @@ namespace CDSimplSharpPro.UI
             this.VisibleJoin.BoolValue = true;
         }
 
-        public UIKey Key { get; private set; }
+        public uint ID
+        {
+            get { return this.DigitalOutputJoin.Number; }
+        }
         public object LinkedObject;
         public event UIButtonEventHandler ButtonEvent;
         string _Title;
@@ -216,6 +214,19 @@ namespace CDSimplSharpPro.UI
         public void Disable()
         {
             this.Enabled = false;
+        }
+
+        public virtual void Dipose()
+        {
+            this._Title = null;
+            this.DigitalOutputJoin = null;
+            this.DigitalInputJoin = null;
+            this.SerialInputJoin = null;
+            this.EnableJoin = null;
+            this.VisibleJoin = null;
+            this.HoldTimer.Stop();
+            this.HoldTimer.Dispose();
+            this.HoldTimer = null;
         }
 
         private void HoldTimerUpdate(object obj)

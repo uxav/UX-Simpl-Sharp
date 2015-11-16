@@ -83,7 +83,6 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BoolInputSigInterlock.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,13 +95,10 @@
     <Compile Include="UI\UIButton.cs" />
     <Compile Include="UI\UIButtonBase.cs" />
     <Compile Include="UI\UIButtonCollection.cs" />
-    <Compile Include="UI\UIButtonKeys.cs" />
     <Compile Include="UI\UIDateTimeLabel.cs" />
     <Compile Include="UI\UIDateTime.cs" />
-    <Compile Include="UI\UIKey.cs" />
     <Compile Include="UI\UILabel.cs" />
     <Compile Include="UI\UILabelCollection.cs" />
-    <Compile Include="UI\UILabelKeys.cs" />
     <Compile Include="UI\UIMediaIcons.cs" />
     <Compile Include="UI\UIPage.cs" />
     <Compile Include="UI\UIPageCollection.cs" />
@@ -113,14 +109,14 @@
     <Compile Include="UI\UISmartObjectList.cs" />
     <Compile Include="UI\UISubPage.cs" />
     <Compile Include="UI\UISubPageCollection.cs" />
-    <Compile Include="UI\UISubPageModal.cs" />
-    <Compile Include="UI\UISubPageModalCollection.cs" />
     <Compile Include="UI\UITextField.cs" />
     <Compile Include="UI\UITimeOut.cs" />
     <Compile Include="UI\UIViewBase.cs" />
     <Compile Include="UI\UIController.cs" />
     <Compile Include="UI\UIControllerCollection.cs" />
     <Compile Include="UI\UIControllerWithSmartObjects.cs" />
+    <Compile Include="UI\UIViewControllerCollection.cs" />
+    <Compile Include="UI\UIViewController.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

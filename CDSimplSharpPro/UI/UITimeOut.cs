@@ -61,6 +61,13 @@ namespace CDSimplSharpPro.UI
         {
             this.Reset();
         }
+
+        public void Dispose()
+        {
+            this.TimeOutTimer.Dispose();
+            this.TimeOutTimer = null;
+            Device.SigChange -= new SigEventHandler(Device_SigChange);
+        }
     }
 
     public delegate void UITimeOutEventHandler(object timeOutObject, UITimeOutEventArgs args);

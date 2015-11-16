@@ -20,8 +20,8 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UIDateTimeLabel(UIKey key, BasicTriList device, uint joinNumber, IFormatProvider dateFormat)
-            : base(key, device, joinNumber)
+        public UIDateTimeLabel(StringInputSig stringInputSig, IFormatProvider dateFormat)
+            : base(stringInputSig)
         {
             this.DateFormat = dateFormat;
         }

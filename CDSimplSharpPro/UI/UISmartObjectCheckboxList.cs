@@ -12,8 +12,8 @@ namespace CDSimplSharpPro.UI
         private ListData Data;
         public ushort MaxNumberOfItems { get; private set; }
 
-        public UISmartObjectCheckboxList(UIKey key, SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
-            : base(key, smartObject, enableJoin, visibleJoin)
+        public UISmartObjectCheckboxList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
+            : base(smartObject, enableJoin, visibleJoin)
         {
             uint item = 1;
             this.Data = listData;

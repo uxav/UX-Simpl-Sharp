@@ -19,28 +19,20 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UISubPage this[UIKey key]
-        {
-            get
-            {
-                return this.SubPages.FirstOrDefault(p => p.Key == key);
-            }
-        }
-
         public UISubPageCollection()
         {
             this.SubPages = new List<UISubPage>();
         }
 
-        public void Add(UISubPage page)
+        public void Add(UISubPage newSubPage)
         {
-            if (!this.SubPages.Exists(p => p.Key == page.Key))
+            if (!this.SubPages.Contains(newSubPage))
             {
-                this.SubPages.Add(page);
+                this.SubPages.Add(newSubPage);
             }
             else
             {
-                throw new Exception(string.Format("SubPage with key name '{0}' already exists", page.Key.Name));
+                throw new Exception(string.Format("SubPage with id '{0}' already exists", newSubPage.ID));
             }
         }
 
@@ -52,34 +44,50 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void ShowOnly(UIKey key)
+        public void ShowOnly(UISubPage newSubPage)
         {
             foreach (UISubPage subPage in SubPages)
             {
-                if (subPage.Key != key)
+                if (subPage != newSubPage)
                 {
                     subPage.Hide();
                 }
             }
 
-            if (this.ContainsSubPageWithKey(key))
-                this[key].Show();
+            if (SubPages.Contains(newSubPage))
+                newSubPage.Show();
             else
-                ErrorLog.Error("Cannot ShowOnly subpage as UIKey: {0} does not exist in the collection", key);
+                ErrorLog.Error("Cannot ShowOnly subpage with ID of {0} as it does not exist in the collection", newSubPage.ID);
         }
 
-        public void ShowOnlyWithIndex(uint index)
+        public void ShowOnly(uint joinNumber)
         {
-            for (uint n = 1; n <= SubPages.Count; n++)
+            foreach (UISubPage subPage in SubPages)
             {
-                if (n != index)
+                if (subPage.VisibleJoinNumber != joinNumber)
                 {
-                    SubPages[(int)n - 1].Hide();
+                    subPage.Hide();
                 }
             }
 
-            if ((int)index <= SubPages.Count)
-                SubPages[(int)index - 1].Show();
+            if (SubPages.Exists(p => p.VisibleJoinNumber == joinNumber))
+                this[joinNumber].Show();
+            else
+                ErrorLog.Error("Cannot ShowOnly subpage with ID of {0} as it does not exist in the collection", joinNumber);
+        }
+
+        public void ShowOnlyWithIndex(int index)
+        {
+            for (int n = 0; n < SubPages.Count; n++)
+            {
+                if (n != index)
+                {
+                    SubPages[n].Hide();
+                }
+            }
+
+            if (index < SubPages.Count)
+                SubPages[index].Show();
         }
 
         public void HideAll()
@@ -88,11 +96,6 @@ namespace CDSimplSharpPro.UI
             {
                 subPage.Hide();
             }
-        }
-
-        public bool ContainsSubPageWithKey(UIKey key)
-        {
-            return this.SubPages.Exists(p => p.Key == key);
         }
 
         public IEnumerator<UISubPage> GetEnumerator()

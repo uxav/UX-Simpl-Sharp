@@ -11,14 +11,6 @@ namespace CDSimplSharpPro
         private List<ListDataObject> Data;
         public event ListDataChangeEventHandler DataChange;
 
-        public ListDataObject this[string keyName]
-        {
-            get
-            {
-                return this.Data.FirstOrDefault(d => d.KeyName == keyName);
-            }
-        }
-
         public ListDataObject this[int index]
         {
             get
@@ -51,30 +43,6 @@ namespace CDSimplSharpPro
         {
             if (!this.Data.Contains(listDataObject))
                 this.Data.Add(listDataObject);
-        }
-
-        public void AddObject(string keyName, string title, object dataObject)
-        {
-            if (this.Data.FirstOrDefault(d => d.KeyName == keyName) != null)
-            {
-                ListDataObject newObject = new ListDataObject(keyName, title, dataObject);
-                this.Data.Add(newObject);
-            }
-            else
-            {
-                ListDataObject existingObject = this.Data.FirstOrDefault(d => d.KeyName == keyName);
-                existingObject.Title = title;
-                existingObject.DataObject = dataObject;
-            }
-        }
-
-        public void RemoveObject(string keyName)
-        {
-            ListDataObject existingObject = this.Data.FirstOrDefault(d => d.KeyName == keyName);
-            if (existingObject != null)
-            {
-                this.Data.Remove(existingObject);
-            }
         }
 
         public void Sort()
@@ -152,6 +120,12 @@ namespace CDSimplSharpPro
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        public virtual void Dispose()
+        {
+            Data.Clear();
+            Data = null;
         }
     }
     

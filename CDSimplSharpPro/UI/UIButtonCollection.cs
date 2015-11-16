@@ -12,22 +12,6 @@ namespace CDSimplSharpPro.UI
     {
         private List<UIButton> Buttons;
 
-        public UIButton this[UIKey key]
-        {
-            get
-            {
-                return this.Buttons.FirstOrDefault(b => b.Key == key);
-            }
-        }
-
-        public UIButton this[string keyName]
-        {
-            get
-            {
-                return this.Buttons.FirstOrDefault(b => b.Key.Name == keyName);
-            }
-        }
-
         public UIButton this[uint joinNumber]
         {
             get
@@ -58,37 +42,6 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Add(UIKey key, BoolOutputSig digitalPressJoin)
-        {
-            UIButton newButton = new UIButton(key, digitalPressJoin);
-            this.Buttons.Add(newButton);
-            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
-        }
-
-        public void Add(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
-        {
-            UIButton newButton = new UIButton(key, digitalPressJoin, digitalFeedbackJoin);
-            this.Buttons.Add(newButton);
-            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
-        }
-
-        public void Add(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
-            StringInputSig titleJoinSig)
-        {
-            UIButton newButton = new UIButton(key, digitalPressJoin, digitalFeedbackJoin, titleJoinSig);
-            this.Buttons.Add(newButton);
-            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
-        }
-
-        public void Add(UIKey key, BoolOutputSig digitalOutputJoin, BoolInputSig digitalFeedbackJoin,
-            StringInputSig titleJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
-        {
-            UIButton newButton = new UIButton(key, digitalOutputJoin, digitalFeedbackJoin,
-                titleJoinSig, enableJoinSig, visibleJoinSig);
-            this.Buttons.Add(newButton);
-            newButton.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
-        }
-
         public IEnumerator<UIButton> GetEnumerator()
         {
             return Buttons.GetEnumerator();
@@ -109,13 +62,15 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             foreach (UIButton button in Buttons)
             {
                 button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
                 button.Dispose();
             }
+
+            Buttons = null;
         }
     }
 

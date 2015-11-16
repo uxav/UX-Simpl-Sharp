@@ -10,24 +10,25 @@ namespace CDSimplSharpPro.UI
 {
     public class UISmartObject
     {
-        public UIKey Key { get; private set; }
+        public uint ID
+        {
+            get { return this.DeviceSmartObject.ID; }
+        }
         public SmartObject DeviceSmartObject;
         public UISmartObjectButtonCollection Buttons;
         public event UISmartObjectButtonEventHandler ButtonEvent;
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
-        public UISmartObject(UIKey key, SmartObject smartObject)
+        public UISmartObject(SmartObject smartObject)
         {
-            this.Key = key;
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
         }
 
-        public UISmartObject(UIKey key, SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
+        public UISmartObject(SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
         {
-            this.Key = key;
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
@@ -133,6 +134,16 @@ namespace CDSimplSharpPro.UI
         public void Disable()
         {
             this.Enabled = false;
+        }
+
+        public virtual void Dispose()
+        {
+            this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+            this.Buttons.Dispose();
+            this.Buttons = null;
+            this.VisibleJoin = null;
+            this.EnableJoin = null;
+            this.DeviceSmartObject = null;
         }
     }
 

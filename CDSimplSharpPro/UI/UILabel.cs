@@ -10,7 +10,10 @@ namespace CDSimplSharpPro.UI
 {
     public class UILabel
     {
-        public UIKey Key { get; private set; }
+        public uint ID
+        {
+            get { return this.SerialFeedbackJoin.Number; }
+        }
         string _Text;
         public string Text
         {
@@ -66,44 +69,44 @@ namespace CDSimplSharpPro.UI
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
 
-        public UILabel(UIKey key, StringInputSig stringInputSig)
+        public UILabel(StringInputSig stringInputSig)
         {
-            this.Key = key;
             this._Text = "Label";
             this.SerialFeedbackJoin = stringInputSig;
             this.SerialFeedbackJoin.StringValue = this._Text;
         }
 
-        public UILabel(UIKey key, BasicTriList device, uint joinNumber)
+        public UILabel(StringInputSig stringInputSig, string defaultText)
         {
-            this.Key = key;
-            this._Text = "Label";
-            if (joinNumber > 0)
-            {
-                this.SerialFeedbackJoin = device.StringInput[joinNumber];
-                this.SerialFeedbackJoin.StringValue = this._Text;
-            }
+            this._Text = defaultText;
+            this.SerialFeedbackJoin = stringInputSig;
+            this.SerialFeedbackJoin.StringValue = this._Text;
         }
 
-        public UILabel(UIKey key, BasicTriList device, uint joinNumber, uint enableJoin, uint visibleJoin)
+        public UILabel(StringInputSig stringInputSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
         {
-            this.Key = key;
             this._Text = "Label";
-            if (joinNumber > 0)
-            {
-                this.SerialFeedbackJoin = device.StringInput[joinNumber];
-                this.SerialFeedbackJoin.StringValue = this._Text;
-            }
-            if (enableJoin > 0)
-            {
-                this.EnableJoin = device.BooleanInput[enableJoin];
-                this.EnableJoin.BoolValue = true;
-            }
-            if (visibleJoin > 0)
-            {
-                this.VisibleJoin = device.BooleanInput[visibleJoin];
-                this.VisibleJoin.BoolValue = true;
-            }
+            this.SerialFeedbackJoin = stringInputSig;
+            this.SerialFeedbackJoin.StringValue = this._Text;
+            this.EnableJoin = enableJoinSig;
+            if (this.EnableJoin != null)
+                this.Enable();
+            this.VisibleJoin = visibleJoinSig;
+            if (this.VisibleJoin != null)
+                this.Show();
+        }
+
+        public UILabel(StringInputSig stringInputSig, string defaultText, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
+        {
+            this._Text = defaultText;
+            this.SerialFeedbackJoin = stringInputSig;
+            this.SerialFeedbackJoin.StringValue = this._Text;
+            this.EnableJoin = enableJoinSig;
+            if (this.EnableJoin != null)
+                this.Enable();
+            this.VisibleJoin = visibleJoinSig;
+            if (this.VisibleJoin != null)
+                this.Show();
         }
 
         public void Show()

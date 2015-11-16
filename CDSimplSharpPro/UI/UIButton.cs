@@ -10,34 +10,34 @@ namespace CDSimplSharpPro.UI
 {
     public class UIButton : UIButtonBase
     {
-        public UIButton(UIKey key, BoolOutputSig digitalPressJoin)
-            : base(key, digitalPressJoin)
+        public UIButton(BoolOutputSig digitalPressJoin)
+            : base(digitalPressJoin)
         {
             this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
-        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, StringInputSig serialJoinSig)
-            : base(key, digitalPressJoin, serialJoinSig)
+        public UIButton(BoolOutputSig digitalPressJoin, StringInputSig serialJoinSig)
+            : base(digitalPressJoin, serialJoinSig)
         {
             this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
-        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
-            : base(key, digitalPressJoin, digitalFeedbackJoin)
+        public UIButton(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
+            : base(digitalPressJoin, digitalFeedbackJoin)
         {
             this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
         
-        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButton(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig)
-            : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
+            : base(digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
         {
             this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
-        public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
+        public UIButton(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
-            : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig, enableJoinSig, visibleJoinSig)
+            : base(digitalPressJoin, digitalFeedbackJoin, serialJoinSig, enableJoinSig, visibleJoinSig)
         {
             this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }

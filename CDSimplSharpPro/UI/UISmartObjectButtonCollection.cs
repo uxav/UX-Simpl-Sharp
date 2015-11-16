@@ -11,14 +11,6 @@ namespace CDSimplSharpPro.UI
     {
         private List<UISmartObjectButton> Buttons;
 
-        public UISmartObjectButton this[UIKey key]
-        {
-            get
-            {
-                return this.Buttons.FirstOrDefault(b => b.Key == key);
-            }
-        }
-
         public UISmartObjectButton this[uint itemIndex]
         {
             get
@@ -72,6 +64,15 @@ namespace CDSimplSharpPro.UI
         public UISmartObjectButton UISmartObjectButtonBySigNumber(uint sigNumber)
         {
             return this.Buttons.FirstOrDefault(b => b.JoinNumber == sigNumber);
+        }
+
+        public virtual void Dispose()
+        {
+            foreach (UISmartObjectButton button in Buttons)
+            {
+                button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
+                button.Dipose();
+            }
         }
     }
 

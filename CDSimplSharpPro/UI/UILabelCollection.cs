@@ -12,14 +12,6 @@ namespace CDSimplSharpPro.UI
     {
         private List<UILabel> Labels;
 
-        public UILabel this[UIKey key]
-        {
-            get
-            {
-                return this.Labels.FirstOrDefault(b => b.Key == key);
-            }
-        }
-
         public UILabel this[uint joinNumber]
         {
             get
@@ -41,24 +33,12 @@ namespace CDSimplSharpPro.UI
             this.Labels = new List<UILabel>();
         }
 
-        public void Add(UILabel label)
+        public void Add(UILabel newLabel)
         {
-            if (!this.Labels.Contains(label))
+            if (!this.Labels.Contains(newLabel))
             {
-                this.Labels.Add(label);
+                this.Labels.Add(newLabel);
             }
-        }
-
-        public void Add(UIKey key, BasicTriList device, uint join)
-        {
-            UILabel newLabel = new UILabel(key, device, join);
-            this.Labels.Add(newLabel);
-        }
-
-        public void Add(UIKey key, BasicTriList device, uint join, uint enableJoin, uint visibleJoin)
-        {
-            UILabel newLabel = new UILabel(key, device, join, enableJoin, visibleJoin);
-            this.Labels.Add(newLabel);
         }
 
         public IEnumerator<UILabel> GetEnumerator()

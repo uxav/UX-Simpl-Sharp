@@ -30,7 +30,7 @@ namespace CDSimplSharpPro.UI
         public uint ItemIndex { get; private set; }
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName)
-            : base(new UIKey(digitalPressJoinName, itemIndex), smartObject.BooleanOutput[digitalPressJoinName])
+            : base(smartObject.BooleanOutput[digitalPressJoinName])
         {
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
@@ -39,7 +39,7 @@ namespace CDSimplSharpPro.UI
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
             string digitalFeedbackJoinName)
-            : base(new UIKey(digitalPressJoinName, itemIndex), smartObject.BooleanOutput[digitalPressJoinName],
+            : base(smartObject.BooleanOutput[digitalPressJoinName],
             smartObject.BooleanInput[digitalFeedbackJoinName])
         {
             this.ItemIndex = itemIndex;
@@ -49,7 +49,7 @@ namespace CDSimplSharpPro.UI
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
             string digitalFeedbackJoinName, string titleJoinName)
-            : base(new UIKey(digitalPressJoinName, itemIndex), smartObject.BooleanOutput[digitalPressJoinName],
+            : base(smartObject.BooleanOutput[digitalPressJoinName],
             smartObject.BooleanInput[digitalFeedbackJoinName], smartObject.StringInput[titleJoinName])
         {
             this.ItemIndex = itemIndex;
@@ -59,7 +59,7 @@ namespace CDSimplSharpPro.UI
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
             string digitalFeedbackJoinName, string titleJoinName, string iconJoinSigName)
-            : base(new UIKey(digitalPressJoinName, itemIndex), smartObject.BooleanOutput[digitalPressJoinName],
+            : base(smartObject.BooleanOutput[digitalPressJoinName],
             smartObject.BooleanInput[digitalFeedbackJoinName], smartObject.StringInput[titleJoinName])
         {
             this.ItemIndex = itemIndex;
@@ -71,7 +71,7 @@ namespace CDSimplSharpPro.UI
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
             string digitalFeedbackJoinName, string titleJoinName, string iconJoinSigName,
             string enableJoinSigName, string visibleJoinSigName)
-            : base(new UIKey(digitalPressJoinName, itemIndex), smartObject.BooleanOutput[digitalPressJoinName],
+            : base(smartObject.BooleanOutput[digitalPressJoinName],
             smartObject.BooleanInput[digitalFeedbackJoinName], smartObject.StringInput[titleJoinName],
             smartObject.BooleanInput[enableJoinSigName], smartObject.BooleanInput[visibleJoinSigName])
         {
@@ -87,6 +87,13 @@ namespace CDSimplSharpPro.UI
             {
                 this.Down = args.Sig.BoolValue;
             }
+        }
+
+        public override void Dipose()
+        {
+            base.Dipose();
+            this.SmartObject.SigChange -= new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
+            this.SmartObject = null;
         }
     }
 }

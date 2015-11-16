@@ -12,9 +12,9 @@ namespace CDSimplSharpPro.UI
     {
         public eActionSheetButtonAction Action;
 
-        public UIActionSheetButton(UIKey key, BoolOutputSig digitalPressJoin,
+        public UIActionSheetButton(BoolOutputSig digitalPressJoin,
             BoolInputSig digitalFeedbackJoin, StringInputSig serialJoinSig, eActionSheetButtonAction action)
-            : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
+            : base(digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
         {
             this.Action = action;
         }

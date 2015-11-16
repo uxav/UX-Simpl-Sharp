@@ -13,26 +13,31 @@ namespace CDSimplSharpPro.UI
     {
         public uint ID { get; private set; }
         public string Name;
-        public BasicTriList Device;
-        Room _Room;
+        public BasicTriList Device { get; private set; }
+        protected Room _Room;
         public Room Room
         {
             set
             {
-                if (_Room != value && value != null)
+                if (_Room != value)
                 {
-                    // Unsubscribe from existing room events
-                    this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-                    this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
+                    if (_Room != null)
+                    {
+                        // Unsubscribe from existing room events
+                        this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                        this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
+                    }
 
-                    // Set the Room Name label
-                    this.Labels[UILabelKeys.RoomName].Text = this.Room.Name;
+                    _Room = value;
 
-                    // Subscribe to new rooms events
-                    this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-                    this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+                    if (_Room != null)
+                    {
+                        // Subscribe to new rooms events
+                        this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                        this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+                    }
 
-                    this.RoomHasChanged(value);
+                    this.OnRoomChange();
                 }
             }
             get
@@ -51,19 +56,12 @@ namespace CDSimplSharpPro.UI
                 this.Room.Source = value;
             }
         }
-        public UIPageCollection Pages;
-        public UISubPageModalCollection Modals;
-        public UILabelCollection Labels;
         
         public UIController(uint id, BasicTriList device, Room defaultRoom)
         {
             _Room = defaultRoom;
             this.ID = id;
             this.Device = device;
-
-            this.Labels = new UILabelCollection();
-            this.Modals = new UISubPageModalCollection();
-            this.Pages = new UIPageCollection(new UITimeOut(this, 30, this.Device));
 
             if (this.Device != null)
             {
@@ -87,7 +85,7 @@ namespace CDSimplSharpPro.UI
         {
             if (this.Room == room)
             {
-                SourceHasChanged(args.PreviousSource, args.NewSource);
+                OnSourceChange(args.PreviousSource, args.NewSource);
             }
         }
 
@@ -98,15 +96,20 @@ namespace CDSimplSharpPro.UI
 
         void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
         {
-            this.Labels[UILabelKeys.RoomName].Text = room.Name;
+            
         }
 
-        public virtual void RoomHasChanged(Room newRoom)
+        protected virtual void OnRoomChange()
         {
 
         }
 
-        public virtual void SourceHasChanged(Source previousSource, Source newSource)
+        protected virtual void OnRoomDetailsChange()
+        {
+
+        }
+
+        protected virtual void OnSourceChange(Source previousSource, Source newSource)
         {
 
         }

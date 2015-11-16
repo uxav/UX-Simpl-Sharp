@@ -10,17 +10,22 @@ namespace CDSimplSharpPro.UI
 {
     public class UIViewBase
     {
-        public UIKey Key { get; private set; }
-        public BoolInputSig VisibleJoin { get; private set; }
-        public BoolInputSig TransitionCompleteJoin { get; private set; }
-        public UILabel TitleLabel;
-        string _name;
-        public string Name
+        public uint ID
+        {
+            get { return this.VisibleJoinNumber; }
+        }
+        public BoolInputSig VisibleJoin { get; protected set; }
+        protected BoolInputSig TransitionCompleteJoin;
+        public UILabel TitleLabel { get; protected set; }
+        public UILabel SubTitleLabel { get; protected set; }
+        public event UIViewBaseVisibitlityEventHandler VisibilityChange;
+        string _Title;
+        public string Title
         {
             set
             {
                 // Set the value
-                this._name = value;
+                this._Title = value;
 
                 // if the page has a serial join sig assigned for the Name:
                 if (this.TitleLabel != null)
@@ -28,12 +33,34 @@ namespace CDSimplSharpPro.UI
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
                     if (this.Visible)
-                        this.TitleLabel.Text = this._name;
+                        this.TitleLabel.Text = this._Title;
                 }
             }
             get
             {
-                return this._name;
+                return this._Title;
+            }
+        }
+        string _SubTitle;
+        public string SubTitle
+        {
+            set
+            {
+                // Set the value
+                this._SubTitle = value;
+
+                // if the page has a serial join sig assigned for the Name:
+                if (this.SubTitleLabel != null)
+                {
+                    // set the string value of the serial join only if the page is showing
+                    // this allows for you to use the same serial join number as it sends updates the name when a page is shown
+                    if (this.Visible)
+                        this.SubTitleLabel.Text = this._SubTitle;
+                }
+            }
+            get
+            {
+                return this._SubTitle;
             }
         }
         public uint VisibleJoinNumber
@@ -49,27 +76,48 @@ namespace CDSimplSharpPro.UI
             {
                 return this.VisibleJoin.BoolValue;
             }
-            set
+            private set
             {
-                this.VisibleJoin.BoolValue = value;
+                if (this.VisibleJoin.BoolValue != value)
+                {
+                    if (value && this.VisibilityChange != null)
+                        this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
+                    if (!value && this.VisibilityChange != null)
+                        this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
+            
+                    this.VisibleJoin.BoolValue = value;
 
-                // If the page has a serial join sig then set the value to the name of the page
-                if (value == true && this.TitleLabel != null)
-                    this.TitleLabel.Text = this.Name;
+                    if (value)
+                        OnShow();
+                    else
+                        OnHide();
+                }
             }
         }
 
-        public UIViewBase(UIKey key, BoolInputSig visibleJoinSig)
+        public UIViewBase(BoolInputSig visibleJoinSig)
         {
-            this.Key = key;
-            this.Name = "";
+            this.Title = "";
             this.VisibleJoin = visibleJoinSig;
         }
 
-        public UIViewBase(UIKey key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name)
+        public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel)
         {
-            this.Key = key;
-            this._name = name;
+            this._Title = "";
+            this.VisibleJoin = visibleJoinSig;
+            this.TitleLabel = titleLabel;
+        }
+
+        public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel, string title)
+        {
+            this._Title = title;
+            this.VisibleJoin = visibleJoinSig;
+            this.TitleLabel = titleLabel;
+        }
+
+        public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel, UILabel subTitleLabel)
+        {
+            this._Title = "";
             this.VisibleJoin = visibleJoinSig;
             this.TitleLabel = titleLabel;
         }
@@ -84,6 +132,22 @@ namespace CDSimplSharpPro.UI
             this.Visible = false;
         }
 
+        protected virtual void OnShow()
+        {
+            // If the page has a serial join sig then set the value to the name of the page
+            if (this.TitleLabel != null)
+                this.TitleLabel.Text = this.Title;
+
+            if (this.VisibilityChange != null)
+                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
+        }
+
+        protected virtual void OnHide()
+        {
+            if (this.VisibilityChange != null)
+                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
+        }
+
         public void SetTransitionCompleteJoin(BoolInputSig inputSig)
         {
             this.TransitionCompleteJoin = inputSig;
@@ -95,24 +159,17 @@ namespace CDSimplSharpPro.UI
         {
             if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.TransitionCompleteJoin.Number)
             {
-                if (this.Visible)
-                {
-                    this.OnTransitionComplete();
-                }
+                OnTransitionComplete();
             }
         }
-
-        public event EventHandler VisibleTransitionComplete;
 
         protected virtual void OnTransitionComplete()
         {
-            if (this.VisibleTransitionComplete != null)
-            {
-                VisibleTransitionComplete(this, new EventArgs());
-            }
+            if (this.VisibilityChange != null)
+                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.TransitionComplete));
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (this.TransitionCompleteJoin != null)
             {
@@ -120,5 +177,27 @@ namespace CDSimplSharpPro.UI
                 device.SigChange -= new SigEventHandler(device_SigChange);
             }
         }
+    }
+
+    public delegate void UIViewBaseVisibitlityEventHandler(UIViewBase sender, UIViewVisibilityEventArgs args);
+
+    public class UIViewVisibilityEventArgs : EventArgs
+    {
+        public eViewEventType EventType;
+
+        public UIViewVisibilityEventArgs(eViewEventType eventType)
+            : base()
+        {
+            this.EventType = eventType;
+        }
+    }
+
+    public enum eViewEventType
+    {
+        WillShow,
+        DidShow,
+        TransitionComplete,
+        WillHide,
+        DidHide
     }
 }

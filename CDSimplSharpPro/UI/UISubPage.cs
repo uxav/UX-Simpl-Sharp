@@ -11,57 +11,50 @@ namespace CDSimplSharpPro.UI
     {
         public UITimeOut TimeOut;
 
-        public override bool Visible
-        {
-            get
-            {
-                return this.VisibleJoin.BoolValue;
-            }
-            set
-            {
-                if (this.VisibleJoin.BoolValue && !value && this.TimeOut != null)
-                    this.TimeOut.Cancel();
-                else if (!this.VisibleJoin.BoolValue && value)
-                {
-                    this.VisibleJoin.BoolValue = value;
-                    if (this.TimeOut != null)
-                    {
-                        this.TimeOut.Set();
-                    }
-                }
-                else
-                {
-                    this.VisibleJoin.BoolValue = value;
-                }
-                // If the page has a serial join sig then set the value to the name of the page
-                if (value == true && this.TitleLabel != null)
-                    this.TitleLabel.Text = this.Name;
-            }
-        }
-
-        public UISubPage(UIKey key, BoolInputSig visibleJoinSig)
-            : base (key, visibleJoinSig)
+        public UISubPage(BoolInputSig visibleJoinSig)
+            : base (visibleJoinSig)
         {
             
         }
 
-        public UISubPage(UIKey key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name)
-            : base (key, visibleJoinSig, titleLabel, name)
+        public UISubPage(BoolInputSig visibleJoinSig, UILabel titleLabel)
+            : base (visibleJoinSig, titleLabel)
         {
 
         }
 
-        public UISubPage(UIKey key, BoolInputSig visibleJoinSig, UILabel titleLabel, string name, UITimeOut timeOut)
-            : base(key, visibleJoinSig, titleLabel, name)
+        public UISubPage(BoolInputSig visibleJoinSig, UILabel titleLabel, UILabel subTitleLabel, UITimeOut timeOut)
+            : base(visibleJoinSig, titleLabel, subTitleLabel)
         {
             this.TimeOut = timeOut;
             this.TimeOut.TimedOut += new UITimeOutEventHandler(TimeOut_TimedOut);
         }
 
+        protected override void OnShow()
+        {
+            base.OnShow();
+            if (this.TimeOut != null)
+                this.TimeOut.Set();
+        }
+
+        protected override void OnHide()
+        {
+            base.OnHide();
+            if (this.TimeOut != null)
+                this.TimeOut.Cancel();
+        }
+
         void TimeOut_TimedOut(object timeOutObject, UITimeOutEventArgs args)
         {
             if (this.Visible)
-                this.Visible = false;
+                this.Hide();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            this.TimeOut.TimedOut -= new UITimeOutEventHandler(TimeOut_TimedOut);
+            this.TimeOut.Dispose();
         }
     }
 }

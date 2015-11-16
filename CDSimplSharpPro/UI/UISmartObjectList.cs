@@ -46,8 +46,8 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        public UISmartObjectList(UIKey key, SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
-            : base(key, smartObject, enableJoin, visibleJoin)
+        public UISmartObjectList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
+            : base(smartObject, enableJoin, visibleJoin)
         {
             uint item = 1;
             this.Data = listData;
@@ -143,6 +143,14 @@ namespace CDSimplSharpPro.UI
         public void LoadingSubPageOverlayAssign(BoolInputSig loadingSubPageOverlaySig)
         {
             this.LoadingSubPageOverlay = loadingSubPageOverlaySig;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            this.Data.DataChange -= new ListDataChangeEventHandler(Data_DataChange);
+            this.Data.Dispose();
+            this.Data = null;
         }
     }
 }

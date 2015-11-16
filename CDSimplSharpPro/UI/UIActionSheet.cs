@@ -6,23 +6,19 @@ using Crestron.SimplSharp;
 
 namespace CDSimplSharpPro.UI
 {
-    public class UIActionSheet
+    public class UIActionSheet : IDisposable
     {
-        UISubPageModal SubPage;
-        UILabel SubTitleLabel;
+        UISubPage SubPage;
         public UIButtonCollection Buttons;
-        string Title;
-        string SubTitle;
         Action<eActionSheetButtonAction> CallBack;
 
-        public UIActionSheet(UISubPageModal subPage, UILabel subTitleLabel, string title, string subTitle, Action<eActionSheetButtonAction> callBack)
+        public UIActionSheet(UISubPage subPage, string title, string subTitle, Action<eActionSheetButtonAction> callBack)
         {
             this.SubPage = subPage;
-            this.SubTitleLabel = subTitleLabel;
+            this.SubPage.Title = title;
+            this.SubPage.SubTitle = subTitle;
             this.Buttons = new UIButtonCollection();
             this.Buttons.ButtonEvent += new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
-            this.Title = title;
-            this.SubTitle = subTitle;
             this.CallBack = callBack;
         }
 
@@ -43,9 +39,15 @@ namespace CDSimplSharpPro.UI
 
         public virtual void Show()
         {
-            this.SubPage.Name = String.Copy(Title);
-            this.SubTitleLabel.Text = String.Copy(SubTitle);
             this.SubPage.Show();
+        }
+
+        public virtual void Dispose()
+        {
+            foreach (UIButton button in Buttons)
+            {
+                button.Dispose();
+            }
         }
     }
 }

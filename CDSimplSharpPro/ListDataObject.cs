@@ -6,30 +6,34 @@ using Crestron.SimplSharp;
 
 namespace CDSimplSharpPro
 {
-    public class ListDataObject
+    public class ListDataObject : IDisposable
     {
-        public string KeyName { get; private set; }
         public string Title;
         public string Icon;
         public object DataObject;
         public bool IsSelected;
 
-        public ListDataObject(string keyName, string title, object dataObject)
+        public ListDataObject(string title, object dataObject)
         {
-            this.KeyName = keyName;
             this.Title = title;
             this.Icon = "";
             this.DataObject = dataObject;
             this.IsSelected = false;
         }
 
-        public ListDataObject(string keyName, string title, string icon, object dataObject)
+        public ListDataObject(string title, string icon, object dataObject)
         {
-            this.KeyName = keyName;
             this.Title = title;
             this.Icon = icon;
             this.DataObject = dataObject;
             this.IsSelected = false;
+        }
+
+        public virtual void Dispose()
+        {
+            this.Title = null;
+            this.Icon = null;
+            this.DataObject = null;
         }
     }
 }
