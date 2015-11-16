@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace CDSimplSharpPro.UI
 {
@@ -11,6 +12,7 @@ namespace CDSimplSharpPro.UI
     {
         public UIKey Key { get; private set; }
         public BoolInputSig VisibleJoin { get; private set; }
+        public BoolInputSig TransitionCompleteJoin { get; private set; }
         public UILabel TitleLabel;
         string _name;
         public string Name
@@ -80,6 +82,43 @@ namespace CDSimplSharpPro.UI
         public virtual void Hide()
         {
             this.Visible = false;
+        }
+
+        public void SetTransitionCompleteJoin(BoolInputSig inputSig)
+        {
+            this.TransitionCompleteJoin = inputSig;
+            BasicTriList device = this.TransitionCompleteJoin.Owner as BasicTriList;
+            device.SigChange += new SigEventHandler(device_SigChange);
+        }
+
+        void device_SigChange(BasicTriList currentDevice, SigEventArgs args)
+        {
+            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.TransitionCompleteJoin.Number)
+            {
+                if (this.Visible)
+                {
+                    this.OnTransitionComplete();
+                }
+            }
+        }
+
+        public event EventHandler VisibleTransitionComplete;
+
+        protected virtual void OnTransitionComplete()
+        {
+            if (this.VisibleTransitionComplete != null)
+            {
+                VisibleTransitionComplete(this, new EventArgs());
+            }
+        }
+
+        public void Dispose()
+        {
+            if (this.TransitionCompleteJoin != null)
+            {
+                BasicTriList device = this.TransitionCompleteJoin.Owner as BasicTriList;
+                device.SigChange -= new SigEventHandler(device_SigChange);
+            }
         }
     }
 }

@@ -25,21 +25,21 @@ namespace CDSimplSharpPro.UI
         public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
             : base(key, digitalPressJoin, digitalFeedbackJoin)
         {
-            this.Device.SigChange +=new SigEventHandler(Device_SigChange);
+            this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
         
         public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig)
             : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
         {
-            this.Device.SigChange +=new SigEventHandler(Device_SigChange);
+            this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
         public UIButton(UIKey key, BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
             StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
             : base(key, digitalPressJoin, digitalFeedbackJoin, serialJoinSig, enableJoinSig, visibleJoinSig)
         {
-            this.Device.SigChange +=new SigEventHandler(Device_SigChange);
+            this.Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
         void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
@@ -48,6 +48,11 @@ namespace CDSimplSharpPro.UI
             {
                 this.Down = args.Sig.BoolValue;
             }
+        }
+
+        public void Dispose()
+        {
+            this.Device.SigChange -= new SigEventHandler(Device_SigChange);
         }
     }
 }

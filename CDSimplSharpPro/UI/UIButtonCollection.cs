@@ -108,6 +108,15 @@ namespace CDSimplSharpPro.UI
                 this.ButtonEvent(this, new UIButtonCollectionEventArgs(button as UIButton, args.EventType, args.HoldTime));
             }
         }
+
+        public void Dispose()
+        {
+            foreach (UIButton button in Buttons)
+            {
+                button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
+                button.Dispose();
+            }
+        }
     }
 
     public delegate void UIButtonCollectionEventHandler(UIButtonCollection buttonCollection, UIButtonCollectionEventArgs args);

@@ -92,6 +92,10 @@ namespace CDSimplSharpPro.UI
             }
             else if (args.EventType == eListDataChangeEventType.HasCleared)
             {
+                for (uint item = 1; item <= this.NumberOfItems; item++)
+                {
+                    this.Buttons[item].Feedback = false;
+                }
                 this.NumberOfItems = 0;
             }
             else if (args.EventType == eListDataChangeEventType.HasLoaded)

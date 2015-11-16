@@ -53,7 +53,6 @@ namespace CDSimplSharpPro.UI
         }
         public UIPageCollection Pages;
         public UISubPageModalCollection Modals;
-        public UIButtonCollection Buttons;
         public UILabelCollection Labels;
         
         public UIController(uint id, BasicTriList device, Room defaultRoom)
@@ -64,7 +63,6 @@ namespace CDSimplSharpPro.UI
 
             this.Labels = new UILabelCollection();
             this.Modals = new UISubPageModalCollection();
-            this.Buttons = new UIButtonCollection();
             this.Pages = new UIPageCollection(new UITimeOut(this, 30, this.Device));
 
             if (this.Device != null)

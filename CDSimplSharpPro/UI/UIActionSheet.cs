@@ -43,8 +43,8 @@ namespace CDSimplSharpPro.UI
 
         public virtual void Show()
         {
-            this.SubPage.Name = this.Title;
-            this.SubTitleLabel.Text = this.SubTitle;
+            this.SubPage.Name = String.Copy(Title);
+            this.SubTitleLabel.Text = String.Copy(SubTitle);
             this.SubPage.Show();
         }
     }
