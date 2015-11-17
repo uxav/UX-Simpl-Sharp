@@ -218,12 +218,6 @@ namespace CDSimplSharpPro.UI
 
         public virtual void Dipose()
         {
-            this._Title = null;
-            this.DigitalOutputJoin = null;
-            this.DigitalInputJoin = null;
-            this.SerialInputJoin = null;
-            this.EnableJoin = null;
-            this.VisibleJoin = null;
             this.HoldTimer.Stop();
             this.HoldTimer.Dispose();
             this.HoldTimer = null;

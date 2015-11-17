@@ -149,8 +149,6 @@ namespace CDSimplSharpPro.UI
         {
             base.Dispose();
             this.Data.DataChange -= new ListDataChangeEventHandler(Data_DataChange);
-            this.Data.Dispose();
-            this.Data = null;
         }
     }
 }

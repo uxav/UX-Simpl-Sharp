@@ -93,7 +93,6 @@ namespace CDSimplSharpPro.UI
         {
             base.Dipose();
             this.SmartObject.SigChange -= new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
-            this.SmartObject = null;
         }
     }
 }

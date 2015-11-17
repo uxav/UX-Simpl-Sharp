@@ -69,8 +69,6 @@ namespace CDSimplSharpPro.UI
                 button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
                 button.Dispose();
             }
-
-            Buttons = null;
         }
     }
 

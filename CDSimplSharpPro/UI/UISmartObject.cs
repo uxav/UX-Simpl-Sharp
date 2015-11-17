@@ -140,10 +140,6 @@ namespace CDSimplSharpPro.UI
         {
             this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.Buttons.Dispose();
-            this.Buttons = null;
-            this.VisibleJoin = null;
-            this.EnableJoin = null;
-            this.DeviceSmartObject = null;
         }
     }
 
