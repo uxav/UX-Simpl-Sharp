@@ -9,24 +9,46 @@ namespace CDSimplSharpPro.UI
     public class UIViewControllerCollection : IEnumerable<UIViewController>
     {
         protected List<UIViewController> ViewControllers;
+        public UITimeOut ViewTimeOut;
+
+        public UIViewController this[uint joinNumber]
+        {
+            get
+            {
+                return this.ViewControllers.FirstOrDefault(p => p.VisibleJoinNumber == joinNumber);
+            }
+        }
+
+        public UIViewController CurrentView
+        {
+            get
+            {
+                return this.ViewControllers.FirstOrDefault(p => p.Visible == true);
+            }
+        }
 
         public UIViewControllerCollection()
         {
             ViewControllers = new List<UIViewController>();
         }
 
+        public UIViewControllerCollection(UITimeOut timeout)
+        {
+            ViewControllers = new List<UIViewController>();
+            this.ViewTimeOut = timeout;
+        }
+
         public void Add(UIViewController newView)
         {
             ViewControllers.Add(newView);
+            newView.VisibilityChange += new UIViewControllerEventHandler(ViewController_VisibilityChange);
         }
 
-        public UIViewController this[uint visibleJoinNumber]
+        void ViewController_VisibilityChange(UIViewController sender, UIViewVisibilityEventArgs args)
         {
-            get
+            if (sender.Visible && this.ViewTimeOut != null)
             {
-                return ViewControllers.FirstOrDefault(
-                    v => v.VisibleJoinNumber == visibleJoinNumber
-                    );
+                this.ViewTimeOut.Set();
             }
         }
 
@@ -38,6 +60,20 @@ namespace CDSimplSharpPro.UI
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        } 
+        }
+
+        public virtual void Dispose()
+        {
+            this.ViewTimeOut.Dispose();
+
+            foreach (UIViewController view in ViewControllers)
+            {
+                view.VisibilityChange -= new UIViewControllerEventHandler(ViewController_VisibilityChange);
+                view.Dispose();
+            }
+
+            this.ViewControllers.Clear();
+            this.ViewControllers = null;
+        }
     }
 }

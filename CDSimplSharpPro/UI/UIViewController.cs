@@ -10,13 +10,26 @@ namespace CDSimplSharpPro.UI
     {
         public UIViewBase View;
         public event UIViewControllerEventHandler VisibilityChange;
-        public List<object> ViewObjects;
+        public UIController UIController;
+        public UIViewController Owner;
 
-        public UIViewController(UIViewBase view)
+        public bool Visible
         {
+            get { return View.Visible; }
+        }
+
+        public UIViewController(UIController uiController, UIViewBase view)
+        {
+            this.UIController = uiController;
             this.View = view;
             this.View.VisibilityChange += new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
-            this.ViewObjects = new List<object>();
+        }
+
+        public UIViewController(UIController uiController, UIViewController ownerViewController)
+        {
+            this.UIController = uiController;
+            this.View = ownerViewController.View;
+            this.View.VisibilityChange += new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
         }
 
         void View_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
@@ -25,14 +38,28 @@ namespace CDSimplSharpPro.UI
                 this.OnShow();
             else if (args.EventType == eViewEventType.DidHide)
                 this.OnHide();
+            else if (this.VisibilityChange != null)
+                this.VisibilityChange(this, args);
         }
 
-        protected virtual void Show()
+        public string Title
+        {
+            get
+            {
+                return this.View.Title;
+            }
+            set
+            {
+                this.View.Title = value;
+            }
+        }
+
+        public virtual void Show()
         {
             this.View.Show();
         }
 
-        protected virtual void Hide()
+        public virtual void Hide()
         {
             this.View.Hide();
         }
@@ -60,7 +87,6 @@ namespace CDSimplSharpPro.UI
         public void Dispose()
         {
             this.View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
-            this.ViewObjects = null;
         }
     }
 

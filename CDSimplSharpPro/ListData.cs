@@ -101,6 +101,24 @@ namespace CDSimplSharpPro
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
         }
 
+        public void SelectItemWithLinkedObjectValue(object linkedObject)
+        {
+            ListDataObject item = Data.FirstOrDefault(o => o.DataObject.Equals(linkedObject));
+            if (item != null)
+            {
+                foreach (ListDataObject dataObject in Data)
+                {
+                    if (dataObject != item)
+                        dataObject.IsSelected = false;
+                }
+
+                item.IsSelected = true;
+            }
+
+            if (this.DataChange != null)
+                this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+        }
+
         public void SelectClearAll()
         {
             foreach (ListDataObject dataObject in Data)

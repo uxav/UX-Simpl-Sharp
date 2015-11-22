@@ -80,6 +80,7 @@ namespace CDSimplSharpPro.UI
                 page.Dispose();
             }
 
+            this.Pages.Clear();
             this.Pages = null;
         }
     }
