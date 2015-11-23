@@ -218,9 +218,12 @@ namespace CDSimplSharpPro.UI
 
         public virtual void Dipose()
         {
-            this.HoldTimer.Stop();
-            this.HoldTimer.Dispose();
-            this.HoldTimer = null;
+            if (this.HoldTimer != null)
+            {
+                this.HoldTimer.Stop();
+                this.HoldTimer.Dispose();
+                this.HoldTimer = null;
+            }
         }
 
         private void HoldTimerUpdate(object obj)
