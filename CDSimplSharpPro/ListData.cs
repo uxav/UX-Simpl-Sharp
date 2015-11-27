@@ -16,13 +16,8 @@ namespace CDSimplSharpPro
             get
             {
                 if (this.Data.ElementAtOrDefault(index) != null)
-                {
                     return this.Data[index];
-                }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
         }
 

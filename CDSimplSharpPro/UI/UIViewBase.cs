@@ -18,7 +18,7 @@ namespace CDSimplSharpPro.UI
         protected BoolInputSig TransitionCompleteJoin;
         public UILabel TitleLabel { get; protected set; }
         public UILabel SubTitleLabel { get; protected set; }
-        public event UIViewBaseVisibitlityEventHandler VisibilityChange;
+        public virtual event UIViewBaseVisibitlityEventHandler VisibilityChange;
         string _Title;
         public string Title
         {
@@ -76,7 +76,7 @@ namespace CDSimplSharpPro.UI
             {
                 return this.VisibleJoin.BoolValue;
             }
-            private set
+            protected set
             {
                 if (this.VisibleJoin.BoolValue != value)
                 {

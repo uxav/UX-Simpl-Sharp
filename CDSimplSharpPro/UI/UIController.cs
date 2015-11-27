@@ -56,6 +56,26 @@ namespace CDSimplSharpPro.UI
                 this.Room.Source = value;
             }
         }
+
+        public UIController(uint id, BasicTriList device)
+        {
+            this.ID = id;
+            this.Device = device;
+
+            if (this.Device != null)
+            {
+                this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+
+                if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
+                }
+            }
+            else
+            {
+                ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
+            }
+        }
         
         public UIController(uint id, BasicTriList device, Room defaultRoom)
         {

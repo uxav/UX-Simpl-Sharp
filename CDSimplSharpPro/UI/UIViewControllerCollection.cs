@@ -44,6 +44,27 @@ namespace CDSimplSharpPro.UI
             newView.VisibilityChange += new UIViewControllerEventHandler(ViewController_VisibilityChange);
         }
 
+        public void ShowOnly(UIViewController newView)
+        {
+            foreach (UIViewController view in ViewControllers)
+            {
+                if (view != newView)
+                {
+                    view.Hide();
+                }
+            }
+
+            if (ViewControllers.Contains(newView))
+            {
+                newView.Show();
+            }
+        }
+
+        public UIViewController GetCurrentView()
+        {
+            return ViewControllers.FirstOrDefault(v => v.Visible);
+        }
+
         void ViewController_VisibilityChange(UIViewController sender, UIViewVisibilityEventArgs args)
         {
             if (sender.Visible && this.ViewTimeOut != null)

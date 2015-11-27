@@ -14,8 +14,8 @@ namespace CDSimplSharpPro.UI
         {
             get { return this.DeviceSmartObject.ID; }
         }
-        public SmartObject DeviceSmartObject;
-        public UISmartObjectButtonCollection Buttons;
+        protected SmartObject DeviceSmartObject;
+        public UISmartObjectButtonCollection Buttons { get; protected set; }
         public event UISmartObjectButtonEventHandler ButtonEvent;
         BoolInputSig EnableJoin;
         BoolInputSig VisibleJoin;
@@ -40,7 +40,7 @@ namespace CDSimplSharpPro.UI
                 VisibleJoin.BoolValue = true;
         }
 
-        public void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
+        protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
         {
             this.ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
         }

@@ -11,10 +11,21 @@ namespace CDSimplSharpPro.UI
     {
         public new BasicTriListWithSmartObject Device;
 
+        public UIControllerWithSmartObjects(uint id, BasicTriListWithSmartObject device)
+            : base(id, device)
+        {
+            this.Device = device;
+        }
+
         public UIControllerWithSmartObjects(uint id, BasicTriListWithSmartObject device, Room defaultRoom)
             : base(id, device, defaultRoom)
         {
             this.Device = device;
+        }
+
+        public void LoadSmartObjects(string sgdFilePath)
+        {
+            this.Device.LoadSmartObjects(sgdFilePath);
         }
     }
 }
