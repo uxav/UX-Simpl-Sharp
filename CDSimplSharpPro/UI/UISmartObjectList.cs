@@ -11,7 +11,7 @@ namespace CDSimplSharpPro.UI
     {
         private ListData Data;
         public ushort MaxNumberOfItems { get; private set; }
-        private BoolInputSig LoadingSubPageOverlay;
+        protected BoolInputSig LoadingSubPageOverlay;
 
         public ushort NumberOfItems
         {
@@ -79,7 +79,7 @@ namespace CDSimplSharpPro.UI
             }
         }
 
-        void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
+        public virtual void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
         {
             if (args.EventType == eListDataChangeEventType.IsStartingToLoad)
             {
