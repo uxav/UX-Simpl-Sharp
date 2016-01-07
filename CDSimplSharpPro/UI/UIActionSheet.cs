@@ -29,6 +29,7 @@ namespace CDSimplSharpPro.UI
                 UIActionSheetButton responseButton = args.Button as UIActionSheetButton;
                 this.SubPage.Hide();
                 this.CallBack(responseButton.Action);
+                this.Dispose();
             }
         }
 
@@ -48,6 +49,7 @@ namespace CDSimplSharpPro.UI
             {
                 button.Dispose();
             }
+            this.SubPage.Dispose();
         }
     }
 }

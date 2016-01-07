@@ -10,8 +10,7 @@ namespace CDSimplSharpPro.UI
     {
         public UIViewBase View;
         public event UIViewControllerEventHandler VisibilityChange;
-        public UIController UIController;
-        public UIViewController Owner;
+        public UIController UIController { get; protected set; }
 
         public bool Visible
         {

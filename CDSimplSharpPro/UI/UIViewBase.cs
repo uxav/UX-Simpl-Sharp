@@ -97,13 +97,15 @@ namespace CDSimplSharpPro.UI
 
         public UIViewBase(BoolInputSig visibleJoinSig)
         {
-            this.Title = "";
+            this._Title = "";
+            this._SubTitle = "";
             this.VisibleJoin = visibleJoinSig;
         }
 
         public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel)
         {
             this._Title = "";
+            this._SubTitle = "";
             this.VisibleJoin = visibleJoinSig;
             this.TitleLabel = titleLabel;
         }
@@ -111,6 +113,7 @@ namespace CDSimplSharpPro.UI
         public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel, string title)
         {
             this._Title = title;
+            this._SubTitle = "";
             this.VisibleJoin = visibleJoinSig;
             this.TitleLabel = titleLabel;
         }
@@ -118,8 +121,10 @@ namespace CDSimplSharpPro.UI
         public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel, UILabel subTitleLabel)
         {
             this._Title = "";
+            this._SubTitle = "";
             this.VisibleJoin = visibleJoinSig;
             this.TitleLabel = titleLabel;
+            this.SubTitleLabel = subTitleLabel;
         }
 
         public virtual void Show()
@@ -137,6 +142,8 @@ namespace CDSimplSharpPro.UI
             // If the page has a serial join sig then set the value to the name of the page
             if (this.TitleLabel != null)
                 this.TitleLabel.Text = this.Title;
+            if (this.SubTitleLabel != null)
+                this.SubTitleLabel.Text = this.SubTitle;
 
             if (this.VisibilityChange != null)
                 this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
