@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CDSimplSharpPro", "CDSimplSharpPro\CDSimplSharpPro.csproj", "{372C9F2A-CCC7-4396-BC70-B6A566AA8EC1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UXLib", "UXLib\UXLib.csproj", "{372C9F2A-CCC7-4396-BC70-B6A566AA8EC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
