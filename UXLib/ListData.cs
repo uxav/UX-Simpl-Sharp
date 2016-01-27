@@ -91,6 +91,11 @@ namespace UXLib
 
                 item.IsSelected = true;
             }
+            else
+            {
+                foreach (ListDataObject dataObject in Data)
+                    dataObject.IsSelected = false;
+            }
 
             if(this.DataChange != null)
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
