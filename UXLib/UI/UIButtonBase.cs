@@ -41,7 +41,8 @@ namespace UXLib.UI
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
             this.SerialInputJoin = serialJoinSig;
-            this.SerialInputJoin.StringValue = this._Title;
+            if (this.SerialInputJoin != null)
+                this.SerialInputJoin.StringValue = this._Title;
         }
 
         public UIButtonBase(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
@@ -52,11 +53,14 @@ namespace UXLib.UI
             this.DigitalOutputJoin = digitalPressJoin;
             this.DigitalInputJoin = digitalFeedbackJoin;
             this.SerialInputJoin = serialJoinSig;
-            this.SerialInputJoin.StringValue = this._Title;
+            if (this.SerialInputJoin != null)
+                this.SerialInputJoin.StringValue = this._Title;
             this.EnableJoin = enableJoinSig;
-            this.EnableJoin.BoolValue = true;
+            if (this.EnableJoin != null)
+                this.EnableJoin.BoolValue = true;
             this.VisibleJoin = visibleJoinSig;
-            this.VisibleJoin.BoolValue = true;
+            if (this.VisibleJoin != null)
+                this.VisibleJoin.BoolValue = true;
         }
 
         public uint ID
