@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("CDSimplSharpPro")]
-[assembly: AssemblyCompany("Control Designs Software Ltd")]
-[assembly: AssemblyProduct("CDSimplSharpPro")]
-[assembly: AssemblyCopyright("©Copyright Control Desigsn Software Ltd 2015")]
-[assembly: AssemblyVersion("0.1.*")]
+[assembly: AssemblyTitle("UXSimplSharpLib")]
+[assembly: AssemblyCompany("UX Digital Systems Ltd")]
+[assembly: AssemblyProduct("UXLib")]
+[assembly: AssemblyCopyright("©Copyright UX Digital Systems Limited 2015")]
+[assembly: AssemblyVersion("0.2.*")]
 

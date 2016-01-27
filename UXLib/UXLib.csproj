@@ -126,9 +126,9 @@
         <ProgramIdTag>UXLib</ProgramIdTag>
         <SystemName>UXLib</SystemName>
         <Programmer />
-        <ArchiveFilename>C:\Users\Mike Jobson\Developer\CDSimplSharpPro\CDSimplSharpPro\bin\CDSimplSharpPro.cplz</ArchiveFilename>
+        <ArchiveFilename>C:\Users\mike\Developer\ux-simplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>11/11/2015 15:39:56</CompiledOn>
+        <CompiledOn>27/01/2016 13:41:33</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />
