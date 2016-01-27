@@ -83,7 +83,7 @@ namespace UXLib.UI
             }
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             this.View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
         }
