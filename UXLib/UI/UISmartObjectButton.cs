@@ -89,9 +89,9 @@ namespace UXLib.UI
             }
         }
 
-        public override void Dipose()
+        public override void Dispose()
         {
-            base.Dipose();
+            base.Dispose();
             this.SmartObject.SigChange -= new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
         }
     }

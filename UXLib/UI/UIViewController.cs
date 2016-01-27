@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 namespace UXLib.UI
 {
-    public class UIViewController
+    public class UIViewController : IDisposable
     {
         public UIViewBase View;
         public event UIViewControllerEventHandler VisibilityChange;
@@ -83,7 +83,7 @@ namespace UXLib.UI
             }
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             this.View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
         }
