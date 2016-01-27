@@ -97,6 +97,7 @@
     <Compile Include="UI\UIButtonCollection.cs" />
     <Compile Include="UI\UIDateTimeLabel.cs" />
     <Compile Include="UI\UIDateTime.cs" />
+    <Compile Include="UI\UIKeypad.cs" />
     <Compile Include="UI\UILabel.cs" />
     <Compile Include="UI\UILabelCollection.cs" />
     <Compile Include="UI\UIMediaIcons.cs" />
@@ -128,7 +129,7 @@
         <Programmer />
         <ArchiveFilename>C:\Users\mike\Developer\ux-simplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>27/01/2016 13:41:33</CompiledOn>
+        <CompiledOn>27/01/2016 18:18:57</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />
