@@ -9,7 +9,7 @@ using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.UI
 {
-    public class UITextField
+    public class UITextField : IDisposable
     {
         BoolOutputSig HasFocusJoin;
         BoolInputSig SetFocusJoinOn;

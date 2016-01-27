@@ -71,7 +71,7 @@ namespace UXLib.UI
             foreach (UISmartObjectButton button in Buttons)
             {
                 button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
-                button.Dipose();
+                button.Dispose();
             }
         }
     }

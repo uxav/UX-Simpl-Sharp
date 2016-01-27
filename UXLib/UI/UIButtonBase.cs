@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UIButtonBase
+    public class UIButtonBase : IDisposable
     {
         public UIButtonBase(BoolOutputSig digitalPressJoin)
         {
@@ -220,7 +220,7 @@ namespace UXLib.UI
             this.Enabled = false;
         }
 
-        public virtual void Dipose()
+        public virtual void Dispose()
         {
             if (this.HoldTimer != null)
             {

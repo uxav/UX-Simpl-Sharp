@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 namespace UXLib.UI
 {
-    public class UIViewController
+    public class UIViewController : IDisposable
     {
         public UIViewBase View;
         public event UIViewControllerEventHandler VisibilityChange;

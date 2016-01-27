@@ -50,9 +50,10 @@ namespace UXLib.UI
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             this.Device.SigChange -= new SigEventHandler(Device_SigChange);
+            base.Dispose();
         }
     }
 }
