@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
@@ -147,6 +148,8 @@ namespace UXLib.UI
                         this.HoldTimer = new CTimer(HoldTimerUpdate, null, 100, 100);
                     }
 
+                    this.Debug(string.Format("{0} Join:{1} Pressed", GetType().ToString(), this.DigitalOutputJoin.Number));
+
                     if (this.ButtonEvent != null)
                     {
                         this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Pressed, this.CurrentHoldTime));
@@ -163,6 +166,8 @@ namespace UXLib.UI
                     {
                         this.PageToShowOnRelease.Show();
                     }
+
+                    this.Debug(string.Format("{0} Join:{1} Release", GetType().ToString(), this.DigitalOutputJoin.Number));
 
                     if (this.ButtonEvent != null)
                     {
@@ -241,6 +246,18 @@ namespace UXLib.UI
                     this.ButtonEvent(this, new UIButtonEventArgs(eUIButtonEventType.Held, this.CurrentHoldTime));
                 }
             }
+        }
+        
+        /// <summary>
+        /// Debug some stuff about the panel's behaviour
+        /// </summary>
+        /// <param name="message">A string to send to the console</param>
+        public void Debug(string message)
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("UI 0x{00:X} {1}", this.Device.ID, message);
+            ErrorLog.Notice("UI 0x{00:X} : {1}", this.Device.ID, message);
+#endif
         }
     }
 

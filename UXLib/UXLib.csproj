@@ -78,6 +78,10 @@
       <HintPath>C:\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -126,13 +130,15 @@
       <FlavorProperties GUID="{0B4745B0-194B-4BB6-8E21-E9057CA92300}">
         <ProgramIdTag>UXLib</ProgramIdTag>
         <SystemName>UXLib</SystemName>
-        <Programmer />
-        <ArchiveFilename>C:\Users\mike\Developer\ux-simplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
+        <Programmer>Mike Jobson</Programmer>
+        <ArchiveFilename>C:\Users\Mike Jobson\Developer\twobirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>27/01/2016 18:18:57</CompiledOn>
+        <CompiledOn>30/01/2016 00:31:22</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
-        <CopyTo />
+        <CopyTo>
+          <DebugAnyCPU />
+        </CopyTo>
         <OriginalReferenceSources />
       </FlavorProperties>
     </VisualStudio>

@@ -10,8 +10,16 @@ namespace UXLib
 {
     public class Room
     {
+        /// <summary>
+        /// This is the unique ID of the room. Try to use an ordered index
+        /// </summary>
         public uint ID { get; private set; }
+        
         private string _Name;
+        
+        /// <summary>
+        /// The Name of the room. Changing this will invoke the <see cref="RoomDetailsChange"/> event.
+        /// </summary>
         public string Name
         {
             get
@@ -54,6 +62,10 @@ namespace UXLib
                 {
                     Source oldSource = _Source;
                     _Source = value;
+#if DEBUG
+                    CrestronConsole.PrintLine("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
+                    ErrorLog.Notice("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name); 
+#endif
                     if (SourceChange != null)
                     {
                         this.SourceChange(this, new RoomSourceChangeEventArgs(oldSource, _Source));
