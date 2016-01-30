@@ -140,10 +140,16 @@ namespace UXLib.UI
         /// <param name="message">A string to send to the console</param>
         public void Debug(string message)
         {
-#if DEBUG
             CrestronConsole.PrintLine("UI 0x{00:X} {1}", this.Device.ID, message);
+        }
+
+        /// <summary>
+        /// Debug some stuff about the panel's behaviour
+        /// </summary>
+        /// <param name="message">A string to send to the notice log</param>
+        public void WriteLog(string message)
+        {
             ErrorLog.Notice("UI 0x{00:X} : {1}", this.Device.ID, message);
-#endif
         }
     }
 }
