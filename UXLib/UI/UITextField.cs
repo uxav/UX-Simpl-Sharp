@@ -63,7 +63,7 @@ namespace UXLib.UI
                 if (!_Text.Equals(value))
                 {
                     _Text = String.Copy(value);
-                    if (!TextJoinFromDevice.StringValue.Equals(value))
+                    if (!TextJoinFromDevice.StringValue.Equals(value) || value == "")
                         TextJoinToDevice.StringValue = _Text;
                     if (_Text.Length > 0 && ClearButton != null)
                         ClearButton.Visible = true;
