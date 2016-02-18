@@ -92,6 +92,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="RoomCollection.cs" />
+    <Compile Include="Sockets\SimpleClientSocket.cs" />
     <Compile Include="Source.cs" />
     <Compile Include="SourceCollection.cs" />
     <Compile Include="UI\UIActionSheet.cs" />
