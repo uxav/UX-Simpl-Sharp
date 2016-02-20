@@ -46,8 +46,6 @@ namespace UXLib.Sockets
 
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
                 socket.DisconnectFromServer();
-            if (rxHandler.ThreadState == Thread.eThreadStates.ThreadRunning)
-                rxHandler.Abort();
         }
 
         public event SimpleClientSocketConnectionEventHandler SocketConnectionEvent;
@@ -57,7 +55,7 @@ namespace UXLib.Sockets
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 rxQueue.Clear();
-                if (rxHandler != null && rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
+                if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
                     rxHandler = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
                 if (SocketConnectionEvent != null)
                     SocketConnectionEvent(this, socket.ClientStatus);
@@ -84,6 +82,8 @@ namespace UXLib.Sockets
             {
                 if (SocketConnectionEvent != null)
                     SocketConnectionEvent(this, socket.ClientStatus);
+                if (rxHandler.ThreadState == Thread.eThreadStates.ThreadRunning)
+                    rxHandler.Abort();
                 if (shouldReconnect)
                     this.Connect();
             }
@@ -114,6 +114,11 @@ namespace UXLib.Sockets
 
                         byteIndex = 0;
                     }
+                    else
+                    {
+                        bytes[byteIndex] = b;
+                        byteIndex++;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -123,7 +128,7 @@ namespace UXLib.Sockets
             }
         }
 
-        public void Send(string str)
+        public virtual SocketErrorCodes Send(string str)
         {
             var bytes = new byte[str.Length];
 
@@ -132,15 +137,17 @@ namespace UXLib.Sockets
                 bytes[i] = unchecked((byte)str[i]);
             }
 
-            this.Send(bytes);
+            return this.Send(bytes);
         }
 
-        public void Send(byte[] bytes)
+        public virtual SocketErrorCodes Send(byte[] bytes)
         {
             SocketErrorCodes err = socket.SendData(bytes, bytes.Length);
 
             if (err != SocketErrorCodes.SOCKET_OK)
                 ErrorLog.Error("SimpleSocketClient at {0} Send Error: {1}", socket.AddressClientConnectedTo, err.ToString());
+
+            return err;
         }
     }
 
