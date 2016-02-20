@@ -42,7 +42,7 @@ namespace UXLib.Sockets
 
         public void Disconnect()
         {
-            this.shouldReconnect = false;
+            shouldReconnect = false;
 
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
                 socket.DisconnectFromServer();
@@ -54,6 +54,7 @@ namespace UXLib.Sockets
         {
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
+                ErrorLog.Notice("Socket connected to device at {0}", socket.AddressClientConnectedTo);
                 rxQueue.Clear();
                 if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
                     rxHandler = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
@@ -63,10 +64,16 @@ namespace UXLib.Sockets
             }
             else
             {
-                ErrorLog.Error("Error connecting to socket at {0}, ClientStatus.{1}",
+                ErrorLog.Error("Error connecting to socket at {0}, ClientStatus.{1}, will try again in 5 seconds...",
                     socket.AddressClientConnectedTo, socket.ClientStatus.ToString());
-                this.Connect();
+                new CTimer(TryAgainConnect, 5000);
             }
+        }
+
+        void TryAgainConnect(object obj)
+        {
+            ErrorLog.Notice("Retrying socket connection to {0}", socket.AddressClientConnectedTo);
+            this.Connect(shouldReconnect);
         }
 
         void OnReceive(TCPClient socket, int byteCount)
@@ -85,7 +92,10 @@ namespace UXLib.Sockets
                 if (rxHandler.ThreadState == Thread.eThreadStates.ThreadRunning)
                     rxHandler.Abort();
                 if (shouldReconnect)
-                    this.Connect();
+                {
+                    ErrorLog.Notice("Socket dropped at {0}, {1}, waiting for 1 second..", socket.AddressClientConnectedTo, socket.ClientStatus.ToString());
+                    new CTimer(TryAgainConnect, 1000);
+                }
             }
         }
 
