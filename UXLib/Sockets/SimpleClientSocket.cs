@@ -17,7 +17,7 @@ namespace UXLib.Sockets
         }
 
         TCPClient socket;
-        CrestronQueue<Byte> rxQueue = new CrestronQueue<byte>();
+        protected CrestronQueue<Byte> rxQueue = new CrestronQueue<byte>();
         Thread rxHandler;
         bool shouldReconnect = false;
         public int BufferSize;
@@ -99,7 +99,7 @@ namespace UXLib.Sockets
             }
         }
 
-        public event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
+        public virtual event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
 
         /// <summary>
         /// This thread callback will look through the received bytes and look for a delimeter.
