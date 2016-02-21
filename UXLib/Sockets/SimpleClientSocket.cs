@@ -101,6 +101,10 @@ namespace UXLib.Sockets
 
         public event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
 
+        /// <summary>
+        /// This thread callback will look through the received bytes and look for a delimeter.
+        /// The default delimiter is byte value 13 (0x0d - CR). Override this function if you need a different delimiter.
+        /// </summary>
         protected virtual object ReceiveBufferProcess(object obj)
         {
             Byte[] bytes = new Byte[this.BufferSize];
@@ -112,8 +116,10 @@ namespace UXLib.Sockets
                 {
                     byte b = rxQueue.Dequeue();
 
+                    // If find byte = CR
                     if (b == 13)
                     {
+                        // Copy bytes to new array with length of packet and ignoring the CR.
                         Byte[] copiedBytes = new Byte[byteIndex];
                         Array.Copy(bytes, copiedBytes, byteIndex);
 
