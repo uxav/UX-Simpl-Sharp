@@ -8,16 +8,16 @@ using UXLib.Sockets;
 
 namespace UXLib.Displays.Canon
 {
-    public class CanonProjector : DisplayDevice
+    public class CanonWUX6000 : DisplayDevice
     {
-        public CanonProjector(string ipAddress)
+        public CanonWUX6000(string ipAddress)
         {
             Socket = new CanonProjectorSocket(ipAddress);
             Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
             Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
         }
 
-        public CanonProjector(string ipAddress, UXLib.Relays.UpDownRelays relays)
+        public CanonWUX6000(string ipAddress, UXLib.Relays.UpDownRelays relays)
             : base(relays)
         {
             Socket = new CanonProjectorSocket(ipAddress);
@@ -105,13 +105,13 @@ namespace UXLib.Displays.Canon
                                 Socket.Send(string.Format("INPUT={0}", requestedInput));
                             break;
                         default:
-                            CrestronConsole.PrintLine("Projector {0} = {1}", command, value);
+                            //CrestronConsole.PrintLine("Projector {0} = {1}", command, value);
                             break;
                     }
                 }
-            }
+            }/*
             else
-                CrestronConsole.PrintLine("Projector Rx ({0} bytes): {1}", receivedString.Length, receivedString);
+                CrestronConsole.PrintLine("Projector Rx ({0} bytes): {1}", receivedString.Length, receivedString);*/
         }
 
         void PollPower(object callBackObject)
