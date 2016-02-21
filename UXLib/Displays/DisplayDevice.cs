@@ -13,38 +13,31 @@ namespace UXLib.Displays
             this.Name = name;
         }
 
-        public DisplayDevice(string name, UXLib.Relays.UpDownRelays relays)
+        public DisplayDevice(string name, ElectricScreen screen)
         {
             this.Name = name;
-            this.relays = relays;
+            this.Screen = screen;
+            this.AutoSetScreen = true;
         }
 
-        UXLib.Relays.UpDownRelays relays;
-        public string Name { get; private set; }
+        public DisplayDevice(string name, ElectricScreen screen, bool autoSetScreen)
+        {
+            this.Name = name;
+            this.Screen = screen;
+            this.AutoSetScreen = autoSetScreen;
+        }
+
+        public string Name { get; protected set; }
+        public ElectricScreen Screen { get; protected set; }
+        public bool AutoSetScreen { get; set; }
 
         public bool SupportsScreenControl
         {
             get
             {
-                if (this.relays != null)
+                if (this.Screen != null)
                     return true;
                 return false;
-            }
-        }
-
-        public void ScreenDown()
-        {
-            if (this.SupportsScreenControl)
-            {
-                relays.Down();
-            }
-        }
-
-        public void ScreenUp()
-        {
-            if (this.SupportsScreenControl)
-            {
-                relays.Up();
             }
         }
 
@@ -95,17 +88,16 @@ namespace UXLib.Displays
             {
                 if (value != _powerStatus)
                 {
-#if DEBUG
-                    CrestronConsole.PrintLine("DisplayDevice, {0} PowerStatus = {1}", this.Name, value.ToString());
-                    ErrorLog.Notice("DisplayDevice, {0} PowerStatus = {1}", this.Name, value.ToString());
-#endif
                     _powerStatus = value;
                     if (PowerStatusChange != null)
                         PowerStatusChange(this, new DisplayDevicePowerStatusEventArgs(_powerStatus));
-                    switch (value)
+                    if (this.SupportsScreenControl && this.AutoSetScreen)
                     {
-                        case DisplayDevicePowerStatus.PowerWarming: ScreenDown(); break;
-                        case DisplayDevicePowerStatus.PowerCooling: ScreenUp(); break;
+                        switch (value)
+                        {
+                            case DisplayDevicePowerStatus.PowerWarming: Screen.Down(); break;
+                            case DisplayDevicePowerStatus.PowerCooling: Screen.Up(); break;
+                        }
                     }
                 }
             }

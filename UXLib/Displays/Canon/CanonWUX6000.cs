@@ -11,15 +11,23 @@ namespace UXLib.Displays.Canon
     public class CanonWUX6000 : DisplayDevice
     {
         public CanonWUX6000(string name, string ipAddress)
-            :base(name)
+            : base (name)
         {
             Socket = new CanonProjectorSocket(ipAddress);
             Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
             Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
         }
 
-        public CanonWUX6000(string name, string ipAddress, UXLib.Relays.UpDownRelays relays)
-            : base(name, relays)
+        public CanonWUX6000(string name, string ipAddress, ElectricScreen screen)
+            : base(name, screen)
+        {
+            Socket = new CanonProjectorSocket(ipAddress);
+            Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
+        }
+
+        public CanonWUX6000(string name, string ipAddress, ElectricScreen screen, bool autoSetScreen)
+            : base(name, screen, autoSetScreen)
         {
             Socket = new CanonProjectorSocket(ipAddress);
             Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
@@ -86,15 +94,10 @@ namespace UXLib.Displays.Canon
                                     }
                                     break;
                                 case "OFF":
-                                    // Only do this if current status is not power warming as we may have
-                                    // just turned the power on
-                                    if (PowerStatus != DisplayDevicePowerStatus.PowerWarming)
-                                    {
-                                        PowerStatus = DisplayDevicePowerStatus.PowerOff;
-                                        commsEstablished = true;
-                                        if (RequestedPower)
-                                            SendPowerCommand(true);
-                                    }
+                                    PowerStatus = DisplayDevicePowerStatus.PowerOff;
+                                    commsEstablished = true;
+                                    if (RequestedPower)
+                                        SendPowerCommand(true);
                                     break;
                                 case "OFF2ON":
                                     commsEstablished = true;

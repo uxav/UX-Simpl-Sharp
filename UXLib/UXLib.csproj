@@ -90,6 +90,9 @@
     <Compile Include="Displays\Canon\CanonWUX6000.cs" />
     <Compile Include="Displays\Canon\CanonProjectorSocket.cs" />
     <Compile Include="Displays\DisplayDevice.cs" />
+    <Compile Include="Displays\ElectricScreen.cs" />
+    <Compile Include="Displays\ElectricScreenRelaysInterlocked.cs" />
+    <Compile Include="Displays\ElectricScreenRelaysMomentary.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
