@@ -56,18 +56,30 @@ namespace UXLib.Displays
 
         }
 
+        /// <summary>
+        /// Set or get the Power for the display. Get will always return the actual power state.
+        /// Get RequestedPower property to find the last set power.
+        /// </summary>
         public virtual bool Power
         {
             get
             {
-                return _power;
+                if (PowerStatus == DisplayDevicePowerStatus.PowerOn
+                    || PowerStatus == DisplayDevicePowerStatus.PowerWarming)
+                    return true;
+                else
+                    return false;
             }
             set
             {
-                _power = value;
+                RequestedPower = value;
             }
         }
-        bool _power;
+
+        /// <summary>
+        /// Get the last requested power state for Display.Power set.
+        /// </summary>
+        public virtual bool RequestedPower { get; protected set; }
 
         public event DisplayDevicePowerStatusChangeEventHandler PowerStatusChange;
 

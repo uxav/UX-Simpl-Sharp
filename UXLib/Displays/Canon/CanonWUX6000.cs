@@ -73,27 +73,29 @@ namespace UXLib.Displays.Canon
                             {
                                 case "ON":
                                     PowerStatus = DisplayDevicePowerStatus.PowerOn;
-                                    if (!Power && commsEstablished)
-                                        // Resend power as should be off
-                                        Power = false;
+                                    if (!RequestedPower && commsEstablished)
+                                        // Send power as should be off
+                                        SendPowerCommand(false);
                                     else if (!commsEstablished)
                                     {
                                         // We have comms and the power is on so update the status
                                         commsEstablished = true;
-                                        // set base power as true as we don't want to set the powerstatus as warming
-                                        base.Power = true;
+                                        // set requested power as true as we may not want to turn off once things have come online
+                                        RequestedPower = true;
                                     }
                                     break;
                                 case "OFF":
                                     PowerStatus = DisplayDevicePowerStatus.PowerOff;
                                     commsEstablished = true;
-                                    if (Power)
-                                        Power = true;
+                                    if (RequestedPower)
+                                        SendPowerCommand(true);
                                     break;
                                 case "OFF2ON":
+                                    commsEstablished = true;
                                     PowerStatus = DisplayDevicePowerStatus.PowerWarming;
                                     break;
                                 case "ON2OFF":
+                                    commsEstablished = true;
                                     PowerStatus = DisplayDevicePowerStatus.PowerCooling;
                                     break;
                                 default:
@@ -117,7 +119,7 @@ namespace UXLib.Displays.Canon
         void PollPower(object callBackObject)
         {
             this.Socket.Send("?POWER");
-            if (this.Power)
+            if (this.PowerStatus == DisplayDevicePowerStatus.PowerOn)
                 new CTimer(PollInput, null, 100);
         }
 
@@ -126,28 +128,17 @@ namespace UXLib.Displays.Canon
             this.Socket.Send("?INPUT");
         }
 
-        public override bool Power
+        void SendPowerCommand(bool power)
         {
-            get
+            if (power && PowerStatus == DisplayDevicePowerStatus.PowerOff)
             {
-                return base.Power;
+                if (Socket.Send("POWER ON") == SocketErrorCodes.SOCKET_OK)
+                    PowerStatus = DisplayDevicePowerStatus.PowerWarming;
             }
-            set
+            else if (!power && PowerStatus == DisplayDevicePowerStatus.PowerOn)
             {
-                if (value)
-                {
-                    SocketErrorCodes err = Socket.Send("POWER ON");
-                    if (err == SocketErrorCodes.SOCKET_OK && !base.Power)
-                        PowerStatus = DisplayDevicePowerStatus.PowerWarming;
-                    base.Power = true;
-                }
-                else
-                {
-                    SocketErrorCodes err = Socket.Send("POWER OFF");
-                    if (err == SocketErrorCodes.SOCKET_OK && base.Power)
-                        PowerStatus = DisplayDevicePowerStatus.PowerCooling;
-                    base.Power = false;
-                }
+                if (Socket.Send("POWER OFF") == SocketErrorCodes.SOCKET_OK)
+                    PowerStatus = DisplayDevicePowerStatus.PowerWarming;
             }
         }
 
