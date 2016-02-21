@@ -8,17 +8,19 @@ namespace UXLib.Displays
 {
     public class DisplayDevice
     {
-        public DisplayDevice()
+        public DisplayDevice(string name)
         {
-
+            this.Name = name;
         }
 
-        public DisplayDevice(UXLib.Relays.UpDownRelays relays)
+        public DisplayDevice(string name, UXLib.Relays.UpDownRelays relays)
         {
+            this.Name = name;
             this.relays = relays;
         }
 
         UXLib.Relays.UpDownRelays relays;
+        public string Name { get; private set; }
 
         public bool SupportsScreenControl
         {
@@ -93,6 +95,10 @@ namespace UXLib.Displays
             {
                 if (value != _powerStatus)
                 {
+#if DEBUG
+                    CrestronConsole.PrintLine("DisplayDevice, {0} PowerStatus = {1}", this.Name, value.ToString());
+                    ErrorLog.Notice("DisplayDevice, {0} PowerStatus = {1}", this.Name, value.ToString());
+#endif
                     _powerStatus = value;
                     if (PowerStatusChange != null)
                         PowerStatusChange(this, new DisplayDevicePowerStatusEventArgs(_powerStatus));
