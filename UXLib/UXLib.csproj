@@ -90,6 +90,8 @@
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Relays\UpDownRelays.cs" />
+    <Compile Include="Relays\Relay.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="RoomCollection.cs" />
     <Compile Include="Sockets\SimpleClientSocket.cs" />
