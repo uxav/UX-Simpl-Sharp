@@ -21,7 +21,23 @@ namespace UXLib.Sockets
         Thread rxHandler;
         bool shouldReconnect = false;
         public int BufferSize;
+        
+        /// <summary>
+        /// Get status of socket connected
+        /// </summary>
+        public bool Connected
+        {
+            get
+            {
+                if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
+                    return true;
+                return false;
+            }
+        }
 
+        /// <summary>
+        /// Connect the socket
+        /// </summary>
         public void Connect()
         {
             if (socket.ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
@@ -34,6 +50,10 @@ namespace UXLib.Sockets
             }
         }
 
+        /// <summary>
+        /// Connect the socket
+        /// </summary>
+        /// <param name="shouldReconnect">Specify if this should be held open or not</param>
         public void Connect(bool shouldReconnect)
         {
             this.shouldReconnect = shouldReconnect;
@@ -58,6 +78,7 @@ namespace UXLib.Sockets
                 rxQueue.Clear();
                 if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
                     rxHandler = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
+                rxHandler.Priority = Thread.eThreadPriority.LowestPriority;
                 if (SocketConnectionEvent != null)
                     SocketConnectionEvent(this, socket.ClientStatus);
                 socket.ReceiveDataAsync(OnReceive);
