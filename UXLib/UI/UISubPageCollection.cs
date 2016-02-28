@@ -32,7 +32,7 @@ namespace UXLib.UI
             }
             else
             {
-                throw new Exception(string.Format("SubPage with id '{0}' already exists", newSubPage.ID));
+                throw new Exception(string.Format("SubPage with join '{0}' already exists", newSubPage.VisibleJoinNumber));
             }
         }
 
@@ -57,7 +57,7 @@ namespace UXLib.UI
             if (SubPages.Contains(newSubPage))
                 newSubPage.Show();
             else
-                ErrorLog.Error("Cannot ShowOnly subpage with ID of {0} as it does not exist in the collection", newSubPage.ID);
+                ErrorLog.Error("Cannot ShowOnly subpage with join of {0} as it does not exist in the collection", newSubPage.VisibleJoinNumber);
         }
 
         public void ShowOnly(uint joinNumber)

@@ -24,7 +24,7 @@ namespace UXLib.UI
 
         void Buttons_ButtonEvent(UIButtonCollection group, UIButtonCollectionEventArgs args)
         {
-            if (args.EventType == eUIButtonEventType.Released)
+            if (args.EventType == UIButtonEventType.Released)
             {
                 UIActionSheetButton responseButton = args.Button as UIActionSheetButton;
                 this.SubPage.Hide();

@@ -9,8 +9,6 @@ namespace UXLib.UI
 {
     public class UISmartObjectButtonCollection : IEnumerable<UISmartObjectButton>
     {
-        private List<UISmartObjectButton> Buttons;
-
         public UISmartObjectButton this[uint itemIndex]
         {
             get
@@ -18,6 +16,8 @@ namespace UXLib.UI
                 return this.Buttons.FirstOrDefault(b => b.ItemIndex == itemIndex);
             }
         }
+        
+        private List<UISmartObjectButton> Buttons;
 
         public int NumberOfButtons
         {
@@ -37,7 +37,15 @@ namespace UXLib.UI
             if (!this.Buttons.Contains(button))
             {
                 this.Buttons.Add(button);
-                button.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+                button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+            }
+        }
+
+        protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
+        {
+            if (this.ButtonEvent != null)
+            {
+                this.ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(currentObject as UISmartObjectButton, args.EventType, args.HoldTime));
             }
         }
 
@@ -53,24 +61,16 @@ namespace UXLib.UI
 
         public event UISmartObjectButtonCollectionEventHandler ButtonEvent;
 
-        void ButtonEventHandler(UIButtonBase button, UIButtonEventArgs args)
+        public UISmartObjectButton UISmartObjectButtonBySigNumber(uint pressDigitalJoinNumber)
         {
-            if (this.ButtonEvent != null)
-            {
-                this.ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(button as UISmartObjectButton, args.EventType, args.HoldTime));
-            }
-        }
-
-        public UISmartObjectButton UISmartObjectButtonBySigNumber(uint sigNumber)
-        {
-            return this.Buttons.FirstOrDefault(b => b.JoinNumber == sigNumber);
+            return this.Buttons.FirstOrDefault(b => b.PressDigitalJoin.Number == pressDigitalJoinNumber);
         }
 
         public virtual void Dispose()
         {
             foreach (UISmartObjectButton button in Buttons)
             {
-                button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
+                button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
         }
@@ -80,10 +80,10 @@ namespace UXLib.UI
 
     public class UISmartObjectButtonCollectionEventArgs : EventArgs
     {
-        public eUIButtonEventType EventType;
+        public UIButtonEventType EventType;
         public UISmartObjectButton Button;
         public long HoldTime;
-        public UISmartObjectButtonCollectionEventArgs(UISmartObjectButton button, eUIButtonEventType type, long holdTime)
+        public UISmartObjectButtonCollectionEventArgs(UISmartObjectButton button, UIButtonEventType type, long holdTime)
             : base()
         {
             this.Button = button;

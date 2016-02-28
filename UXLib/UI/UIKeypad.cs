@@ -8,47 +8,42 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UIKeypad : IDisposable
+    public class UIKeypad : UIObject
     {
-        public BoolOutputSig StartJoin { get; private set; }
-
-        public UIKeypad(BoolOutputSig startJoin)
+        public UIKeypad(BoolOutputSig digitalStartJoin)
         {
-            this.StartJoin = startJoin;
-
-            BasicTriList device = startJoin.Owner as BasicTriList;
-
-            this.Device.SigChange += new SigEventHandler(device_SigChange);
+            this.PressDigitalJoin = digitalStartJoin;
+            this.SubscribeToSigChanges();
         }
 
-        void device_SigChange(BasicTriList currentDevice, SigEventArgs args)
+        protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
         {
             if (args.Event == eSigEvent.BoolChange
                 && args.Sig.BoolValue == true
-                && args.Sig.Number >= this.StartJoin.Number
-                && args.Sig.Number <= (this.StartJoin.Number + 12))
+                && args.Sig.Number >= this.PressDigitalJoin.Number
+                && args.Sig.Number <= (this.PressDigitalJoin.Number + 12))
             {
                 if (ButtonPressed != null)
                 {
-                    uint index = args.Sig.Number - this.StartJoin.Number;
+                    uint index = args.Sig.Number - this.PressDigitalJoin.Number;
 
-                    eKeypadButton button;
+                    UIKeypadButton button;
 
                     switch (index)
                     {
-                        case 0: button = eKeypadButton.Digit0; break;
-                        case 1: button = eKeypadButton.Digit1; break;
-                        case 2: button = eKeypadButton.Digit2; break;
-                        case 3: button = eKeypadButton.Digit3; break;
-                        case 4: button = eKeypadButton.Digit4; break;
-                        case 5: button = eKeypadButton.Digit5; break;
-                        case 6: button = eKeypadButton.Digit6; break;
-                        case 7: button = eKeypadButton.Digit7; break;
-                        case 8: button = eKeypadButton.Digit8; break;
-                        case 9: button = eKeypadButton.Digit9; break;
-                        case 10: button = eKeypadButton.Misc1; break;
-                        case 11: button = eKeypadButton.Misc2; break;
-                        default: button = eKeypadButton.Digit0; break;
+                        case 0: button = UIKeypadButton.Digit0; break;
+                        case 1: button = UIKeypadButton.Digit1; break;
+                        case 2: button = UIKeypadButton.Digit2; break;
+                        case 3: button = UIKeypadButton.Digit3; break;
+                        case 4: button = UIKeypadButton.Digit4; break;
+                        case 5: button = UIKeypadButton.Digit5; break;
+                        case 6: button = UIKeypadButton.Digit6; break;
+                        case 7: button = UIKeypadButton.Digit7; break;
+                        case 8: button = UIKeypadButton.Digit8; break;
+                        case 9: button = UIKeypadButton.Digit9; break;
+                        case 10: button = UIKeypadButton.Misc1; break;
+                        case 11: button = UIKeypadButton.Misc2; break;
+                        default: button = UIKeypadButton.Digit0; break;
                     }
 
                     ButtonPressed(this, new UIKeypadEventArgs(
@@ -58,22 +53,11 @@ namespace UXLib.UI
                         button));
                 }
             }
-        }
 
-        public BasicTriList Device
-        {
-            get
-            {
-                return this.StartJoin.Owner as BasicTriList;
-            }
+            base.OnSigChange(currentDevice, args);
         }
 
         public event UIKeypadEventHandler ButtonPressed;
-
-        public virtual void Dispose()
-        {
-            this.Device.SigChange -= new SigEventHandler(device_SigChange);
-        }
     }
 
     public delegate void UIKeypadEventHandler(UIKeypad keypad, UIKeypadEventArgs args);
@@ -83,8 +67,8 @@ namespace UXLib.UI
         public BasicTriList Device;
         public uint SigNumber;
         public uint Index;
-        public eKeypadButton Button;
-        public UIKeypadEventArgs(uint index, uint sigNumber, BasicTriList device, eKeypadButton button)
+        public UIKeypadButton Button;
+        public UIKeypadEventArgs(uint index, uint sigNumber, BasicTriList device, UIKeypadButton button)
         {
             Device = device;
             SigNumber = sigNumber;
@@ -93,7 +77,7 @@ namespace UXLib.UI
         }
     }
 
-    public enum eKeypadButton
+    public enum UIKeypadButton
     {
         Digit0,
         Digit1,

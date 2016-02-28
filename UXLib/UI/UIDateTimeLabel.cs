@@ -20,8 +20,8 @@ namespace UXLib.UI
             }
         }
 
-        public UIDateTimeLabel(StringInputSig stringInputSig, IFormatProvider dateFormat)
-            : base(stringInputSig)
+        public UIDateTimeLabel(StringInputSig textSerialJoin, IFormatProvider dateFormat)
+            : base(textSerialJoin)
         {
             this.DateFormat = dateFormat;
         }

@@ -149,17 +149,17 @@ namespace UXLib.UI
             if (EnterButton != null)
             {
                 this.EnterButton.Title = "Enter";
-                this.EnterButton.ButtonEvent += new UIButtonEventHandler(EnterButton_ButtonEvent);
+                this.EnterButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
             }
             this.EscButton = escButton;
             if (EscButton != null)
             {
                 this.EscButton.Title = "Escape";
-                this.EscButton.ButtonEvent += new UIButtonEventHandler(EscButton_ButtonEvent);
+                this.EscButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
             }
             this.ClearButton = clearButton;
             if (ClearButton != null)
-                this.ClearButton.ButtonEvent += new UIButtonEventHandler(ClearButton_ButtonEvent);
+                this.ClearButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
             Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
@@ -177,37 +177,34 @@ namespace UXLib.UI
             this.EscButton.Title = escButtonTitle;
         }
 
-        void EnterButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
+        protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
         {
-            if (args.EventType == eUIButtonEventType.Tapped)
-            {
-                this.HasFocus = false;
-                if (this.TextFieldEvent != null)
-                    this.TextFieldEvent(this, new UITextFieldEventArgs(
-                        eUITextFieldEventType.Entered, this.HasFocus, this.InitialText, this.Text));
-            }
-        }
+            UIButton button = currentObject as UIButton;
 
-        void EscButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
-        {
-            if (args.EventType == eUIButtonEventType.Tapped)
+            if (args.EventType == UIButtonEventType.Released)
             {
-                this.HasFocus = false;
-                this.Text = InitialText;
-                if (this.TextFieldEvent != null)
-                    this.TextFieldEvent(this, new UITextFieldEventArgs(
-                        eUITextFieldEventType.Escaped, this.HasFocus, this.InitialText, this.Text));
-            }
-        }
-
-        void ClearButton_ButtonEvent(UIButtonBase button, UIButtonEventArgs args)
-        {
-            if (args.EventType == eUIButtonEventType.Tapped)
-            {
-                this.Text = "";
-                if (this.TextFieldEvent != null)
-                    this.TextFieldEvent(this, new UITextFieldEventArgs(
-                        eUITextFieldEventType.ClearedByUser, this.HasFocus, this.InitialText, this.Text));
+                if (button == this.EnterButton)
+                {
+                    this.HasFocus = false;
+                    if (this.TextFieldEvent != null)
+                        this.TextFieldEvent(this, new UITextFieldEventArgs(
+                            eUITextFieldEventType.Entered, this.HasFocus, this.InitialText, this.Text));
+                }
+                else if (button == this.EscButton)
+                {
+                    this.HasFocus = false;
+                    this.Text = InitialText;
+                    if (this.TextFieldEvent != null)
+                        this.TextFieldEvent(this, new UITextFieldEventArgs(
+                            eUITextFieldEventType.Escaped, this.HasFocus, this.InitialText, this.Text));
+                }
+                else if (button == this.ClearButton)
+                {
+                    this.Text = "";
+                    if (this.TextFieldEvent != null)
+                        this.TextFieldEvent(this, new UITextFieldEventArgs(
+                            eUITextFieldEventType.ClearedByUser, this.HasFocus, this.InitialText, this.Text));
+                }
             }
         }
 
@@ -258,11 +255,11 @@ namespace UXLib.UI
         {
             _Text = null;
             Device.SigChange -= new SigEventHandler(Device_SigChange);
-            this.EnterButton.ButtonEvent -= new UIButtonEventHandler(EnterButton_ButtonEvent);
+            this.EnterButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
             this.EnterButton.Dispose();
-            this.EscButton.ButtonEvent -= new UIButtonEventHandler(EscButton_ButtonEvent);
+            this.EscButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
             this.EscButton.Dispose();
-            this.ClearButton.ButtonEvent -= new UIButtonEventHandler(ClearButton_ButtonEvent);
+            this.ClearButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
             this.ClearButton.Dispose();
         }
     }

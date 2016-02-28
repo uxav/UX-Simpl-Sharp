@@ -147,11 +147,11 @@ namespace UXLib.UI
 
     public class UISmartObjectButtonEventArgs : EventArgs
     {
-        public eUIButtonEventType EventType;
+        public UIButtonEventType EventType;
         public uint ButtonIndex;
         public UISmartObjectButton Button;
         public long HoldTime;
-        public UISmartObjectButtonEventArgs(UISmartObjectButton button, eUIButtonEventType type, long holdTime)
+        public UISmartObjectButtonEventArgs(UISmartObjectButton button, UIButtonEventType type, long holdTime)
             : base()
         {
             this.ButtonIndex = button.ItemIndex;

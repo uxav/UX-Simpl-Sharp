@@ -41,7 +41,7 @@ namespace UXLib.UI
 
         public void Add(UIPage newPage)
         {
-            if (!this.Pages.Exists(p => p.VisibleJoin == newPage.VisibleJoin))
+            if (!this.Pages.Exists(p => p.VisibleDigitalJoin == newPage.VisibleDigitalJoin))
             {
                 this.Pages.Add(newPage);
                 newPage.VisibilityChange += new UIViewBaseVisibitlityEventHandler(Page_VisibilityChange);

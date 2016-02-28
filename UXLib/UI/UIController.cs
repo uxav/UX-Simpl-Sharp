@@ -11,52 +11,6 @@ namespace UXLib.UI
 {
     public class UIController
     {
-        public uint ID { get; private set; }
-        public string Name;
-        public BasicTriList Device { get; private set; }
-        protected Room _Room;
-        public Room Room
-        {
-            set
-            {
-                if (_Room != value)
-                {
-                    if (_Room != null)
-                    {
-                        // Unsubscribe from existing room events
-                        this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-                        this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
-                    }
-
-                    _Room = value;
-
-                    if (_Room != null)
-                    {
-                        // Subscribe to new rooms events
-                        this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-                        this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
-                    }
-
-                    this.OnRoomChange();
-                }
-            }
-            get
-            {
-                return _Room;
-            }
-        }
-        public Source Source
-        {
-            get
-            {
-                return this.Room.Source;
-            }
-            set
-            {
-                this.Room.Source = value;
-            }
-        }
-
         public UIController(uint id, BasicTriList device)
         {
             this.ID = id;
@@ -76,32 +30,61 @@ namespace UXLib.UI
                 ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
             }
         }
-        
+
         public UIController(uint id, BasicTriList device, Room defaultRoom)
+            : this(id, device)
         {
-            _Room = defaultRoom;
-            this.ID = id;
-            this.Device = device;
-
-            if (this.Device != null)
-            {
-                this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
-
-                if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
-                {
-                    ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
-                }
-            }
-            else
-            {
-                ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
-            }
-
-            this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-            this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+            this.Room = defaultRoom;
         }
 
-        public virtual void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
+        public uint ID { get; protected set; }
+        public string Name { get; set; }
+        public BasicTriList Device { get; protected set; }
+        Room _room;
+        public Room Room
+        {
+            set
+            {
+                if (_room != value)
+                {
+                    if (_room != null)
+                    {
+                        // Unsubscribe from existing room events
+                        this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                        this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
+                    }
+
+                    _room = value;
+
+                    if (_room != null)
+                    {
+                        // Subscribe to new rooms events
+                        this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                        this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+                    }
+
+                    this.OnRoomChange();
+                }
+            }
+            get
+            {
+                return _room;
+            }
+        }
+
+        public Source Source
+        {
+            get
+            {
+                return this.Room.Source;
+            }
+            set
+            {
+                this.Room.Source = value;
+            }
+        }
+
+        void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
         {
             if (this.Room == room)
             {

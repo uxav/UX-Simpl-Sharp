@@ -16,7 +16,7 @@ namespace UXLib.UI
         {
             get
             {
-                return this.Labels.FirstOrDefault(b => b.JoinNumber == joinNumber);
+                return this.Labels.FirstOrDefault(l => l.TextSerialJoin.Number == joinNumber);
             }
         }
 

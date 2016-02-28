@@ -12,11 +12,11 @@ namespace UXLib.UI
     {
         private List<UIButton> Buttons;
 
-        public UIButton this[uint joinNumber]
+        public UIButton this[uint pressDigitalJoinNumber]
         {
             get
             {
-                return this.Buttons.FirstOrDefault(b => b.JoinNumber == joinNumber);
+                return this.Buttons.FirstOrDefault(b => b.PressDigitalJoin.Number == pressDigitalJoinNumber);
             }
         }
 
@@ -38,7 +38,15 @@ namespace UXLib.UI
             if (!this.Buttons.Contains(button))
             {
                 this.Buttons.Add(button);
-                button.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+                button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+            }
+        }
+
+        protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
+        {
+            if (this.ButtonEvent != null)
+            {
+                this.ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime));
             }
         }
 
@@ -54,19 +62,11 @@ namespace UXLib.UI
 
         public event UIButtonCollectionEventHandler ButtonEvent;
 
-        void ButtonEventHandler(UIButtonBase button, UIButtonEventArgs args)
-        {
-            if (this.ButtonEvent != null)
-            {
-                this.ButtonEvent(this, new UIButtonCollectionEventArgs(button as UIButton, args.EventType, args.HoldTime));
-            }
-        }
-
         public virtual void Dispose()
         {
             foreach (UIButton button in Buttons)
             {
-                button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
+                button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
         }
@@ -76,10 +76,10 @@ namespace UXLib.UI
 
     public class UIButtonCollectionEventArgs : EventArgs
     {
-        public eUIButtonEventType EventType;
+        public UIButtonEventType EventType;
         public UIButton Button;
         public long HoldTime;
-        public UIButtonCollectionEventArgs(UIButton button, eUIButtonEventType type, long holdTime)
+        public UIButtonCollectionEventArgs(UIButton button, UIButtonEventType type, long holdTime)
             : base()
         {
             this.Button = button;

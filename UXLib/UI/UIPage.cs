@@ -10,54 +10,37 @@ namespace UXLib.UI
 {
     public class UIPage : UIViewBase
     {
-        public BoolOutputSig VisibleJoinFeedbackSig { get; protected set; }
-
-        public UIPage(BoolInputSig visibleJoinSig, BoolOutputSig visibleJoinFeedbackSig)
-            : base(visibleJoinSig)
+        public UIPage(BoolInputSig visibleDigitalJoin, BoolOutputSig visibleFeedbackJoin)
+            : base(visibleDigitalJoin)
         {
-            VisibleJoinFeedbackSig = visibleJoinFeedbackSig;
-            BasicTriList device = VisibleJoinFeedbackSig.Owner as BasicTriList;
-            device.SigChange += new SigEventHandler(device_SigChange);
+            this.VisibleFeedbackJoin = visibleFeedbackJoin;
         }
 
-        public UIPage(BoolInputSig visibleJoinSig, BoolOutputSig visibleJoinFeedbackSig, UILabel titleLabel, string title)
-            : base(visibleJoinSig, titleLabel, title)
+        public UIPage(BoolInputSig visibleDigitalJoin, BoolOutputSig visibleFeedbackJoin, UILabel titleLabel, string title)
+            : base(visibleDigitalJoin, titleLabel)
         {
-            VisibleJoinFeedbackSig = visibleJoinFeedbackSig;
-            BasicTriList device = VisibleJoinFeedbackSig.Owner as BasicTriList;
-            device.SigChange += new SigEventHandler(device_SigChange);
+            this.VisibleFeedbackJoin = visibleFeedbackJoin;
+            this.Title = title;
+        }
+
+        protected override void OnShow()
+        {
+            if (!base.Visible)
+                base.Visible = true;
+            else
+                base.OnShow();
         }
 
         public override bool Visible
         {
             get
             {
-                return this.VisibleJoinFeedbackSig.BoolValue;
+                return this.VisibleFeedbackJoin.BoolValue;
             }
-        }
-
-        void device_SigChange(BasicTriList currentDevice, SigEventArgs args)
-        {
-            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == VisibleJoinFeedbackSig.Number)
+            set
             {
-                if (args.Sig.BoolValue)
-                    this.Show();
-                else
-                    this.Hide();
+                base.Visible = value;
             }
-        }
-
-        public override void Show()
-        {
-            base.Show();
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-
-            BasicTriList device = VisibleJoinFeedbackSig.Owner as BasicTriList;
-            device.SigChange -= new SigEventHandler(device_SigChange);
         }
     }
 }

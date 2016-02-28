@@ -44,17 +44,24 @@ namespace UXLib.UI
                 this.TimeOut.Cancel();
         }
 
+        protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
+        {
+            if (this.TimeOut != null)
+                this.TimeOut.Reset();
+            base.OnSigChange(currentDevice, args);
+        }
+
         void TimeOut_TimedOut(object timeOutObject, UITimeOutEventArgs args)
         {
             if (this.Visible)
                 this.Hide();
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
             this.TimeOut.TimedOut -= new UITimeOutEventHandler(TimeOut_TimedOut);
             this.TimeOut.Dispose();
+            base.Dispose(disposing);
         }
     }
 }
