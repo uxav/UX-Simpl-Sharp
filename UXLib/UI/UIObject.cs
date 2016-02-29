@@ -322,9 +322,11 @@ namespace UXLib.UI
         /// <param name="newValue">The new value of the join</param>
         protected virtual void OnValueChange(ushort newValue)
         {
-            if (this.ValueChangeEvent != null)
+            if (this.ValueChangeEvent != null && this.PressDigitalJoin != null)
                 this.ValueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue,
                     this.PressDigitalJoin.BoolValue));
+            else if (this.ValueChangeEvent != null)
+                this.ValueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue));
         }
 
         /// <summary>
@@ -515,9 +517,14 @@ namespace UXLib.UI
 
     public class UIObjectAnalogTouchEventArgs : EventArgs
     {
-        public UIObjectAnalogTouchEventArgs(ushort newValue, bool isBeingPressed)
+        public UIObjectAnalogTouchEventArgs(ushort newValue)
         {
             this.NewValue = newValue;
+        }
+
+        public UIObjectAnalogTouchEventArgs(ushort newValue, bool isBeingPressed)
+            : this(newValue)
+        {
             this.IsBeingPressed = isBeingPressed;
         }
 

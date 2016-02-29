@@ -8,15 +8,6 @@ namespace UXLib.UI
 {
     public class UIViewController : IDisposable
     {
-        public UIViewBase View;
-        public event UIViewControllerEventHandler VisibilityChange;
-        public UIController UIController { get; protected set; }
-
-        public bool Visible
-        {
-            get { return View.Visible; }
-        }
-
         public UIViewController(UIController uiController, UIViewBase view)
         {
             this.UIController = uiController;
@@ -24,9 +15,25 @@ namespace UXLib.UI
             this.View.VisibilityChange += new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
         }
 
-        public UIViewController(UIController uiController, UIViewController ownerViewController)
-            : this(uiController, ownerViewController.View)
+        public UIViewController(UIViewController ownerViewController)
+            : this(ownerViewController.UIController, ownerViewController.View)
         {
+            
+        }
+
+        public UIViewController(UIViewController ownerViewController, UIViewBase view)
+            : this(ownerViewController.UIController, view)
+        {
+            
+        }
+        
+        public UIViewBase View;
+        public event UIViewControllerEventHandler VisibilityChange;
+        public UIController UIController { get; protected set; }
+        
+        public bool Visible
+        {
+            get { return View.Visible; }
         }
 
         void View_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
@@ -35,8 +42,10 @@ namespace UXLib.UI
                 this.OnShow();
             else if (args.EventType == eViewEventType.DidHide)
                 this.OnHide();
-            else if (this.VisibilityChange != null)
-                this.VisibilityChange(this, args);
+            else if (args.EventType == eViewEventType.WillShow)
+                this.WillShow();
+            else if (args.EventType == eViewEventType.WillHide)
+                this.WillHide();
         }
 
         public string Title
@@ -73,6 +82,18 @@ namespace UXLib.UI
                 this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
         }
 
+        protected virtual void WillShow()
+        {
+            if (this.VisibilityChange != null)
+                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
+        }
+
+        protected virtual void WillHide()
+        {
+            if (this.VisibilityChange != null)
+                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
+        }
+
         public uint VisibleJoinNumber
         {
             get
@@ -80,10 +101,49 @@ namespace UXLib.UI
                 return this.View.VisibleJoinNumber;
             }
         }
-
-        public virtual void Dispose()
+        
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
         {
-            this.View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            // Suppress finalization. - Sandbox litits this currently
+            // GC.SuppressFinalize(this);
+        }
+        
+        bool disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                // Free any other managed objects here.
+                //
+
+                this.View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
+            }
+
+            // Free any unmanaged objects here.
+            //
+
+            disposed = true;
         }
     }
 

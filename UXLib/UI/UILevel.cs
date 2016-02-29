@@ -11,12 +11,25 @@ namespace UXLib.UI
     public class UILevel : UIObject
     {
         /// <summary>
-        /// Create a level can have feedback only
+        /// Create a level which can have feedback only
         /// </summary>
         /// <param name="analogFeedbackJoin">The analog input signal join</param>
         public UILevel(UShortInputSig analogFeedbackJoin)
         {
             this.AnalogFeedbackJoin = analogFeedbackJoin;
+        }
+
+        /// <summary>
+        /// Create a level that is touch settable
+        /// </summary>
+        /// <remarks>This will automatically subscribe to sig changes from the device to monitor touch values</remarks>
+        /// <param name="analogFeedbackJoin">The analog input signal join</param>
+        /// <param name="analogTouchJoin">The analog 'touch' output signal join</param>
+        public UILevel(UShortInputSig analogFeedbackJoin, UShortOutputSig analogTouchJoin)
+            : this(analogFeedbackJoin)
+        {
+            this.AnalogTouchJoin = analogTouchJoin;
+            this.SubscribeToSigChanges();
         }
 
         /// <summary>
@@ -30,6 +43,50 @@ namespace UXLib.UI
         {
             this.EnableDigitalJoin = enableDigitalJoin;
             this.VisibleDigitalJoin = visibleDigitalJoin;
+        }
+
+        /// <summary>
+        /// Set the feedback value
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetLevel(ushort level)
+        {
+            this.AnalogueFeedbackValue = level;
+        }
+
+        /// <summary>
+        /// Set the feedback value from a scaled value
+        /// </summary>
+        /// <param name="scaledValue"></param>
+        /// <param name="minimumValue"></param>
+        /// <param name="maximumValue"></param>
+        public void SetLevel(double scaledValue, double minimumValue, double maximumValue)
+        {
+            try
+            {
+                int newVal = (int) ScaleRange(scaledValue, minimumValue, maximumValue, 0, 65535);
+                this.AnalogueFeedbackValue = (ushort)newVal;
+            }
+            catch
+            {
+                ErrorLog.Error("Cannot scale level back to UILevel ID: {0}", this.AnalogFeedbackJoin.Number);
+            }
+        }
+
+        public static double ScaleRange(double Value,
+           double FromMinValue, double FromMaxValue,
+           double ToMinValue, double ToMaxValue)
+        {
+            try
+            {
+                return (Value - FromMinValue) *
+                    (ToMaxValue - ToMinValue) /
+                    (FromMaxValue - FromMinValue) + ToMinValue;
+            }
+            catch
+            {
+                return double.NaN;
+            }
         }
     }
 }

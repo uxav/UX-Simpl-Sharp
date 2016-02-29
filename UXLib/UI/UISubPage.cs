@@ -9,27 +9,48 @@ namespace UXLib.UI
 {
     public class UISubPage : UIViewBase
     {
-        public UITimeOut TimeOut;
+        public UISubPage(BoolInputSig visibleDigitalJoin)
+            : base(visibleDigitalJoin) { }
 
-        public UISubPage(BoolInputSig visibleJoinSig)
-            : base (visibleJoinSig)
-        {
-            
-        }
+        public UISubPage(BoolInputSig visibleDigitalJoin, UILabel titleLabel)
+            : base(visibleDigitalJoin, titleLabel) { }
 
-        public UISubPage(BoolInputSig visibleJoinSig, UILabel titleLabel)
-            : base (visibleJoinSig, titleLabel)
-        {
+        public UISubPage(BoolInputSig visibleDigitalJoin, UILabel titleLabel, UILabel subTitleLabel)
+            : base(visibleDigitalJoin, titleLabel, subTitleLabel) { }
 
-        }
-
-        public UISubPage(BoolInputSig visibleJoinSig, UILabel titleLabel, UILabel subTitleLabel, UITimeOut timeOut)
-            : base(visibleJoinSig, titleLabel, subTitleLabel)
+        public UISubPage(BoolInputSig visibleDigitalJoin, UILabel titleLabel, UILabel subTitleLabel, UITimeOut timeOut)
+            : base(visibleDigitalJoin, titleLabel, subTitleLabel)
         {
             this.TimeOut = timeOut;
             this.TimeOut.TimedOut += new UITimeOutEventHandler(TimeOut_TimedOut);
         }
 
+        public UISubPage(UIController uiController, uint visibleDigitalJoinNumber)
+            : this(uiController.Device.BooleanInput[visibleDigitalJoinNumber]) { }
+
+        public UISubPage(UIController uiController, uint visibleDigitalJoinNumber, UILabel titleLabel)
+            : this(uiController.Device.BooleanInput[visibleDigitalJoinNumber], titleLabel) { }
+
+        public UISubPage(UIController uiController, uint visibleDigitalJoinNumber, UILabel titleLabel, UILabel subTitleLabel)
+            : this(uiController.Device.BooleanInput[visibleDigitalJoinNumber], titleLabel, subTitleLabel) { }
+
+        public UISubPage(UIController uiController, uint visibleDigitalJoinNumber, UILabel titleLabel, UILabel subTitleLabel, UITimeOut timeOut)
+            : this(uiController.Device.BooleanInput[visibleDigitalJoinNumber], titleLabel, subTitleLabel, timeOut) { }
+
+        public UISubPage(UIViewController viewController, uint visibleDigitalJoinNumber)
+            : this(viewController.UIController.Device.BooleanInput[visibleDigitalJoinNumber]) { }
+
+        public UISubPage(UIViewController viewController, uint visibleDigitalJoinNumber, UILabel titleLabel)
+            : this(viewController.UIController.Device.BooleanInput[visibleDigitalJoinNumber], titleLabel) { }
+
+        public UISubPage(UIViewController viewController, uint visibleDigitalJoinNumber, UILabel titleLabel, UILabel subTitleLabel)
+            : this(viewController.UIController.Device.BooleanInput[visibleDigitalJoinNumber], titleLabel, subTitleLabel) { }
+
+        public UISubPage(UIViewController viewController, uint visibleDigitalJoinNumber, UILabel titleLabel, UILabel subTitleLabel, UITimeOut timeOut)
+            : this(viewController.UIController.Device.BooleanInput[visibleDigitalJoinNumber], titleLabel, subTitleLabel, timeOut) { }
+
+        public UITimeOut TimeOut;
+        
         protected override void OnShow()
         {
             base.OnShow();

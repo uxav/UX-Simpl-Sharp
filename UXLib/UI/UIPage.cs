@@ -23,24 +23,16 @@ namespace UXLib.UI
             this.Title = title;
         }
 
-        protected override void OnShow()
-        {
-            if (!base.Visible)
-                base.Visible = true;
-            else
-                base.OnShow();
-        }
+        public UIPage(UIController uiController, uint visibleJoinNumber)
+            : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber]) { }
 
-        public override bool Visible
-        {
-            get
-            {
-                return this.VisibleFeedbackJoin.BoolValue;
-            }
-            set
-            {
-                base.Visible = value;
-            }
-        }
+        public UIPage(UIController uiController, uint visibleJoinNumber, UILabel titleLabel, string title)
+            : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber], titleLabel, title) { }
+
+        public UIPage(UIViewController viewController, uint visibleJoinNumber)
+            : this(viewController.UIController.Device.BooleanInput[visibleJoinNumber], viewController.UIController.Device.BooleanOutput[visibleJoinNumber]) { }
+
+        public UIPage(UIViewController viewController, uint visibleJoinNumber, UILabel titleLabel, string title)
+            : this(viewController.UIController.Device.BooleanInput[visibleJoinNumber], viewController.UIController.Device.BooleanOutput[visibleJoinNumber], titleLabel, title) { }
     }
 }
