@@ -368,24 +368,24 @@ namespace UXLib.UI
         /// <param name="args">The SigEventArgs</param>
         protected virtual void OnSigChange(GenericBase currentDevice, SigEventArgs args)
         {
-            if (args.Event == eSigEvent.BoolChange && args.Sig.Number == this.PressDigitalJoin.Number)
+            if (args.Event == eSigEvent.BoolChange && this.PressDigitalJoin != null && args.Sig == this.PressDigitalJoin)
             {
                 if (args.Sig.BoolValue)
                     OnPress();
                 else
                     OnRelease();
             }
-            else if (args.Event == eSigEvent.BoolChange && args.Sig.Number == this.VisibleFeedbackJoin.Number)
+            else if (args.Event == eSigEvent.BoolChange && this.VisibleFeedbackJoin != null && args.Sig == this.VisibleFeedbackJoin)
             {
-                if (args.Sig.BoolValue)
+                if (args.Sig.BoolValue && this.VisibleDigitalJoin != null && !this.VisibleDigitalJoin.BoolValue)
                     OnShow();
             }
-            else if (args.Event == eSigEvent.BoolChange && args.Sig.Number == this.TransitionCompleteDigitalJoin.Number)
+            else if (args.Event == eSigEvent.BoolChange && this.TransitionCompleteDigitalJoin != null && args.Sig == this.TransitionCompleteDigitalJoin)
             {
                 if (args.Sig.BoolValue)
                     OnTransitionComplete();
             }
-            else if (args.Event == eSigEvent.UShortChange && args.Sig.Number == this.AnalogTouchJoin.Number)
+            else if (args.Event == eSigEvent.UShortChange && this.AnalogTouchJoin != null && args.Sig == this.AnalogTouchJoin)
             {
                 OnValueChange(args.Sig.UShortValue);
             }
