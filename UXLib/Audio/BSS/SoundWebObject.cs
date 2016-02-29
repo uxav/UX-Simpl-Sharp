@@ -1,0 +1,82 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+
+namespace UXLib.Audio.BSS
+{
+    public class SoundWebObject
+    {
+        public SoundWeb Device { get; protected set; }
+        public string HiQAddress { get; protected set; }
+
+        bool setPacketCapture = false;
+
+        public virtual void Subscribe()
+        {
+            if (!setPacketCapture)
+            {
+                setPacketCapture = true;
+                this.Device.Socket.ReceivedPacketEvent += new UXLib.Sockets.SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
+            }
+        }
+
+        void Socket_ReceivedPacketEvent(UXLib.Sockets.SimpleClientSocket socket, UXLib.Sockets.SimpleClientSocketReceiveEventArgs args)
+        {
+            string receivedString = Encoding.UTF7.GetString(args.ReceivedPacket, 1, args.ReceivedPacket.Length - 3);
+            // string receivedString = new string(args.ReceivedPacket.Select(b => (char)b).ToArray());
+
+            string address = receivedString.Substring(1, 6);
+
+            if (address == HiQAddress)
+            {
+                /*var bytes = new byte[receivedString.Length];
+
+                for (int i = 0; i < receivedString.Length; i++)
+                {
+                    bytes[i] = unchecked((byte)receivedString[i]);
+                }
+                
+                CrestronConsole.Print("Soundweb Rx: ");
+                foreach (byte b in bytes)
+                {
+                    CrestronConsole.Print("\\x{0}", b.ToString("X2"));
+                }
+                CrestronConsole.PrintLine("");*/
+
+                char[] c = receivedString.Substring(7, 2).ToCharArray();
+                int paramID = c[0] << 8 | c[1];
+
+                c = receivedString.Substring(9, 4).ToCharArray();
+                int value = c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
+
+                OnReceive(paramID, value);
+            }
+        }
+
+        protected virtual void OnReceive(int paramID, int value)
+        {
+            if (this.FeedbackReceived != null)
+            {
+                this.FeedbackReceived(this, new SoundWebObjectFeedbackEventArgs(paramID, value));
+            }
+        }
+
+        public event SoundWebObjectFeedbackEventHandler FeedbackReceived;
+    }
+
+    public delegate void SoundWebObjectFeedbackEventHandler(SoundWebObject soundWebObject, SoundWebObjectFeedbackEventArgs args);
+
+    public class SoundWebObjectFeedbackEventArgs : EventArgs
+    {
+        public SoundWebObjectFeedbackEventArgs(int paramID, int value)
+        {
+            this.ParamID = paramID;
+            this.Value = value;
+        }
+
+        public int ParamID { get; private set; }
+        public int Value { get; private set; }
+    }
+}
