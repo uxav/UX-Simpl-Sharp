@@ -42,16 +42,5 @@ namespace UXLib.Audio.BSS
                 return this.channels[(int)channel - 1];
             }
         }
-
-        public override void Subscribe()
-        {
-            base.Subscribe();
-        }
-
-        public void Subscribe(uint channel)
-        {
-            base.Subscribe();
-            this[channel].Subscribe();
-        }
     }
 }

@@ -15,12 +15,12 @@ namespace UXLib.Audio.BSS
             this.Mixer.FeedbackReceived += new SoundWebObjectFeedbackEventHandler(Mixer_FeedbackReceived);
         }
 
-        public SoundWebMixer Mixer { get; private set; }
-        public uint Index { get; private set; }
+        public SoundWebMixer Mixer { get; protected set; }
+        public uint Index { get; protected set; }
 
-        public void Send(string messageType, uint param, string value)
+        public void Send(string messageType, SoundWebMixerChannelParamType paramType, string value)
         {
-            ushort pVal = Convert.ToUInt16(((this.Index - 1) * 100) + param);
+            ushort pVal = Convert.ToUInt16(((this.Index - 1) * 100) + (int)paramType);
             byte upper = (byte) (pVal >> 8);
             byte lower = (byte) (pVal & 0xff);
             this.Mixer.Send(messageType, string.Format("{0}{1}", (char)upper, (char)lower), value);
@@ -42,7 +42,10 @@ namespace UXLib.Audio.BSS
                     bytes[2] = (byte)(value >> 8);
                     bytes[3] = (byte)(value & 0xff);
 
-                    this.Send("\x88", 0, string.Format("{0}{1}{2}{3}", (char)bytes[0], (char)bytes[1], (char)bytes[2], (char)bytes[3]));
+                    this.Send("\x88", (uint)SoundWebMixerChannelParamType.Gain, string.Format("{0}{1}{2}{3}", (char)bytes[0], (char)bytes[1], (char)bytes[2], (char)bytes[3]));
+
+                    if (ChangeEvent != null)
+                        ChangeEvent(this, new SoundWebMixerChannelEventArgs(SoundWebMixerChannelEventType.GainChange));
                 }
             }
             get
@@ -56,11 +59,16 @@ namespace UXLib.Audio.BSS
         {
             set
             {
-                _mute = value;
-                if (value)
-                    this.Send("\x88", 1, "\x00\x00\x00\x01");
-                else
-                    this.Send("\x88", 1, "\x00\x00\x00\x00");
+                if (_mute != value)
+                {
+                    _mute = value;
+                    if (value)
+                        this.Send("\x88", SoundWebMixerChannelParamType.Mute, "\x00\x00\x00\x01");
+                    else
+                        this.Send("\x88", SoundWebMixerChannelParamType.Mute, "\x00\x00\x00\x00");
+                    if (ChangeEvent != null)
+                        ChangeEvent(this, new SoundWebMixerChannelEventArgs(SoundWebMixerChannelEventType.MuteChange));
+                }
             }
             get
             {
@@ -70,8 +78,15 @@ namespace UXLib.Audio.BSS
 
         public void Subscribe()
         {
-            this.Send("\x89", 0, "\x00\x00\x00\x00");
-            this.Send("\x89", 1, "\x00\x00\x00\x00");
+            this.Subscribe(SoundWebMixerChannelParamType.Gain);
+            this.Subscribe(SoundWebMixerChannelParamType.Mute);
+        }
+
+        public void Subscribe(SoundWebMixerChannelParamType paramType)
+        {
+            Mixer.Subscribe();
+            CrestronConsole.PrintLine("Mixer Channel[{0}].Subscribe({1});", this.Index, paramType.ToString());
+            this.Send("\x89", paramType, "\x00\x00\x00\x00");
         }
 
         void Mixer_FeedbackReceived(SoundWebObject soundWebObject, SoundWebObjectFeedbackEventArgs args)
@@ -81,14 +96,14 @@ namespace UXLib.Audio.BSS
 
             if (channel == this.Index)
             {
-                switch (channelControlType)
+                switch ((SoundWebMixerChannelParamType)channelControlType)
                 {
-                    case 0:
+                    case SoundWebMixerChannelParamType.Gain:
                         _gain = args.Value;
                         if (ChangeEvent != null)
                             ChangeEvent(this, new SoundWebMixerChannelEventArgs(SoundWebMixerChannelEventType.GainChange));
                         break;
-                    case 1:
+                    case SoundWebMixerChannelParamType.Mute:
                         if (args.Value == 1)
                             _mute = true;
                         else
@@ -119,5 +134,11 @@ namespace UXLib.Audio.BSS
     {
         MuteChange,
         GainChange
+    }
+
+    public enum SoundWebMixerChannelParamType
+    {
+        Gain,
+        Mute
     }
 }

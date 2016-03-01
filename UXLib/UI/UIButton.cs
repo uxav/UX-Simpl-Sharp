@@ -69,5 +69,10 @@ namespace UXLib.UI
                 this.Text = value;
             }
         }
+
+        public void Toggle()
+        {
+            this.Feedback = !this.Feedback;
+        }
     }
 }

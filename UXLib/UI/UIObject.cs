@@ -187,7 +187,7 @@ namespace UXLib.UI
         /// <summary>
         /// Set the analog feedback join of the object
         /// </summary>
-        public virtual ushort AnalogueFeedbackValue
+        public virtual ushort AnalogFeedbackValue
         {
             get
             {

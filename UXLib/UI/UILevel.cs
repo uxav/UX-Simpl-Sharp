@@ -16,6 +16,8 @@ namespace UXLib.UI
         /// <param name="analogFeedbackJoin">The analog input signal join</param>
         public UILevel(UShortInputSig analogFeedbackJoin)
         {
+            this.LevelMinimumValue = 0;
+            this.LevelMaximumValue = 65535;
             this.AnalogFeedbackJoin = analogFeedbackJoin;
         }
 
@@ -51,7 +53,7 @@ namespace UXLib.UI
         /// <param name="level"></param>
         public void SetLevel(ushort level)
         {
-            this.AnalogueFeedbackValue = level;
+            this.AnalogFeedbackValue = level;
         }
 
         /// <summary>
@@ -64,14 +66,17 @@ namespace UXLib.UI
         {
             try
             {
-                int newVal = (int) ScaleRange(scaledValue, minimumValue, maximumValue, 0, 65535);
-                this.AnalogueFeedbackValue = (ushort)newVal;
+                int newVal = (int)ScaleRange(scaledValue, minimumValue, maximumValue, this.LevelMinimumValue, this.LevelMaximumValue);
+                this.AnalogFeedbackValue = (ushort)newVal;
             }
             catch
             {
                 ErrorLog.Error("Cannot scale level back to UILevel ID: {0}", this.AnalogFeedbackJoin.Number);
             }
         }
+
+        public ushort LevelMinimumValue { get; set; }
+        public ushort LevelMaximumValue { get; set; }
 
         public static double ScaleRange(double Value,
            double FromMinValue, double FromMaxValue,

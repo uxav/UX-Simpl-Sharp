@@ -91,6 +91,8 @@
     <Compile Include="Audio\BSS\SoundWebMatrix.cs" />
     <Compile Include="Audio\BSS\SoundWebMixer.cs" />
     <Compile Include="Audio\BSS\SoundWebMixerChannel.cs" />
+    <Compile Include="Audio\BSS\SoundWebMixerChannelUILevel.cs" />
+    <Compile Include="Audio\BSS\SoundWebMixerChannelUIMuteButton.cs" />
     <Compile Include="Audio\BSS\SoundWebObject.cs" />
     <Compile Include="Audio\BSS\SoundWebSocket.cs" />
     <Compile Include="Audio\Polycom\Soundstructure.cs" />
