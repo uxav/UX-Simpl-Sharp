@@ -13,7 +13,6 @@ namespace UXLib.UI
         public UIButton(BoolOutputSig pressDigitalJoin)
         {
             this.PressDigitalJoin = pressDigitalJoin;
-            this.SubscribeToSigChanges();
         }
 
         public UIButton(BasicTriList device, uint pressDigitalJoinNumber)

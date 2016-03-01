@@ -73,25 +73,32 @@ namespace UXLib.UI
         {
             get
             {
-                if (PressDigitalJoin != null)
-                    return PressDigitalJoin.Owner as BasicTriList;
-                if (FeedbackDigitalJoin != null)
-                    return FeedbackDigitalJoin.Owner as BasicTriList;
-                if (TextSerialJoin != null)
-                    return TextSerialJoin.Owner as BasicTriList;
-                if (VisibleDigitalJoin != null)
-                    return VisibleDigitalJoin.Owner as BasicTriList;
-                if (EnableDigitalJoin != null)
-                    return EnableDigitalJoin.Owner as BasicTriList;
-                if (AnalogFeedbackJoin != null)
-                    return AnalogFeedbackJoin.Owner as BasicTriList;
-                if (AnalogTouchJoin != null)
-                    return AnalogTouchJoin.Owner as BasicTriList;
-                if (AnalogModeJoin != null)
-                    return AnalogModeJoin.Owner as BasicTriList;
-                if (TransitionCompleteDigitalJoin != null)
-                    return TransitionCompleteDigitalJoin.Owner as BasicTriList;
-                return null;
+                try
+                {
+                    if (PressDigitalJoin != null)
+                        return PressDigitalJoin.Owner as BasicTriList;
+                    if (FeedbackDigitalJoin != null)
+                        return FeedbackDigitalJoin.Owner as BasicTriList;
+                    if (TextSerialJoin != null)
+                        return TextSerialJoin.Owner as BasicTriList;
+                    if (VisibleDigitalJoin != null)
+                        return VisibleDigitalJoin.Owner as BasicTriList;
+                    if (EnableDigitalJoin != null)
+                        return EnableDigitalJoin.Owner as BasicTriList;
+                    if (AnalogFeedbackJoin != null)
+                        return AnalogFeedbackJoin.Owner as BasicTriList;
+                    if (AnalogTouchJoin != null)
+                        return AnalogTouchJoin.Owner as BasicTriList;
+                    if (AnalogModeJoin != null)
+                        return AnalogModeJoin.Owner as BasicTriList;
+                    if (TransitionCompleteDigitalJoin != null)
+                        return TransitionCompleteDigitalJoin.Owner as BasicTriList;
+                    return null;
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
 
@@ -338,15 +345,19 @@ namespace UXLib.UI
         }
 
         bool subscribed = false;
-
+        public SmartObject SmartObject { get; set; }
+        
         /// <summary>
         /// Use this to set a sig change event handler on the device
         /// </summary>
-        protected virtual void SubscribeToSigChanges()
+        public virtual void SubscribeToSigChanges()
         {
             if (!subscribed)
             {
-                this.Device.SigChange += new SigEventHandler(OnSigChange);
+                if(this.SmartObject != null)
+                    this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(OnSigChange);
+                else
+                    this.Device.SigChange += new SigEventHandler(OnSigChange);
                 subscribed = true;
             }
         }
@@ -354,11 +365,14 @@ namespace UXLib.UI
         /// <summary>
         /// Use this to set a sig change event handler on the device
         /// </summary>
-        protected virtual void UnSubscribeToSigChanges()
+        public virtual void UnSubscribeToSigChanges()
         {
             if (subscribed)
             {
-                this.Device.SigChange -= new SigEventHandler(OnSigChange);
+                if(this.SmartObject != null)
+                    this.SmartObject.SigChange -= new SmartObjectSigChangeEventHandler(OnSigChange);
+                else
+                    this.Device.SigChange -= new SigEventHandler(OnSigChange);
                 subscribed = false;
             }
         }

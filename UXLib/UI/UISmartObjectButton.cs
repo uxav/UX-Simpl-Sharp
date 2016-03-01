@@ -14,7 +14,6 @@ namespace UXLib.UI
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
             this.PressDigitalJoin = this.SmartObject.BooleanOutput[pressDigitalJoinName];
-            this.SubscribeToSigChanges();
         }
 
         public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
@@ -48,16 +47,9 @@ namespace UXLib.UI
             this.VisibleDigitalJoin = this.SmartObject.BooleanInput[visibleDigitalJoinName];
         }
 
-        public SmartObject SmartObject { get; protected set; }
-
         public object LinkedObject { get; set; }
         
         public uint ItemIndex { get; protected set; }
-
-        protected override void SubscribeToSigChanges()
-        {
-            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(OnSigChange);
-        }
 
         protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
         {

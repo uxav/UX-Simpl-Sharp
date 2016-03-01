@@ -24,14 +24,12 @@ namespace UXLib.UI
         /// <summary>
         /// Create a level that is touch settable
         /// </summary>
-        /// <remarks>This will automatically subscribe to sig changes from the device to monitor touch values</remarks>
         /// <param name="analogFeedbackJoin">The analog input signal join</param>
         /// <param name="analogTouchJoin">The analog 'touch' output signal join</param>
         public UILevel(UShortInputSig analogFeedbackJoin, UShortOutputSig analogTouchJoin)
             : this(analogFeedbackJoin)
         {
             this.AnalogTouchJoin = analogTouchJoin;
-            this.SubscribeToSigChanges();
         }
 
         /// <summary>
