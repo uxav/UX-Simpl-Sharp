@@ -57,6 +57,21 @@ namespace UXLib.UI
             device.BooleanInput[enableDigitalJoinNumber],
             device.BooleanInput[visibleDigitalJoinNumber]) { }
 
+        public UIButton(BoolOutputSig pressDigitalJoin, BoolInputSig feedbackDigitalJoin,
+            BoolInputSig enableDigitalJoin, BoolInputSig visibleDigitalJoin)
+            : this(pressDigitalJoin, feedbackDigitalJoin)
+        {
+            this.EnableDigitalJoin = enableDigitalJoin;
+            this.VisibleDigitalJoin = visibleDigitalJoin;
+        }
+
+        public UIButton(BasicTriList device, uint pressDigitalJoinNumber, uint feedbackDigitalJoinNumber,
+            uint enableDigitalJoinNumber, uint visibleDigitalJoinNumber)
+            : this(device.BooleanOutput[pressDigitalJoinNumber],
+            device.BooleanInput[feedbackDigitalJoinNumber],
+            device.BooleanInput[enableDigitalJoinNumber],
+            device.BooleanInput[visibleDigitalJoinNumber]) { }
+
         public string Title
         {
             get
