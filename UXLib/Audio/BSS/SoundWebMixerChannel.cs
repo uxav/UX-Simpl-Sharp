@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Audio.BSS
 {
-    public class SoundWebMixerChannel
+    public class SoundWebMixerChannel : IDisposable
     {
         public SoundWebMixerChannel(SoundWebMixer mixer, uint index)
         {
@@ -85,7 +85,6 @@ namespace UXLib.Audio.BSS
         public void Subscribe(SoundWebMixerChannelParamType paramType)
         {
             Mixer.Subscribe();
-            CrestronConsole.PrintLine("Mixer Channel[{0}].Subscribe({1});", this.Index, paramType.ToString());
             this.Send("\x89", paramType, "\x00\x00\x00\x00");
         }
 
@@ -116,6 +115,50 @@ namespace UXLib.Audio.BSS
         }
 
         public event SoundWebMixerChannelEventHandler ChangeEvent;
+        
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            // Suppress finalization. - Sandbox litits this currently
+            // GC.SuppressFinalize(this);
+        }
+        
+        bool disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                // Free any other managed objects here.
+                //
+                this.Mixer.FeedbackReceived -= new SoundWebObjectFeedbackEventHandler(Mixer_FeedbackReceived);
+            }
+
+            // Free any unmanaged objects here.
+            //
+            
+
+            disposed = true;
+        }
     }
 
     public delegate void SoundWebMixerChannelEventHandler(SoundWebMixerChannel channel, SoundWebMixerChannelEventArgs args);

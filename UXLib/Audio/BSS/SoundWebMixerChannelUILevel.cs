@@ -121,5 +121,15 @@ namespace UXLib.Audio.BSS
                 this.Channel.Subscribe(SoundWebMixerChannelParamType.Gain);
             }
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.Channel.ChangeEvent -= new SoundWebMixerChannelEventHandler(Channel_ChangeEvent);
+                this.Channel.Mixer.Device.Socket.SocketConnectionEvent -= new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            }
+            base.Dispose(disposing);
+        }
     }
 }

@@ -483,20 +483,12 @@ namespace UXLib.UI
             {
                 // Free any other managed objects here.
                 //
-
-                UnSubscribeToSigChanges();
+                
             }
 
             // Free any unmanaged objects here.
             //
-            this.PressDigitalJoin = null;
-            this.FeedbackDigitalJoin = null;
-            this.EnableDigitalJoin = null;
-            this.VisibleDigitalJoin = null;
-            this.TextSerialJoin = null;
-            this.AnalogModeJoin = null;
-            this.AnalogFeedbackJoin = null;
-            this.AnalogTouchJoin = null;
+            UnSubscribeToSigChanges();
 
             disposed = true;
         }
