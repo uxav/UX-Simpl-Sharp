@@ -88,5 +88,15 @@ namespace UXLib.UI
         {
             this.Feedback = !this.Feedback;
         }
+
+        public void SetAnalogModeJoin(UShortInputSig analogModeJoin)
+        {
+            this.AnalogModeJoin = analogModeJoin;
+        }
+
+        public void SetAnalogModeJoin(uint analogModeJoinNumber)
+        {
+            this.AnalogModeJoin = this.Device.UShortInput[analogModeJoinNumber];
+        }
     }
 }

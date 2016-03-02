@@ -206,6 +206,16 @@ namespace UXLib.UI
             }
         }
 
+        public bool SupportsModeStates
+        {
+            get
+            {
+                if (this.AnalogModeJoin != null)
+                    return true;
+                return false;
+            }
+        }
+
         /// <summary>
         /// Set the the state / mode of an object
         /// </summary>
@@ -275,8 +285,8 @@ namespace UXLib.UI
         {
             this.CurrentHoldTime = this.CurrentHoldTime + 100;
 
-            if (this.CurrentHoldTime == this.HoldTime && this.ButtonEvent != null)
-                this.ButtonEvent(this,
+            if (this.CurrentHoldTime == this.HoldTime && _buttonEvent != null)
+                _buttonEvent(this,
                     new UIObjectButtonEventArgs(
                         UIButtonEventType.Held, this.CurrentHoldTime));
         }
@@ -293,8 +303,8 @@ namespace UXLib.UI
                 holdTimer = new CTimer(holdTimerUpdate, null, 100, 100);
             }
 
-            if (this.ButtonEvent != null)
-                this.ButtonEvent(this,
+            if (_buttonEvent != null)
+                _buttonEvent(this,
                     new UIObjectButtonEventArgs(
                         UIButtonEventType.Pressed, this.CurrentHoldTime));
         }
@@ -311,13 +321,13 @@ namespace UXLib.UI
                 holdTimer.Dispose();
             }
 
-            if (this.ButtonEvent != null)
-                this.ButtonEvent(this,
+            if (_buttonEvent != null)
+                _buttonEvent(this,
                     new UIObjectButtonEventArgs(
                         UIButtonEventType.Released, this.CurrentHoldTime));
 
-            if (this.CurrentHoldTime < this.HoldTime && this.ButtonEvent != null)
-                this.ButtonEvent(this,
+            if (this.CurrentHoldTime < this.HoldTime && _buttonEvent != null)
+                _buttonEvent(this,
                     new UIObjectButtonEventArgs(
                         UIButtonEventType.Tapped, this.CurrentHoldTime));
         }
@@ -350,7 +360,7 @@ namespace UXLib.UI
         /// <summary>
         /// Use this to set a sig change event handler on the device
         /// </summary>
-        public virtual void SubscribeToSigChanges()
+        protected virtual void SubscribeToSigChanges()
         {
             if (!subscribed)
             {
@@ -365,7 +375,7 @@ namespace UXLib.UI
         /// <summary>
         /// Use this to set a sig change event handler on the device
         /// </summary>
-        public virtual void UnSubscribeToSigChanges()
+        protected virtual void UnSubscribeToSigChanges()
         {
             if (subscribed)
             {
@@ -407,10 +417,24 @@ namespace UXLib.UI
             }
         }
 
+        private event UIObjectButtonEventHandler _buttonEvent;
+
         /// <summary>
         /// Called once a digital press join event is triggered
         /// </summary>
-        public event UIObjectButtonEventHandler ButtonEvent;
+        public event UIObjectButtonEventHandler ButtonEvent
+        {
+            add
+            {
+                if (!subscribed)
+                    SubscribeToSigChanges();
+                _buttonEvent += value;
+            }
+            remove
+            {
+                _buttonEvent -= value;
+            }
+        }
 
         /// <summary>
         /// Called once a value is changed from an analog touch join

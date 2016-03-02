@@ -48,7 +48,6 @@ namespace UXLib.UI
         public void AddButton(UISmartObjectButton button)
         {
             this.Buttons.Add(button);
-            button.SubscribeToSigChanges();
         }
 
         public void AddButton(uint itemIndex, string digitalPressSigNam, string digitalFeedbackSigName)

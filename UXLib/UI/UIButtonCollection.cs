@@ -46,7 +46,7 @@ namespace UXLib.UI
         {
             if (this.ButtonEvent != null)
             {
-                this.ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime));
+                this.ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime, Buttons.IndexOf(currentObject as UIButton)));
             }
         }
 
@@ -79,12 +79,14 @@ namespace UXLib.UI
         public UIButtonEventType EventType;
         public UIButton Button;
         public long HoldTime;
-        public UIButtonCollectionEventArgs(UIButton button, UIButtonEventType type, long holdTime)
+        public int ButtonIndexInCollection;
+        public UIButtonCollectionEventArgs(UIButton button, UIButtonEventType type, long holdTime, int buttonIndex)
             : base()
         {
             this.Button = button;
             this.EventType = type;
             this.HoldTime = holdTime;
+            this.ButtonIndexInCollection = buttonIndex;
         }
     }
 }
