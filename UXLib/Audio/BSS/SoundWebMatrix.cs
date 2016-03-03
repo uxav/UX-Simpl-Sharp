@@ -8,7 +8,7 @@ namespace UXLib.Audio.BSS
 {
     public class SoundWebMatrix : SoundWebObject
     {
-        public SoundWebMatrix(SoundWeb device, uint inputs, uint outputs, string address)
+        public SoundWebMatrix(SoundWeb device, string address, uint inputs, uint outputs)
         {
             this.Device = device;
             InputCount = inputs;

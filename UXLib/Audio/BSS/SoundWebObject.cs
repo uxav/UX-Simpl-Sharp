@@ -31,7 +31,8 @@ namespace UXLib.Audio.BSS
 
             if (address == HiQAddress)
             {
-                /*var bytes = new byte[receivedString.Length];
+#if DEBUG
+                var bytes = new byte[receivedString.Length];
 
                 for (int i = 0; i < receivedString.Length; i++)
                 {
@@ -43,8 +44,8 @@ namespace UXLib.Audio.BSS
                 {
                     CrestronConsole.Print("\\x{0}", b.ToString("X2"));
                 }
-                CrestronConsole.PrintLine("");*/
-
+                CrestronConsole.PrintLine("");
+#endif
                 char[] c = receivedString.Substring(7, 2).ToCharArray();
                 int paramID = c[0] << 8 | c[1];
 
@@ -61,6 +62,27 @@ namespace UXLib.Audio.BSS
             {
                 this.FeedbackReceived(this, new SoundWebObjectFeedbackEventArgs(paramID, value));
             }
+        }
+
+        public void Send(string messageType, string paramID, string value)
+        {
+            string str = messageType + this.HiQAddress + paramID + value;
+#if DEBUG
+            var bytes = new byte[str.Length];
+
+            for (int i = 0; i < str.Length; i++)
+            {
+                bytes[i] = unchecked((byte)str[i]);
+            }
+
+            CrestronConsole.Print("Soundweb Tx: ");
+            foreach (byte b in bytes)
+            {
+                CrestronConsole.Print("\\x{0}", b.ToString("X2"));
+            }
+            CrestronConsole.PrintLine("");
+#endif
+            this.Device.Socket.Send(str);
         }
 
         public event SoundWebObjectFeedbackEventHandler FeedbackReceived;

@@ -8,7 +8,7 @@ using UXLib.UI;
 
 namespace UXLib.Audio.BSS
 {
-    public class SoundWebMixerChannelUILevel : UILevel
+    public class SoundWebChannelUILevel : UILevel
     {
         /// <summary>
         /// Feedback level only
@@ -20,7 +20,7 @@ namespace UXLib.Audio.BSS
         /// <remarks>-100000 to 100000 = -10dB to +10dB, values below -100000 are log scaled down to -80dB
         /// -160204 is -20dB
         /// </remarks>
-        public SoundWebMixerChannelUILevel(UShortInputSig analogFeedbackJoin, SoundWebMixerChannel channel, int gainMin, int gainMax)
+        public SoundWebChannelUILevel(UShortInputSig analogFeedbackJoin, SoundWebChannel channel, int gainMin, int gainMax)
             : base(analogFeedbackJoin)
         {
             this.Channel = channel;
@@ -32,10 +32,10 @@ namespace UXLib.Audio.BSS
                 this.GainMaxValue = gainMax;
             else
                 this.GainMaxValue = 100000;
-            this.Channel.ChangeEvent += new SoundWebMixerChannelEventHandler(Channel_ChangeEvent);
-            this.Channel.Mixer.Device.Socket.SocketConnectionEvent += new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
-            if (this.Channel.Mixer.Device.Socket.Connected)
-                Channel.Subscribe(SoundWebMixerChannelParamType.Gain);
+            this.Channel.ChangeEvent += new SoundWebChannelEventHandler(Channel_ChangeEvent);
+            this.Channel.Owner.Device.Socket.SocketConnectionEvent += new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            if (this.Channel.Owner.Device.Socket.Connected)
+                Channel.Subscribe(SoundWebChannelParamType.Gain);
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace UXLib.Audio.BSS
         /// <remarks>-100000 to 100000 = -10dB to +10dB, values below -100000 are log scaled down to -80dB
         /// -160204 is -20dB
         /// </remarks>
-        public SoundWebMixerChannelUILevel(UShortInputSig analogFeedbackJoin, UShortOutputSig analogTouchJoin,
-            SoundWebMixerChannel channel, int gainMin, int gainMax)
+        public SoundWebChannelUILevel(UShortInputSig analogFeedbackJoin, UShortOutputSig analogTouchJoin,
+            SoundWebChannel channel, int gainMin, int gainMax)
             : base(analogFeedbackJoin, analogTouchJoin)
         {
             this.Channel = channel;
@@ -62,13 +62,13 @@ namespace UXLib.Audio.BSS
                 this.GainMaxValue = gainMax;
             else
                 this.GainMaxValue = 100000;
-            this.Channel.ChangeEvent += new SoundWebMixerChannelEventHandler(Channel_ChangeEvent);
-            this.Channel.Mixer.Device.Socket.SocketConnectionEvent += new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
-            if (this.Channel.Mixer.Device.Socket.Connected)
-                Channel.Subscribe(SoundWebMixerChannelParamType.Gain);
+            this.Channel.ChangeEvent += new SoundWebChannelEventHandler(Channel_ChangeEvent);
+            this.Channel.Owner.Device.Socket.SocketConnectionEvent += new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            if (this.Channel.Owner.Device.Socket.Connected)
+                Channel.Subscribe(SoundWebChannelParamType.Gain);
         }
 
-        public SoundWebMixerChannel Channel { get; protected set; }
+        public SoundWebChannel Channel { get; protected set; }
 
         protected new ushort LevelMinimumValue
         {
@@ -101,9 +101,9 @@ namespace UXLib.Audio.BSS
             base.OnValueChange(newValue);
         }
 
-        void Channel_ChangeEvent(SoundWebMixerChannel channel, SoundWebMixerChannelEventArgs args)
+        void Channel_ChangeEvent(SoundWebChannel channel, SoundWebChannelEventArgs args)
         {
-            if (args.EventType == SoundWebMixerChannelEventType.GainChange)
+            if (args.EventType == SoundWebChannelEventType.GainChange)
             {
                 if (channel.Gain <= this.GainMinValue)
                     this.AnalogFeedbackValue = this.LevelMinimumValue;
@@ -118,7 +118,7 @@ namespace UXLib.Audio.BSS
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
-                this.Channel.Subscribe(SoundWebMixerChannelParamType.Gain);
+                this.Channel.Subscribe(SoundWebChannelParamType.Gain);
             }
         }
 
@@ -126,10 +126,19 @@ namespace UXLib.Audio.BSS
         {
             if (disposing)
             {
-                this.Channel.ChangeEvent -= new SoundWebMixerChannelEventHandler(Channel_ChangeEvent);
-                this.Channel.Mixer.Device.Socket.SocketConnectionEvent -= new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+                this.Channel.ChangeEvent -= new SoundWebChannelEventHandler(Channel_ChangeEvent);
+                this.Channel.Owner.Device.Socket.SocketConnectionEvent -= new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
             }
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Call to self subscribe to sig events on smart object or device
+        /// <remarks>if adding smart object do this before calling this method</remarks>
+        /// </summary>
+        public new void SubscribeToSigChanges()
+        {
+            base.SubscribeToSigChanges();
         }
     }
 }

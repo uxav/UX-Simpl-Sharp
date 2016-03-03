@@ -6,32 +6,14 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Audio.BSS
 {
-    public class SoundWebMixer : SoundWebObject
+    public class SoundWebMixer : SoundWebMultiChannelObject
     {
-        public SoundWebMixer(SoundWeb device, uint channelCount, string address)
+        public SoundWebMixer(SoundWeb device, string address, uint channelCount)
+            : base(device, address)
         {
-            this.Device = device;
-            HiQAddress = address;
-            this.channels = new List<SoundWebMixerChannel>();
             for (uint c = 0; c < channelCount; c++)
             {
                 this.channels.Add(new SoundWebMixerChannel(this, c + 1));
-            }
-        }
-
-        List<SoundWebMixerChannel> channels;
-
-        public void Send(string messageType, string paramID, string value)
-        {
-            string str = messageType + this.HiQAddress + paramID + value;
-            this.Device.Socket.Send(str);
-        }
-
-        public int ChannelCount
-        {
-            get
-            {
-                return this.channels.Count();
             }
         }
 
@@ -39,7 +21,7 @@ namespace UXLib.Audio.BSS
         {
             get
             {
-                return this.channels[(int)channel - 1];
+                return this.channels[(int)channel - 1] as SoundWebMixerChannel;
             }
         }
     }
