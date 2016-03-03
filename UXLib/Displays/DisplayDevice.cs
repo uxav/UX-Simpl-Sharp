@@ -51,6 +51,22 @@ namespace UXLib.Displays
 
         }
 
+        public virtual bool Connected
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public virtual string IPAddress
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
         /// <summary>
         /// Set or get the Power for the display. Get will always return the actual power state.
         /// Get RequestedPower property to find the last set power.

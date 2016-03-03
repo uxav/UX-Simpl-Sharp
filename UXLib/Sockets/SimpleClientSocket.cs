@@ -192,6 +192,14 @@ namespace UXLib.Sockets
 
             return err;
         }
+
+        public string IPAddress
+        {
+            get
+            {
+                return this.socket.AddressClientConnectedTo;
+            }
+        }
     }
 
     public delegate void SimpleClientSocketConnectionEventHandler(SimpleClientSocket socket, SocketStatus status);

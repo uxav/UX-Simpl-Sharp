@@ -190,5 +190,21 @@ namespace UXLib.Displays.Canon
                 default: return "";
             }
         }
+
+        public override string IPAddress
+        {
+            get
+            {
+                return this.Socket.IPAddress;
+            }
+        }
+
+        public override bool Connected
+        {
+            get
+            {
+                return this.Socket.Connected;
+            }
+        }
     }
 }

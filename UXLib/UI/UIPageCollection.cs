@@ -56,6 +56,8 @@ namespace UXLib.UI
 
         void Page_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
         {
+            if (VisibilityChange != null)
+                VisibilityChange(sender, args);
             if (args.EventType == eViewEventType.WillShow)
             {
                 UIPage newPage = sender as UIPage;
@@ -69,6 +71,8 @@ namespace UXLib.UI
                 }
             }
         }
+
+        public event UIViewBaseVisibitlityEventHandler VisibilityChange;
 
         public IEnumerator<UIPage> GetEnumerator()
         {
