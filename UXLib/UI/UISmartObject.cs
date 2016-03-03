@@ -17,8 +17,8 @@ namespace UXLib.UI
         protected SmartObject DeviceSmartObject;
         public UISmartObjectButtonCollection Buttons { get; protected set; }
         public event UISmartObjectButtonEventHandler ButtonEvent;
-        BoolInputSig EnableJoin;
-        BoolInputSig VisibleJoin;
+        protected BoolInputSig EnableJoin { get; set; }
+        protected BoolInputSig VisibleJoin { get; set; }
 
         public UISmartObject(SmartObject smartObject)
         {
@@ -33,11 +33,7 @@ namespace UXLib.UI
             this.DeviceSmartObject = smartObject;
             this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             EnableJoin = objectEnableJoin;
-            if (EnableJoin != null)
-                EnableJoin.BoolValue = true;
             VisibleJoin = objectVisibleJoin;
-            if (VisibleJoin != null)
-                VisibleJoin.BoolValue = true;
         }
 
         protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)

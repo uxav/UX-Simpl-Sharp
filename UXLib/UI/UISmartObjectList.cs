@@ -9,8 +9,41 @@ namespace UXLib.UI
 {
     public class UISmartObjectList : UISmartObject
     {
-        private ListData Data;
-        public ushort MaxNumberOfItems { get; private set; }
+        public UISmartObjectList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
+            : base(smartObject, enableJoin, visibleJoin)
+        {
+            uint item = 1;
+            this.Data = listData;
+            this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
+            try
+            {
+                while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Pressed", item)))
+                {
+                    UISmartObjectButton listButton = new UISmartObjectButton(
+                        item, this.DeviceSmartObject,
+                        string.Format("Item {0} Pressed", item),
+                        string.Format("Item {0} Selected", item),
+                        string.Format("Set Item {0} Text", item),
+                        string.Format("Set Item {0} Icon Serial", item),
+                        string.Format("Item {0} Enabled", item),
+                        string.Format("Item {0} Visible", item)
+                        );
+                    this.AddButton(listButton);
+
+                    item++;
+                }
+
+                this.MaxNumberOfItems = (ushort)(item - 1);
+                this.NumberOfItems = 0;
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error constructing UISmartObjectList with KeyName: {0}", e.Message);
+            }
+        }
+
+        protected ListData Data { get; set; }
+        public ushort MaxNumberOfItems { get; protected set; }
         protected BoolInputSig LoadingSubPageOverlay;
 
         public ushort NumberOfItems
@@ -46,46 +79,12 @@ namespace UXLib.UI
             }
         }
 
-        public UISmartObjectList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
-            : base(smartObject, enableJoin, visibleJoin)
-        {
-            uint item = 1;
-            this.Data = listData;
-            this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
-            try
-            {
-                while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Pressed", item)))
-                {
-                    UISmartObjectButton listButton = new UISmartObjectButton(
-                        item, this.DeviceSmartObject,
-                        string.Format("Item {0} Pressed", item),
-                        string.Format("Item {0} Selected", item),
-                        string.Format("Set Item {0} Text", item),
-                        string.Format("Set Item {0} Icon Serial", item),
-                        string.Format("Item {0} Enabled", item),
-                        string.Format("Item {0} Visible", item)
-                        );
-                    this.AddButton(listButton);
-
-                    item++;
-                }
-
-                this.MaxNumberOfItems = (ushort)(item - 1);
-                this.NumberOfItems = 0;
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Error constructing UISmartObjectList with KeyName: {0}", e.Message);
-            }
-        }
-
-        public virtual void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
+        protected virtual void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
         {
             if (args.EventType == eListDataChangeEventType.IsStartingToLoad)
             {
-                this.Disable();
                 this.Buttons[1].Title = "Loading...";
-                this.Buttons[1].Icon = "Info";
+                this.Buttons[1].Icon = UIMediaIcons.Info;
                 this.NumberOfItems = 1;
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = true;
@@ -121,7 +120,6 @@ namespace UXLib.UI
                     this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
                 }
 
-                this.Enable();
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = false;
             }
