@@ -72,6 +72,13 @@ namespace UXLib.UI
             device.BooleanInput[enableDigitalJoinNumber],
             device.BooleanInput[visibleDigitalJoinNumber]) { }
 
+        public UIButton(UIViewController ownerViewController, uint pressDigitalJoinNumber, UIViewBase targetView)
+            : this(ownerViewController.UIController.Device, pressDigitalJoinNumber)
+        {
+            TargetView = targetView;
+            this.SubscribeToSigChanges();
+        }
+
         public string Title
         {
             get
@@ -98,5 +105,16 @@ namespace UXLib.UI
         {
             this.AnalogModeJoin = this.Device.UShortInput[analogModeJoinNumber];
         }
+
+        protected override void OnRelease()
+        {
+            base.OnRelease();
+            if (this.TargetView != null)
+            {
+                this.TargetView.Show();
+            }
+        }
+
+        public UIViewBase TargetView { get; protected set; }
     }
 }
