@@ -70,6 +70,11 @@ namespace UXLib.UI
                 button.Dispose();
             }
         }
+
+        public int IndexOf(UIButton button)
+        {
+            return Buttons.IndexOf(button);
+        }
     }
 
     public delegate void UIButtonCollectionEventHandler(UIButtonCollection buttonCollection, UIButtonCollectionEventArgs args);
