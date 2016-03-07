@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Relays;
 
 namespace UXLib.Displays
 {
     public class ElectricScreenRelaysInterlocked : ElectricScreen
     {
         public ElectricScreenRelaysInterlocked(Crestron.SimplSharpPro.Relay upRelay, Crestron.SimplSharpPro.Relay downRelay)
-            : base(upRelay, downRelay, UXLib.Relays.UpDownRelayModeType.Interlocked)
-        {
-            
-        }
+            : base(new UpDownRelays(upRelay, downRelay, UpDownRelayModeType.Interlocked)) { }
+
+        public ElectricScreenRelaysInterlocked(Crestron.SimplSharpPro.Relay upRelay, Crestron.SimplSharpPro.Relay downRelay, DisplayDevice display)
+            : base(new UpDownRelays(upRelay, downRelay, UpDownRelayModeType.Interlocked), display) { }
     }
 }

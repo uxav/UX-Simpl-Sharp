@@ -9,11 +9,10 @@ namespace UXLib.Audio.Polycom
 {
     public class SoundstructureSocket : SimpleClientSocket
     {
-        public SoundstructureSocket(Soundstructure device, string ipAddress)
-            : base (ipAddress, 52774, 1000)
+        public SoundstructureSocket(Soundstructure device, string hostAddress)
+            : base (hostAddress, 52774, 1000)
         {
             Device = device;
-            this.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(SoundstructureSocket_ReceivedPacketEvent);
         }
 
         Soundstructure Device;
@@ -22,48 +21,72 @@ namespace UXLib.Audio.Polycom
         {
             str = str + "\x0d";
 
+            //CrestronConsole.PrintLine("Soundstructure Tx: {0}", str);
             return base.Send(str);
         }
 
-        void SoundstructureSocket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        public static List<string> ElementsFromString(string str)
         {
-            string reply = Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length);
+            string[] parts = str.Split(' ');
+            List<string> elements = new List<string>();
 
-            if (reply.Contains(' '))
+            bool isStringValue = false;
+            foreach (string word in parts)
             {
-                string[] words = reply.Split(' ');
-
-                switch (words[0])
+                if (word[0] == '\x22')
                 {
-                    case "vcitem":
-                        // this should be a response from the vclist command which sends back all virtual channels defined
-                        try
-                        {
-                            SoundstructureVirtualChannel channel = new SoundstructureVirtualChannel(words[1],
-                                (SoundstructureVirtualChannelType)Enum.Parse(typeof(SoundstructureVirtualChannelType), words[2], true),
-                                (SoundsrtucturePhysicalChannelType)Enum.Parse(typeof(SoundsrtucturePhysicalChannelType), words[3], true));
-                            if (!Device.VirtualChannels.ContainsKey(channel.Name))
-                                Device.VirtualChannels.Add(channel.Name, channel);
-                        }
-                        catch (Exception e)
-                        {
-                            ErrorLog.Error("Error parsing Soundstructure vcitem: {0}", e.Message);
-                        }
-                        break;
-                    case "val":
-                        // this should be a value response from a set or get
-                        {
-                            switch (words[1])
-                            {
-                                default:
-                                    break;
-                            }
-                        }
-                        break;
-                    default:
-                        break;
+                    if (word[word.Length - 1] == '\x22')
+                        elements.Add(word.Substring(1, word.Length - 2));
+                    else
+                    {
+                        isStringValue = true;
+                        elements.Add(word.Substring(1, word.Length - 1));
+                    }
+                }
+                else if (word[word.Length - 1] == '\x22' && isStringValue)
+                {
+                    elements[elements.Count() - 1] = elements.Last() + ' ' + word.Substring(0, word.Length - 1);
+                    isStringValue = false;
+                }
+                else if (isStringValue)
+                {
+                    elements[elements.Count() - 1] = elements.Last() + ' ' + word;
+                }
+                else
+                {
+                    elements.Add(word);
                 }
             }
+
+            return elements;
+        }
+
+        public bool Set(ISoundstructureItem channel, SoundstructureCommandType type, double value)
+        {
+            string str = string.Format("set {0} \x22{1}\x22 {2:N2}", type.ToString().ToLower(),
+                channel.Name, value);
+            if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
+                return true;
+            return false;
+        }
+
+        public bool Set(ISoundstructureItem channel, SoundstructureCommandType type, bool value)
+        {
+            int b;
+            if (value) b = 1;
+            else b = 0;
+            string str = string.Format("set {0} \x22{1}\x22 {2}", type.ToString().ToLower(),
+                channel.Name, b);
+            if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
+                return true;
+            return false;
+        }
+
+        public void Get(ISoundstructureItem channel, SoundstructureCommandType type)
+        {
+            string str = string.Format("get {0} \x22{1}\x22", type.ToString().ToLower(),
+                channel.Name);
+            this.Send(str);
         }
     }
 }

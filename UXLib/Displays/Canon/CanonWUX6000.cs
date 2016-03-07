@@ -5,30 +5,15 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
+using UXLib.Devices;
 
 namespace UXLib.Displays.Canon
 {
-    public class CanonWUX6000 : DisplayDevice
+    public class CanonWUX6000 : DisplayDevice, ISocketDevice
     {
         public CanonWUX6000(string name, string ipAddress)
-            : base (name)
         {
-            Socket = new CanonProjectorSocket(ipAddress);
-            Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
-            Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
-        }
-
-        public CanonWUX6000(string name, string ipAddress, ElectricScreen screen)
-            : base(name, screen)
-        {
-            Socket = new CanonProjectorSocket(ipAddress);
-            Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
-            Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
-        }
-
-        public CanonWUX6000(string name, string ipAddress, ElectricScreen screen, bool autoSetScreen)
-            : base(name, screen, autoSetScreen)
-        {
+            this.Name = name;
             Socket = new CanonProjectorSocket(ipAddress);
             Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
             Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
@@ -39,12 +24,12 @@ namespace UXLib.Displays.Canon
 
         bool commsEstablished = false;
 
-        public override void Connect()
+        public void Connect()
         {
             this.Socket.Connect(true);
         }
 
-        public override void Disconnect()
+        public void Disconnect()
         {
             this.Socket.Disconnect();
         }
@@ -58,12 +43,18 @@ namespace UXLib.Displays.Canon
             else
             {
                 pollTimer.Dispose();
+                DeviceCommunicating = false;
             }
         }
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        public override void Send(string stringToSend)
         {
-            string receivedString = Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length);
+            this.Socket.Send(stringToSend);
+        }
+
+        public override void OnReceive(string receivedString)
+        {
+            base.OnReceive(receivedString);
 
             if (receivedString.StartsWith("g"))
             {
@@ -81,7 +72,7 @@ namespace UXLib.Displays.Canon
                             switch (value)
                             {
                                 case "ON":
-                                    PowerStatus = DisplayDevicePowerStatus.PowerOn;
+                                    PowerStatus = DevicePowerStatus.PowerOn;
                                     if (!RequestedPower && commsEstablished)
                                         // Send power as should be off
                                         SendPowerCommand(false);
@@ -94,18 +85,18 @@ namespace UXLib.Displays.Canon
                                     }
                                     break;
                                 case "OFF":
-                                    PowerStatus = DisplayDevicePowerStatus.PowerOff;
+                                    PowerStatus = DevicePowerStatus.PowerOff;
                                     commsEstablished = true;
                                     if (RequestedPower)
                                         SendPowerCommand(true);
                                     break;
                                 case "OFF2ON":
                                     commsEstablished = true;
-                                    PowerStatus = DisplayDevicePowerStatus.PowerWarming;
+                                    PowerStatus = DevicePowerStatus.PowerWarming;
                                     break;
                                 case "ON2OFF":
                                     commsEstablished = true;
-                                    PowerStatus = DisplayDevicePowerStatus.PowerCooling;
+                                    PowerStatus = DevicePowerStatus.PowerCooling;
                                     break;
                                 default:
                                     break;
@@ -125,10 +116,15 @@ namespace UXLib.Displays.Canon
                 CrestronConsole.PrintLine("Projector Rx ({0} bytes): {1}", receivedString.Length, receivedString);*/
         }
 
+        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        {
+            OnReceive(Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length));
+        }
+
         void PollPower(object callBackObject)
         {
             this.Socket.Send("?POWER");
-            if (this.PowerStatus == DisplayDevicePowerStatus.PowerOn)
+            if (this.PowerStatus == DevicePowerStatus.PowerOn)
                 new CTimer(PollInput, null, 100);
         }
 
@@ -139,15 +135,15 @@ namespace UXLib.Displays.Canon
 
         void SendPowerCommand(bool power)
         {
-            if (power && PowerStatus == DisplayDevicePowerStatus.PowerOff)
+            if (power && PowerStatus == DevicePowerStatus.PowerOff)
             {
                 if (Socket.Send("POWER ON") == SocketErrorCodes.SOCKET_OK)
-                    PowerStatus = DisplayDevicePowerStatus.PowerWarming;
+                    PowerStatus = DevicePowerStatus.PowerWarming;
             }
-            else if (!power && PowerStatus == DisplayDevicePowerStatus.PowerOn)
+            else if (!power && PowerStatus == DevicePowerStatus.PowerOn)
             {
                 if (Socket.Send("POWER OFF") == SocketErrorCodes.SOCKET_OK)
-                    PowerStatus = DisplayDevicePowerStatus.PowerCooling;
+                    PowerStatus = DevicePowerStatus.PowerCooling;
             }
         }
 
@@ -191,20 +187,40 @@ namespace UXLib.Displays.Canon
             }
         }
 
-        public override string IPAddress
+        public string IPAddress
         {
             get
             {
-                return this.Socket.IPAddress;
+                return this.Socket.HostAddress;
             }
         }
 
-        public override bool Connected
+        public bool Connected
         {
             get
             {
                 return this.Socket.Connected;
             }
+        }
+
+        public string HostAddress
+        {
+            get { return this.Socket.HostAddress; }
+        }
+
+        public override string DeviceManufacturer
+        {
+            get { return "Canon"; }
+        }
+
+        public override string DeviceModel
+        {
+            get { return "WUX6000"; }
+        }
+
+        public override string DeviceSerialNumber
+        {
+            get { return string.Empty; }
         }
     }
 }

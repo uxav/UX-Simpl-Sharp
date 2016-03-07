@@ -3,69 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Devices;
 
 namespace UXLib.Displays
 {
-    public class DisplayDevice
+    public class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
     {
-        public DisplayDevice(string name)
-        {
-            this.Name = name;
-        }
-
-        public DisplayDevice(string name, ElectricScreen screen)
-        {
-            this.Name = name;
-            this.Screen = screen;
-            this.AutoSetScreen = true;
-        }
-
-        public DisplayDevice(string name, ElectricScreen screen, bool autoSetScreen)
-        {
-            this.Name = name;
-            this.Screen = screen;
-            this.AutoSetScreen = autoSetScreen;
-        }
-
-        public string Name { get; protected set; }
-        public ElectricScreen Screen { get; protected set; }
-        public bool AutoSetScreen { get; set; }
-
-        public bool SupportsScreenControl
-        {
-            get
-            {
-                if (this.Screen != null)
-                    return true;
-                return false;
-            }
-        }
-
-        public virtual void Connect()
-        {
-
-        }
-
-        public virtual void Disconnect()
-        {
-
-        }
-
-        public virtual bool Connected
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public virtual string IPAddress
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
+        public string Name { get; set; }
 
         /// <summary>
         /// Set or get the Power for the display. Get will always return the actual power state.
@@ -75,8 +19,8 @@ namespace UXLib.Displays
         {
             get
             {
-                if (PowerStatus == DisplayDevicePowerStatus.PowerOn
-                    || PowerStatus == DisplayDevicePowerStatus.PowerWarming)
+                if (PowerStatus == DevicePowerStatus.PowerOn
+                    || PowerStatus == DevicePowerStatus.PowerWarming)
                     return true;
                 else
                     return false;
@@ -92,9 +36,47 @@ namespace UXLib.Displays
         /// </summary>
         public virtual bool RequestedPower { get; protected set; }
 
-        public event DisplayDevicePowerStatusChangeEventHandler PowerStatusChange;
+        public event DevicePowerStatusEventHandler PowerStatusChange;
 
-        public virtual DisplayDevicePowerStatus PowerStatus
+        public virtual void OnPowerStatusChange(DevicePowerStatus newPowerStatus, DevicePowerStatus previousPowerStatus)
+        {
+            if (PowerStatusChange != null)
+                PowerStatusChange(this, new DevicePowerStatusEventArgs(newPowerStatus, previousPowerStatus));
+        }
+
+        public virtual void Send(string stringToSend)
+        {
+            
+        }
+
+        public virtual void OnReceive(string receivedString)
+        {
+            this.DeviceCommunicating = true;
+        }
+
+        private bool _deviceCommunicating;
+        public bool DeviceCommunicating
+        {
+            get
+            {
+                return _deviceCommunicating;
+            }
+            protected set
+            {
+                _deviceCommunicating = value;
+                if (value)
+                {
+                    new CTimer(CommsTimeout, 10000);
+                }
+            }
+        }
+
+        void CommsTimeout(object obj)
+        {
+            this.DeviceCommunicating = false;
+        }
+
+        public virtual DevicePowerStatus PowerStatus
         {
             get
             {
@@ -104,21 +86,13 @@ namespace UXLib.Displays
             {
                 if (value != _powerStatus)
                 {
+                    DevicePowerStatus previousValue = _powerStatus;
                     _powerStatus = value;
-                    if (PowerStatusChange != null)
-                        PowerStatusChange(this, new DisplayDevicePowerStatusEventArgs(_powerStatus));
-                    if (this.SupportsScreenControl && this.AutoSetScreen)
-                    {
-                        switch (value)
-                        {
-                            case DisplayDevicePowerStatus.PowerWarming: Screen.Down(); break;
-                            case DisplayDevicePowerStatus.PowerCooling: Screen.Up(); break;
-                        }
-                    }
+                    OnPowerStatusChange(previousValue, _powerStatus);
                 }
             }
         }
-        DisplayDevicePowerStatus _powerStatus;
+        DevicePowerStatus _powerStatus;
 
         public virtual DisplayDeviceInput Input
         {
@@ -132,27 +106,24 @@ namespace UXLib.Displays
             }
         }
         DisplayDeviceInput _input;
-    }
 
-    public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DisplayDevicePowerStatusEventArgs args);
-
-    public class DisplayDevicePowerStatusEventArgs : EventArgs
-    {
-        public DisplayDevicePowerStatus PowerStatus;
-
-        public DisplayDevicePowerStatusEventArgs(DisplayDevicePowerStatus powerStatus)
+        public virtual string DeviceManufacturer
         {
-            PowerStatus = powerStatus;
+            get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceManufacturer property", GetType().ToString())); }
+        }
+
+        public virtual string DeviceModel
+        {
+            get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceModel property", GetType().ToString())); }
+        }
+
+        public virtual string DeviceSerialNumber
+        {
+            get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceSerialNumber property", GetType().ToString())); }
         }
     }
 
-    public enum DisplayDevicePowerStatus
-    {
-        PowerOff,
-        PowerOn,
-        PowerWarming,
-        PowerCooling
-    }
+    public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DevicePowerStatusEventArgs args);
 
     public enum DisplayDeviceInput
     {

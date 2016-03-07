@@ -149,13 +149,20 @@ namespace UXLib.Sockets
                         Byte[] copiedBytes = new Byte[byteIndex];
                         Array.Copy(bytes, copiedBytes, byteIndex);
 
-                        // if the byte array has length && an event is registered
-                        if (this.ReceivedPacketEvent != null && copiedBytes.Length > 0)
-                        {
-                            this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(copiedBytes));
-                        }
-
                         byteIndex = 0;
+
+                        try
+                        {
+                            // if the byte array has length && an event is registered
+                            if (this.ReceivedPacketEvent != null && copiedBytes.Length > 0)
+                            {
+                                this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(copiedBytes));
+                            }
+                        }
+                        catch
+                        {
+                            ErrorLog.Error("{0} - Error calling event in thread", GetType().ToString());
+                        }
                     }
                     else
                     {
@@ -193,7 +200,7 @@ namespace UXLib.Sockets
             return err;
         }
 
-        public string IPAddress
+        public string HostAddress
         {
             get
             {
