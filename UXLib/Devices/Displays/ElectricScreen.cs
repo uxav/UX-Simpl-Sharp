@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using UXLib.Relays;
 using UXLib.Devices;
 
-namespace UXLib.Displays
+namespace UXLib.Devices.Displays
 {
     public class ElectricScreen : IHoistDevice
     {

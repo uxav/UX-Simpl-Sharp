@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Displays.Samsung
+namespace UXLib.Devices.Displays.Samsung
 {
     public class SamsungLCD : DisplayDevice
     {

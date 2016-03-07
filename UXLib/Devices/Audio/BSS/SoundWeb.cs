@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 
-namespace UXLib.Audio.BSS
+namespace UXLib.Devices.Audio.BSS
 {
     public class SoundWeb
     {

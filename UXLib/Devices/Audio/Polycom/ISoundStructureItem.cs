@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Audio.Polycom
+namespace UXLib.Devices.Audio.Polycom
 {
     public interface ISoundstructureItem
     {

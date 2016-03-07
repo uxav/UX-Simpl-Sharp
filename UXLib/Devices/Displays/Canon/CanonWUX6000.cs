@@ -7,7 +7,7 @@ using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 using UXLib.Devices;
 
-namespace UXLib.Displays.Canon
+namespace UXLib.Devices.Displays.Canon
 {
     public class CanonWUX6000 : DisplayDevice, ISocketDevice
     {

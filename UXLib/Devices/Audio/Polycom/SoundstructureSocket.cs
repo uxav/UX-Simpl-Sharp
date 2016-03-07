@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using UXLib.Sockets;
 
-namespace UXLib.Audio.Polycom
+namespace UXLib.Devices.Audio.Polycom
 {
     public class SoundstructureSocket : SimpleClientSocket
     {

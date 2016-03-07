@@ -1,33 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Audio.Polycom
+namespace UXLib.Devices.Audio.Polycom
 {
-    public class VirtualChannel : ISoundstructureItem
+    public class VirtualChannelGroup : ISoundstructureItem, IEnumerable<ISoundstructureItem>
     {
-        public VirtualChannel(Soundstructure device, string name, SoundstructureVirtualChannelType vcType, SoundstructurePhysicalChannelType pcType, uint[] values)
+        public VirtualChannelGroup(Soundstructure device, string name, List<ISoundstructureItem> fromChannels)
         {
             this.Device = device;
             this.Device.ValueChange += new SoundstructureValueChangeHandler(Device_ValueChange);
             this.Name = name;
-            this.VirtualChannelType = vcType;
-            this.PhysicalChannelType = pcType;
-            _physicalChannelIndex = new List<uint>(values);
+            this.VirtualChannels = new SoundstructureItemCollection(fromChannels);
 
 #if DEBUG
-            CrestronConsole.Print("Received channel with name: {0}, Virtual Type: {1}, Physical Type: {2} Values:",
-                        this.Name, this.VirtualChannelType.ToString(), this.PhysicalChannelType.ToString());
-
-            foreach (uint value in this.PhysicalChannelIndex)
-            {
-                CrestronConsole.Print(" {0}", value);
-            }
-
-            CrestronConsole.PrintLine("");
+            CrestronConsole.PrintLine("Received group \x22{0}\x22 with {1} channels",
+                        this.Name, this.Count());
 #endif
 
             this.Device.Socket.Get(this, SoundstructureCommandType.FADER);
@@ -36,17 +26,19 @@ namespace UXLib.Audio.Polycom
 
         public Soundstructure Device { get; protected set; }
         public string Name { get; protected set; }
+        private SoundstructureItemCollection VirtualChannels { get; set; }
 
-        public SoundstructureVirtualChannelType VirtualChannelType { get; protected set; }
-        public SoundstructurePhysicalChannelType PhysicalChannelType { get; protected set; }
-
-        List<uint> _physicalChannelIndex;
-        public ReadOnlyCollection<uint> PhysicalChannelIndex
+        public ISoundstructureItem this[string channelName]
         {
             get
             {
-                return _physicalChannelIndex.AsReadOnly();
+                return this.VirtualChannels[channelName];
             }
+        }
+
+        public int Count()
+        {
+            return this.VirtualChannels.Count();
         }
 
         double _faderValue;
@@ -59,9 +51,7 @@ namespace UXLib.Audio.Polycom
             set
             {
                 if (this.Device.Socket.Set(this, SoundstructureCommandType.FADER, value))
-                {
                     _faderValue = value;
-                }
             }
         }
 
@@ -94,5 +84,23 @@ namespace UXLib.Audio.Polycom
                 }
             }
         }
+
+        #region IEnumerable<ISoundstructureItem> Members
+
+        public IEnumerator<ISoundstructureItem> GetEnumerator()
+        {
+            return this.VirtualChannels.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        #endregion
     }
 }

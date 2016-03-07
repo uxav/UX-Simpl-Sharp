@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 
-namespace UXLib.Displays.Canon
+namespace UXLib.Devices.Displays.Canon
 {
     public class CanonProjectorSocket : SimpleClientSocket
     {

@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using UXLib.UI;
 
-namespace UXLib.Audio.BSS
+namespace UXLib.Devices.Audio.BSS
 {
     public class SoundWebChannelUILevel : UILevel
     {

@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using UXLib.Relays;
 
-namespace UXLib.Displays
+namespace UXLib.Devices.Displays
 {
     public class ElectricScreenRelaysMomentary : ElectricScreen
     {

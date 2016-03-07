@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using UXLib.Devices;
 
-namespace UXLib.Displays
+namespace UXLib.Devices.Displays
 {
     public class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
     {

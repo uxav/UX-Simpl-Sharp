@@ -87,36 +87,36 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Audio\BSS\SoundWeb.cs" />
-    <Compile Include="Audio\BSS\SoundWebChannel.cs" />
-    <Compile Include="Audio\BSS\SoundWebMatrix.cs" />
-    <Compile Include="Audio\BSS\SoundWebMixer.cs" />
-    <Compile Include="Audio\BSS\SoundWebMixerChannel.cs" />
-    <Compile Include="Audio\BSS\SoundWebChannelUILevel.cs" />
-    <Compile Include="Audio\BSS\SoundWebChannelUIMuteButton.cs" />
-    <Compile Include="Audio\BSS\SoundWebMultiChannelObject.cs" />
-    <Compile Include="Audio\BSS\SoundWebNInputGain.cs" />
-    <Compile Include="Audio\BSS\SoundWebNInputGainChannel.cs" />
-    <Compile Include="Audio\BSS\SoundWebObject.cs" />
-    <Compile Include="Audio\BSS\SoundWebSocket.cs" />
-    <Compile Include="Audio\Polycom\ISoundStructureItem.cs" />
-    <Compile Include="Audio\Polycom\Soundstructure.cs" />
-    <Compile Include="Audio\Polycom\SoundstructureSocket.cs" />
-    <Compile Include="Audio\Polycom\VirtualChannel.cs" />
-    <Compile Include="Audio\Polycom\SoundstructureItemCollection.cs" />
-    <Compile Include="Audio\Polycom\VirtualChannelGroup.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWeb.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebChannel.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebMatrix.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebMixer.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebMixerChannel.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebChannelUILevel.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebChannelUIMuteButton.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebMultiChannelObject.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebNInputGain.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebNInputGainChannel.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebObject.cs" />
+    <Compile Include="Devices\Audio\BSS\SoundWebSocket.cs" />
+    <Compile Include="Devices\Audio\Polycom\ISoundStructureItem.cs" />
+    <Compile Include="Devices\Audio\Polycom\Soundstructure.cs" />
+    <Compile Include="Devices\Audio\Polycom\SoundstructureSocket.cs" />
+    <Compile Include="Devices\Audio\Polycom\VirtualChannel.cs" />
+    <Compile Include="Devices\Audio\Polycom\SoundstructureItemCollection.cs" />
+    <Compile Include="Devices\Audio\Polycom\VirtualChannelGroup.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Devices\IDeviceWithPower.cs" />
     <Compile Include="Devices\ISerialDevice.cs" />
-    <Compile Include="Displays\Canon\CanonWUX6000.cs" />
-    <Compile Include="Displays\Canon\CanonProjectorSocket.cs" />
-    <Compile Include="Displays\DisplayDevice.cs" />
-    <Compile Include="Displays\ElectricScreen.cs" />
-    <Compile Include="Displays\ElectricScreenRelaysInterlocked.cs" />
-    <Compile Include="Displays\ElectricScreenRelaysMomentary.cs" />
-    <Compile Include="Displays\Samsung\SamsungLCD.cs" />
+    <Compile Include="Devices\Displays\Canon\CanonWUX6000.cs" />
+    <Compile Include="Devices\Displays\Canon\CanonProjectorSocket.cs" />
+    <Compile Include="Devices\Displays\DisplayDevice.cs" />
+    <Compile Include="Devices\Displays\ElectricScreen.cs" />
+    <Compile Include="Devices\Displays\ElectricScreenRelaysInterlocked.cs" />
+    <Compile Include="Devices\Displays\ElectricScreenRelaysMomentary.cs" />
+    <Compile Include="Devices\Displays\Samsung\SamsungLCD.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -168,7 +168,7 @@
         <Programmer>Mike Jobson</Programmer>
         <ArchiveFilename>C:\Users\mike\Developer\cglondon\CGLondon\lib\uxlib\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>23/02/2016 14:19:07</CompiledOn>
+        <CompiledOn>07/03/2016 14:30:19</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

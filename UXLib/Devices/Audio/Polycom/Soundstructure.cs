@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using UXLib.Devices;
 using UXLib.Sockets;
 
-namespace UXLib.Audio.Polycom
+namespace UXLib.Devices.Audio.Polycom
 {
     public class Soundstructure : ISocketDevice, IDevice
     {

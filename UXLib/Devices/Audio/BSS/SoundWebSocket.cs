@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 
-namespace UXLib.Audio.BSS
+namespace UXLib.Devices.Audio.BSS
 {
     public class SoundWebSocket : SimpleClientSocket
     {
