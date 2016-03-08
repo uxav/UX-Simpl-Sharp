@@ -63,7 +63,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         public bool Set(ISoundstructureItem channel, SoundstructureCommandType type, double value)
         {
-            string str = string.Format("set {0} \x22{1}\x22 {2:N2}", type.ToString().ToLower(),
+            string str = string.Format("set {0} \x22{1}\x22 {2:0.00}", type.ToString().ToLower(),
                 channel.Name, value);
             if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
                 return true;
@@ -84,9 +84,17 @@ namespace UXLib.Devices.Audio.Polycom
 
         public void Get(ISoundstructureItem channel, SoundstructureCommandType type)
         {
-            string str = string.Format("get {0} \x22{1}\x22", type.ToString().ToLower(),
-                channel.Name);
+            string str = string.Format("get {0} \x22{1}\x22", type.ToString().ToLower(), channel.Name);
             this.Send(str);
+
+            if (type == SoundstructureCommandType.FADER)
+            {
+                str = string.Format("get fader min \x22{0}\x22", channel.Name);
+                this.Send(str);
+                
+                str = string.Format("get fader max \x22{0}\x22", channel.Name);
+                this.Send(str);
+            }
         }
     }
 }

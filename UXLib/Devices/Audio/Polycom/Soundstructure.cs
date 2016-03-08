@@ -28,6 +28,11 @@ namespace UXLib.Devices.Audio.Polycom
             Socket.Send("vclist");
         }
 
+        void Init(object obj)
+        {
+            this.Init();
+        }
+
         void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
         {
             this.OnReceive(Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length));
@@ -35,7 +40,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
-            this.Init();
+            new CTimer(Init, 2000);
         }
 
         #region ISocketDevice Members
@@ -76,17 +81,39 @@ namespace UXLib.Devices.Audio.Polycom
 
         public event SoundstructureValueChangeHandler ValueChange;
 
-        void OnValueChange(ISoundstructureItem item, SoundstructureCommandType commandType, double value)
+        void OnValueChange(string name, SoundstructureCommandType commandType, double value)
         {
-            if (ValueChange != null)
-            {
+            ISoundstructureItem item = GetItemForName(name);
+            if (ValueChange != null && item != null)
                 ValueChange(item, new SoundstructureValueChangeEventArgs(commandType, value));
+        }
+
+        void OnValueChange(string name, SoundstructureCommandType commandType, string commandModifier, double value)
+        {
+            ISoundstructureItem item = GetItemForName(name);
+            if (ValueChange != null && item != null)
+                ValueChange(item, new SoundstructureValueChangeEventArgs(commandType, commandModifier, value));
+        }
+
+        ISoundstructureItem GetItemForName(string name)
+        {
+            try
+            {
+                if (this.VirtualChannelGroups.Contains(name))
+                    return this.VirtualChannelGroups[name];
+                else if (this.VirtualChannels.Contains(name))
+                    return this.VirtualChannels[name];
             }
+            catch (Exception e)
+            {
+                CrestronConsole.PrintLine("GetItemForName({0}) Error: {1}", e.Message);
+            }
+            return null;
         }
 
         public void OnReceive(string receivedString)
         {
-            CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
+            //CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
             
             if (receivedString.Contains(' '))
             {
@@ -185,21 +212,24 @@ namespace UXLib.Devices.Audio.Polycom
                                     case SoundstructureCommandType.MATRIX_MUTE:
                                         CrestronConsole.PrintLine("Matrix Mute Input: \x22{0}\x22 Output: \x22{1}\x22 Value: {2}", elements[2], elements[3], elements[4]);
                                         break;
+                                    case SoundstructureCommandType.FADER:
+                                        if (elements[2] == "min" || elements[2] == "max")
+                                        {
+                                            OnValueChange(elements[3], commandType, elements[2], Convert.ToDouble(elements[4]));
+                                        }
+                                        else
+                                        {
+                                            OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
+                                        }
+                                        break;
                                     default:
-                                        if (this.VirtualChannels.Contains(elements[2]))
-                                        {
-                                            OnValueChange(VirtualChannels[elements[2]], commandType, Convert.ToDouble(elements[3]));
-                                        }
-                                        else if (this.VirtualChannelGroups.Contains(elements[2]))
-                                        {
-                                            OnValueChange(VirtualChannelGroups[elements[2]], commandType, Convert.ToDouble(elements[3]));
-                                        }
+                                        OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
                                         break;
                                 }
                             }
-                            catch
+                            catch  (Exception e)
                             {
-                                CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
+                                ErrorLog.Error("Soundstructure Rx: {0}, Error: {1}", receivedString, e.Message);
                             }
                         }
                         break;
@@ -213,13 +243,36 @@ namespace UXLib.Devices.Audio.Polycom
                 {
                     this.VirtualChannels = new SoundstructureItemCollection(listedItems);
                     listedItems.Clear();
+
                     Socket.Send("vcglist");
                 }
                 else if (receivedString == "vcglist")
                 {
                     this.VirtualChannelGroups = new SoundstructureItemCollection(listedItems);
+                    listedItems.Clear();
+
+                    foreach (ISoundstructureItem item in VirtualChannelGroups)
+                        item.Init();
+
+                    foreach (ISoundstructureItem item in VirtualChannels)
+                    {
+                        if (!ChannelIsGrouped(item))
+                        {
+                            item.Init();
+                        }
+                    }
                 }
             }
+        }
+
+        bool ChannelIsGrouped(ISoundstructureItem channel)
+        {
+            foreach (VirtualChannelGroup group in VirtualChannelGroups)
+            {
+                if (group.Contains(channel))
+                    return true;
+            }
+            return false;
         }
 
         #endregion
@@ -299,7 +352,15 @@ namespace UXLib.Devices.Audio.Polycom
             this.Value = value;
         }
 
+        public SoundstructureValueChangeEventArgs(SoundstructureCommandType commandType, string commmandModifier, double value)
+        {
+            this.CommandType = commandType;
+            this.CommandModifier = commmandModifier;
+            this.Value = value;
+        }
+
         public SoundstructureCommandType CommandType;
+        public string CommandModifier;
         public double Value;
     }
 }

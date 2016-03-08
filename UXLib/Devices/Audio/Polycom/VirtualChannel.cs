@@ -29,9 +29,6 @@ namespace UXLib.Devices.Audio.Polycom
 
             CrestronConsole.PrintLine("");
 #endif
-
-            this.Device.Socket.Get(this, SoundstructureCommandType.FADER);
-            this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
         }
 
         public Soundstructure Device { get; protected set; }
@@ -49,6 +46,35 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
+        public void Init()
+        {
+            if (this.SupportsFader)
+                this.Device.Socket.Get(this, SoundstructureCommandType.FADER);
+            if (this.SupportsMute)
+                this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
+        }
+
+        public bool SupportsFader
+        {
+            get
+            {
+                switch (this.PhysicalChannelType)
+                {
+                    case SoundstructurePhysicalChannelType.SR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_LINE_OUT:
+                    case SoundstructurePhysicalChannelType.SR_LINE_OUT:
+                    case SoundstructurePhysicalChannelType.PSTN_IN:
+                    case SoundstructurePhysicalChannelType.PSTN_OUT:
+                    case SoundstructurePhysicalChannelType.CLINK_OUT:
+                    case SoundstructurePhysicalChannelType.CLINK_IN:
+                    case SoundstructurePhysicalChannelType.SUBMIX:
+                        return true;
+                }
+                return false;
+            }
+        }
+
         double _faderValue;
         public double Fader
         {
@@ -58,10 +84,37 @@ namespace UXLib.Devices.Audio.Polycom
             }
             set
             {
+
                 if (this.Device.Socket.Set(this, SoundstructureCommandType.FADER, value))
                 {
-                    _faderValue = value;
+                    if (value <= FaderMax && value >= FaderMin)
+                        _faderValue = value;
                 }
+            }
+        }
+
+        public double FaderMin { get; protected set; }
+        public double FaderMax { get; protected set; }
+
+        public bool SupportsMute
+        {
+            get
+            {
+                switch (this.PhysicalChannelType)
+                {
+                    case SoundstructurePhysicalChannelType.SR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_LINE_OUT:
+                    case SoundstructurePhysicalChannelType.SR_LINE_OUT:
+                    case SoundstructurePhysicalChannelType.PSTN_IN:
+                    case SoundstructurePhysicalChannelType.PSTN_OUT:
+                    case SoundstructurePhysicalChannelType.CLINK_OUT:
+                    case SoundstructurePhysicalChannelType.CLINK_IN:
+                    case SoundstructurePhysicalChannelType.SUBMIX:
+                    case SoundstructurePhysicalChannelType.SIG_GEN:
+                        return true;
+                }
+                return false;
             }
         }
 
@@ -81,17 +134,37 @@ namespace UXLib.Devices.Audio.Polycom
 
         void Device_ValueChange(ISoundstructureItem item, SoundstructureValueChangeEventArgs args)
         {
-            if (item == this)
+            try
             {
-                switch (args.CommandType)
+                if (item == this)
                 {
-                    case SoundstructureCommandType.MUTE:
-                        _mute = Convert.ToBoolean(args.Value);
-                        break;
-                    case SoundstructureCommandType.FADER:
-                        _faderValue = args.Value;
-                        break;
+                    switch (args.CommandType)
+                    {
+                        case SoundstructureCommandType.MUTE:
+                            _mute = Convert.ToBoolean(args.Value);
+#if DEBUG
+                            CrestronConsole.PrintLine("{0} Mute = {1}", this.Name, _mute);
+#endif
+                            break;
+                        case SoundstructureCommandType.FADER:
+                            if (args.CommandModifier == "min")
+                                FaderMin = args.Value;
+                            else if (args.CommandModifier == "max")
+                                FaderMax = args.Value;
+                            else
+                            {
+                                _faderValue = args.Value;
+#if DEBUG
+                                CrestronConsole.PrintLine("{0} Fader = {1:0.00}", this.Name, this.Fader);
+#endif
+                            }
+                            break;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("VirtualChannel Error in Device_ValueChange(): {0}", e.Message);
             }
         }
     }

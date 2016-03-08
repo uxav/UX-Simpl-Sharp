@@ -19,9 +19,6 @@ namespace UXLib.Devices.Audio.Polycom
             CrestronConsole.PrintLine("Received group \x22{0}\x22 with {1} channels",
                         this.Name, this.Count());
 #endif
-
-            this.Device.Socket.Get(this, SoundstructureCommandType.FADER);
-            this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
         }
 
         public Soundstructure Device { get; protected set; }
@@ -36,9 +33,24 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
+        public void Init()
+        {
+            this.Device.Socket.Get(this, SoundstructureCommandType.FADER);
+            this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
+        }
+
         public int Count()
         {
             return this.VirtualChannels.Count();
+        }
+
+        public bool SupportsFader
+        {
+            get
+            {
+                return true;
+
+            }
         }
 
         double _faderValue;
@@ -52,6 +64,17 @@ namespace UXLib.Devices.Audio.Polycom
             {
                 if (this.Device.Socket.Set(this, SoundstructureCommandType.FADER, value))
                     _faderValue = value;
+            }
+        }
+
+        public double FaderMin { get; protected set; }
+        public double FaderMax { get; protected set; }
+
+        public bool SupportsMute
+        {
+            get
+            {
+                return true;
             }
         }
 
@@ -77,9 +100,22 @@ namespace UXLib.Devices.Audio.Polycom
                 {
                     case SoundstructureCommandType.MUTE:
                         _mute = Convert.ToBoolean(args.Value);
+#if DEBUG
+                        CrestronConsole.PrintLine("{0} Mute = {1}", this.Name, _mute);
+#endif
                         break;
                     case SoundstructureCommandType.FADER:
-                        _faderValue = args.Value;
+                        if (args.CommandModifier == "min")
+                            FaderMin = args.Value;
+                        else if (args.CommandModifier == "max")
+                            FaderMax = args.Value;
+                        else
+                        {
+                            _faderValue = args.Value;
+#if DEBUG
+                            CrestronConsole.PrintLine("{0} Fader = {1:0.00}", this.Name, this.Fader);
+#endif
+                        }
                         break;
                 }
             }
