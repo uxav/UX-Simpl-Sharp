@@ -128,6 +128,7 @@
     <Compile Include="Sockets\SimpleClientSocket.cs" />
     <Compile Include="Source.cs" />
     <Compile Include="SourceCollection.cs" />
+    <Compile Include="Tools.cs" />
     <Compile Include="UI\UIActionSheet.cs" />
     <Compile Include="UI\UIActionSheetButton.cs" />
     <Compile Include="UI\UIButton.cs" />
