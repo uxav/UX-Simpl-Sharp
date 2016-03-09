@@ -38,7 +38,8 @@ namespace UXLib.UI
 
         protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
         {
-            this.ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
+            if (this.ButtonEvent != null)
+                this.ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
         }
 
         public void AddButton(UISmartObjectButton button)
