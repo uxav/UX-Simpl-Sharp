@@ -173,7 +173,7 @@ namespace UXLib.Sockets
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
-                        ErrorLog.Error("{0} - Error in thread: {1}", GetType().ToString(), e.Message);
+                        ErrorLog.Error("{0} - Error in thread: {1}, byteIndex = {2}", GetType().ToString(), e.Message, byteIndex);
                 }
             }
         }

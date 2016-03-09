@@ -122,26 +122,33 @@ namespace UXLib.Devices.Audio.BSS
                             newIndex++;
                         }
                         
-                        // Copy bytes to new array with length of packet and ignoring the CR.
                         Byte[] copiedBytes = new Byte[newIndex];
                         Array.Copy(processedBytes, copiedBytes, newIndex);
 
-                        if (this.ReceivedPacketEvent != null)
+                        byteIndex = 0;
+
+                        try
                         {
-                            this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(copiedBytes));
+                            if (this.ReceivedPacketEvent != null)
+                            {
+                                this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(copiedBytes));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            ErrorLog.Error("{0} - Error calling event in thread: {1}, Packet Length: {2}", GetType().ToString(), e.Message, copiedBytes.Length);
                         }
                     }
                     else
                     {
                         byteIndex++;
                         bytes[byteIndex] = b;
-
                     }
                 }
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
-                        ErrorLog.Error("{0} - Error in thread: {1}", GetType().ToString(), e.Message);
+                        ErrorLog.Error("{0} - Error in thread: {1}, byteIndex = {2}", GetType().ToString(), e.Message, byteIndex);
                 }
             }
         }

@@ -39,20 +39,36 @@ namespace UXLib.Devices.Audio.BSS
                     bytes[i] = unchecked((byte)receivedString[i]);
                 }
                 
-                CrestronConsole.Print("Soundweb Rx: ");
+                CrestronConsole.Print("Soundweb Rx (Len={0}): ", receivedString.Length);
                 foreach (byte b in bytes)
                 {
-                    CrestronConsole.Print("\\x{0}", b.ToString("X2"));
+                    if (b >= 32 && b <= 27)
+                        CrestronConsole.Print("{0}", (char)b);
+                    else
+                        CrestronConsole.Print("\\x{0}", b.ToString("X2"));
                 }
                 CrestronConsole.PrintLine("");
 #endif
-                char[] c = receivedString.Substring(7, 2).ToCharArray();
-                int paramID = c[0] << 8 | c[1];
+                try
+                {
+                    if (receivedString.Length >= 13)
+                    {
+                        char[] c = receivedString.Substring(7, 2).ToCharArray();
+                        int paramID = c[0] << 8 | c[1];
 
-                c = receivedString.Substring(9, 4).ToCharArray();
-                int value = c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
+                        c = receivedString.Substring(9, 4).ToCharArray();
+                        int value = c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
 
-                OnReceive(paramID, value);
+                        OnReceive(paramID, value);
+                    }
+                }
+                catch (Exception e)
+                {
+#if DEBUG
+                    CrestronConsole.PrintLine("Error in Soundweb Rx Event, {0}", e.Message);
+#endif
+                    ErrorLog.Error("Error in Soundweb Rx Event, {0}", e.Message);
+                }
             }
         }
 
