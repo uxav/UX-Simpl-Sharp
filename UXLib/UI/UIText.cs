@@ -11,9 +11,21 @@ namespace UXLib.UI
 {
     public class UIText
     {
+        public UIText()
+        {
+            xml = new XDocument(new XElement("FONT", ""));
+        }
+
         public UIText(string fromText)
         {
-            xml = new XDocument(new XElement("FONT", fromText));
+            try
+            {
+                xml = XDocument.Load(new XmlReader(fromText));
+            }
+            catch
+            {
+                xml = new XDocument(new XElement("FONT", fromText));
+            }
         }
 
         public UIText(UIText item)
@@ -29,6 +41,20 @@ namespace UXLib.UI
             XElement element = xml.Element("FONT");
             element.WriteTo(new XmlTextWriter(sw));
             return sw.ToString();
+        }
+
+        public string Text
+        {
+            get
+            {
+                XElement element = xml.Element("FONT");
+                return element.Value;
+            }
+            set
+            {
+                XElement element = xml.Element("FONT");
+                element.Value = value;
+            }
         }
 
         public UIText Color(UIColor color)
