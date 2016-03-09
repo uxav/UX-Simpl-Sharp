@@ -101,6 +101,29 @@ namespace UXLib
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
         }
 
+        public void SelectItemWithTitle(string itemTitle)
+        {
+            ListDataObject item = Data.FirstOrDefault(o => o.Title == itemTitle);
+            if (item != null)
+            {
+                foreach (ListDataObject dataObject in Data)
+                {
+                    if (dataObject != item)
+                        dataObject.IsSelected = false;
+                }
+
+                item.IsSelected = true;
+            }
+            else
+            {
+                foreach (ListDataObject dataObject in Data)
+                    dataObject.IsSelected = false;
+            }
+
+            if (this.DataChange != null)
+                this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+        }
+
         public void SelectItemWithLinkedObjectValue(object linkedObject)
         {
             ListDataObject item = Data.FirstOrDefault(o => o.DataObject.Equals(linkedObject));
