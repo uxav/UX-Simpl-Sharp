@@ -106,12 +106,16 @@ namespace UXLib.Devices.Displays.Canon
                             if (requestedInput.Length > 0 && requestedInput != value)
                                 Socket.Send(string.Format("INPUT={0}", requestedInput));
                             break;
+                        case "BLANK":
+                            if (value == "ON") _blank = true;
+                            else if (value == "OFF") _blank = false;
+                            break;
                         default:
                             //CrestronConsole.PrintLine("Projector {0} = {1}", command, value);
                             break;
                     }
                 }
-            }/*
+            }/*6
             else
                 CrestronConsole.PrintLine("Projector Rx ({0} bytes): {1}", receivedString.Length, receivedString);*/
         }
@@ -125,12 +129,20 @@ namespace UXLib.Devices.Displays.Canon
         {
             this.Socket.Send("?POWER");
             if (this.PowerStatus == DevicePowerStatus.PowerOn)
+            {
                 new CTimer(PollInput, null, 100);
+                new CTimer(PollBlank, null, 200);
+            }
         }
 
         void PollInput(object callBackObject)
         {
             this.Socket.Send("?INPUT");
+        }
+
+        void PollBlank(object callBackObject)
+        {
+            this.Socket.Send("?BLANK");
         }
 
         void SendPowerCommand(bool power)
@@ -184,6 +196,26 @@ namespace UXLib.Devices.Displays.Canon
                 case DisplayDeviceInput.Composite:
                     return "VIDEO";
                 default: return "";
+            }
+        }
+
+        bool _blank;
+        public override bool Blank
+        {
+            get
+            {
+                return _blank;
+            }
+            set
+            {
+                if (_blank != value)
+                {
+                    _blank = value;
+                    if (_blank)
+                        this.Send("BLANK=ON");
+                    else
+                        this.Send("BLANK=OFF");
+                }
             }
         }
 

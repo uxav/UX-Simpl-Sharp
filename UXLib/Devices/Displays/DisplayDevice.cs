@@ -111,6 +111,8 @@ namespace UXLib.Devices.Displays
         }
         DisplayDeviceInput _input;
 
+        public virtual bool Blank { get; set; }
+
         public virtual string DeviceManufacturer
         {
             get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceManufacturer property", GetType().ToString())); }
