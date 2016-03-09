@@ -133,6 +133,7 @@
     <Compile Include="UI\UIActionSheetButton.cs" />
     <Compile Include="UI\UIButton.cs" />
     <Compile Include="UI\UIButtonCollection.cs" />
+    <Compile Include="UI\UIColor.cs" />
     <Compile Include="UI\UIDateTimeLabel.cs" />
     <Compile Include="UI\UIDateTime.cs" />
     <Compile Include="UI\UIKeypad.cs" />
@@ -152,6 +153,7 @@
     <Compile Include="UI\UISubPageCollection.cs" />
     <Compile Include="UI\UITextField.cs" />
     <Compile Include="UI\UITimeOut.cs" />
+    <Compile Include="UI\UIText.cs" />
     <Compile Include="UI\UIViewBase.cs" />
     <Compile Include="UI\UIController.cs" />
     <Compile Include="UI\UIControllerCollection.cs" />
