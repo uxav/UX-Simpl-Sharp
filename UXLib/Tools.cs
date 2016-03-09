@@ -10,12 +10,11 @@ namespace UXLib
 {
     public class Tools
     {
-        public static void PrintLibInfo()
+        public static void PrintLibInfo(string projectName, Assembly projectAssembly)
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            Version version = assembly.GetName().Version;
+            Version version = projectAssembly.GetName().Version;
             Version libVersion = Assembly.LoadFrom(string.Format("{0}\\UXLib.dll", InitialParametersClass.ProgramDirectory)).GetName().Version;
-            string versionInfo = string.Format("{0} v{1}.{2:D2}.{3:D2} ({4})", assembly.GetName().Name, version.Major, version.Minor, version.Build, version.Revision);
+            string versionInfo = string.Format("{0} v{1}.{2:D2}.{3:D2} ({4})", projectAssembly.GetName().Name, version.Major, version.Minor, version.Build, version.Revision);
             string libVersionInfo = string.Format("UXSimplSharp Library v{0}.{1:D2}.{2:D2} ({3})", libVersion.Major, libVersion.Minor, libVersion.Build, libVersion.Revision);
 
             CrestronConsole.PrintLine("");
@@ -32,6 +31,7 @@ namespace UXLib
             CrestronConsole.PrintLine(@"    www.ux.digital                                       ");
             CrestronConsole.PrintLine(@"_________________________________________________________");
             CrestronConsole.PrintLine(@"");
+            CrestronConsole.PrintLine("Project: {0}", projectName);
             CrestronConsole.PrintLine(versionInfo);
             CrestronConsole.PrintLine(libVersionInfo);
             CrestronConsole.PrintLine(@"_________________________________________________________");
