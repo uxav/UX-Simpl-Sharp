@@ -40,6 +40,10 @@ namespace UXLib.Devices.Displays
 
         public virtual void OnPowerStatusChange(DevicePowerStatus newPowerStatus, DevicePowerStatus previousPowerStatus)
         {
+#if DEBUG
+            CrestronConsole.PrintLine("Display {0} OnPowerStatusChange(), newPowerStatus = {1}, previousPowerStatus = {2}",
+                this.Name, newPowerStatus.ToString(), previousPowerStatus.ToString());
+#endif
             if (PowerStatusChange != null)
                 PowerStatusChange(this, new DevicePowerStatusEventArgs(newPowerStatus, previousPowerStatus));
         }
@@ -88,7 +92,7 @@ namespace UXLib.Devices.Displays
                 {
                     DevicePowerStatus previousValue = _powerStatus;
                     _powerStatus = value;
-                    OnPowerStatusChange(previousValue, _powerStatus);
+                    OnPowerStatusChange(_powerStatus, previousValue);
                 }
             }
         }

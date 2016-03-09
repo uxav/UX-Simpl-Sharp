@@ -27,12 +27,12 @@ namespace UXLib.Devices.Displays
             if (args.PreviousPowerStatus == DevicePowerStatus.PowerOff && (
                 args.NewPowerStatus == DevicePowerStatus.PowerOn || args.NewPowerStatus == DevicePowerStatus.PowerWarming))
             {
-                this.Up();
+                this.Down();
             }
             else if (args.PreviousPowerStatus == DevicePowerStatus.PowerOn && (
                 args.NewPowerStatus == DevicePowerStatus.PowerOff || args.NewPowerStatus == DevicePowerStatus.PowerCooling))
             {
-                this.Down();
+                this.Up();
             }
         }
 
