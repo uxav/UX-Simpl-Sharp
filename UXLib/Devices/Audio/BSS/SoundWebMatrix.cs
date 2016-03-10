@@ -30,11 +30,14 @@ namespace UXLib.Devices.Audio.BSS
         {
             string paramID = "\x00" + (char)(output - 1);
             string value = "\x00\x00\x00" + (char)input;
-            OutputValues[output] = input;
-
-            //CrestronConsole.PrintLine("Soundweb Matrix Input {0} to Output {1}", input, output);
 
             Device.Socket.Send("\x88", HiQAddress, paramID, value);
+
+            if (OutputValues[output] != input)
+            {
+                OutputValues[output] = input;
+                OnOutputChange(output, input);
+            }
         }
 
         public override void Subscribe()
@@ -47,7 +50,18 @@ namespace UXLib.Devices.Audio.BSS
 
         void SoundWebMatrix_FeedbackReceived(SoundWebObject soundWebObject, SoundWebObjectFeedbackEventArgs args)
         {
-            this.OutputValues[(uint)args.ParamID] = (uint)args.Value;
+            this.OutputValues[(uint)args.ParamID + 1] = (uint)args.Value;
+            OnOutputChange((uint)args.ParamID + 1, (uint)args.Value);
+        }
+
+        public event SoundWebMatrixOutputChangeHandler OutputChange;
+
+        protected virtual void OnOutputChange(uint output, uint input)
+        {
+            if (OutputChange != null)
+            {
+                OutputChange(this, new SoundWebMatrixOutputChangeEventArgs(output, input));
+            }
         }
 
         public uint this[uint output]
@@ -61,5 +75,19 @@ namespace UXLib.Devices.Audio.BSS
                 this.Route(output, value);
             }
         }
+    }
+
+    public delegate void SoundWebMatrixOutputChangeHandler(SoundWebMatrix soundWebMatrix, SoundWebMatrixOutputChangeEventArgs args);
+
+    public class SoundWebMatrixOutputChangeEventArgs
+    {
+        public SoundWebMatrixOutputChangeEventArgs(uint output, uint input)
+        {
+            Output = output;
+            Input = input;
+        }
+
+        public uint Output;
+        public uint Input;
     }
 }
