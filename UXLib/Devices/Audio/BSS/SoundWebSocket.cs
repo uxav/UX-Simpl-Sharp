@@ -81,8 +81,6 @@ namespace UXLib.Devices.Audio.BSS
             return result;
         }
 
-        public override event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
-
         protected override object ReceiveBufferProcess(object obj)
         {
             Byte[] bytes = new Byte[50];
@@ -126,18 +124,7 @@ namespace UXLib.Devices.Audio.BSS
                         Array.Copy(processedBytes, copiedBytes, newIndex);
 
                         byteIndex = 0;
-
-                        try
-                        {
-                            if (this.ReceivedPacketEvent != null)
-                            {
-                                this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(copiedBytes));
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            ErrorLog.Error("{0} - Error calling event in thread: {1}, Packet Length: {2}", GetType().ToString(), e.Message, copiedBytes.Length);
-                        }
+                        OnReceivedPacket(copiedBytes);
                     }
                     else
                     {

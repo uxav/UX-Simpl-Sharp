@@ -125,7 +125,21 @@ namespace UXLib.Sockets
             }
         }
 
-        public virtual event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
+        public event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
+
+        public void OnReceivedPacket(byte[] bytes)
+        {
+            try
+            {
+                // if an event is registered
+                if (this.ReceivedPacketEvent != null)
+                    this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(bytes));
+            }
+            catch
+            {
+                ErrorLog.Error("{0} - Error in OnReceivedPacket()", GetType().ToString());
+            }
+        }
 
         /// <summary>
         /// This thread callback will look through the received bytes and look for a delimeter.
@@ -156,18 +170,7 @@ namespace UXLib.Sockets
 
                         byteIndex = 0;
 
-                        try
-                        {
-                            // if the byte array has length && an event is registered
-                            if (this.ReceivedPacketEvent != null && copiedBytes.Length > 0)
-                            {
-                                this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(copiedBytes));
-                            }
-                        }
-                        catch
-                        {
-                            ErrorLog.Error("{0} - Error calling event in Rx thread", GetType().ToString());
-                        }
+                        OnReceivedPacket(copiedBytes);
                     }
                     else
                     {
