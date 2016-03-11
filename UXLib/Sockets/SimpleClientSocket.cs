@@ -74,6 +74,7 @@ namespace UXLib.Sockets
         {
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
+                tryCount = 0;
                 ErrorLog.Notice("Socket connected to device at {0}", socket.AddressClientConnectedTo);
                 rxQueue.Clear();
                 if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
@@ -85,15 +86,19 @@ namespace UXLib.Sockets
             }
             else
             {
-                ErrorLog.Error("Error connecting to socket at {0}, ClientStatus.{1}, will try again in 5 seconds...",
-                    socket.AddressClientConnectedTo, socket.ClientStatus.ToString());
-                new CTimer(TryAgainConnect, 5000);
+                new CTimer(TryAgainConnect, 2000);
             }
         }
 
+        uint tryCount = 0;
+
         void TryAgainConnect(object obj)
         {
-            ErrorLog.Notice("Retrying socket connection to {0}", socket.AddressClientConnectedTo);
+            tryCount++;
+            if (tryCount == 10)
+            {
+                ErrorLog.Error("{0}, socket connection to {1} has failed to connect", this.GetType().ToString(), socket.AddressClientConnectedTo);
+            }
             this.Connect(shouldReconnect);
         }
 
@@ -161,7 +166,7 @@ namespace UXLib.Sockets
                         }
                         catch
                         {
-                            ErrorLog.Error("{0} - Error calling event in thread", GetType().ToString());
+                            ErrorLog.Error("{0} - Error calling event in Rx thread", GetType().ToString());
                         }
                     }
                     else
@@ -195,7 +200,7 @@ namespace UXLib.Sockets
             SocketErrorCodes err = socket.SendData(bytes, bytes.Length);
 
             if (err != SocketErrorCodes.SOCKET_OK)
-                ErrorLog.Error("SimpleSocketClient at {0} Send Error: {1}", socket.AddressClientConnectedTo, err.ToString());
+                ErrorLog.Error("{0} Send to {1} Error: {2}", this.GetType().ToString(), socket.AddressClientConnectedTo, err.ToString());
 
             return err;
         }
