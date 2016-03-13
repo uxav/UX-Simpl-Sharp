@@ -40,14 +40,7 @@ namespace UXLib.Sockets
         /// </summary>
         public void Connect()
         {
-            if (socket.ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
-            {
-                socket.ConnectToServerAsync(OnConnect);
-            }
-            else
-            {
-                ErrorLog.Notice("Socket {0} already connected!", socket.AddressClientConnectedTo);
-            }
+            this.Connect(true);
         }
 
         /// <summary>
@@ -57,7 +50,14 @@ namespace UXLib.Sockets
         public void Connect(bool shouldReconnect)
         {
             this.shouldReconnect = shouldReconnect;
-            this.Connect();
+            if (socket.ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+            {
+                socket.ConnectToServerAsync(OnConnect);
+            }
+            else
+            {
+                ErrorLog.Notice("Socket {0} already connected!", socket.AddressClientConnectedTo);
+            }
         }
 
         public void Disconnect()
@@ -104,6 +104,10 @@ namespace UXLib.Sockets
 
         void OnReceive(TCPClient socket, int byteCount)
         {
+#if DEBUG
+            //CrestronConsole.PrintLine("{0} Socket OnReceive() Rx: ", this.GetType().ToString());
+            //Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
+#endif
             for (int b = 0; b < byteCount; b++)
             {
                 rxQueue.Enqueue(socket.IncomingDataBuffer[b]);
