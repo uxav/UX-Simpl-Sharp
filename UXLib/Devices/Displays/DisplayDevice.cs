@@ -142,6 +142,9 @@ namespace UXLib.Devices.Displays
         VGA,
         RGBHV,
         Composite,
-        YUV
+        YUV,
+        SVideo,
+        MagicInfo,
+        TV
     }
 }

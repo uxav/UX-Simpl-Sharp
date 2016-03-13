@@ -105,6 +105,7 @@
     <Compile Include="Devices\Audio\Polycom\VirtualChannel.cs" />
     <Compile Include="Devices\Audio\Polycom\SoundstructureItemCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VirtualChannelGroup.cs" />
+    <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
     <Compile Include="Devices\IDevice.cs" />
@@ -116,7 +117,7 @@
     <Compile Include="Devices\Displays\ElectricScreen.cs" />
     <Compile Include="Devices\Displays\ElectricScreenRelaysInterlocked.cs" />
     <Compile Include="Devices\Displays\ElectricScreenRelaysMomentary.cs" />
-    <Compile Include="Devices\Displays\Samsung\SamsungLCD.cs" />
+    <Compile Include="Devices\Displays\Samsung\SamsungMDCDisplay.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
