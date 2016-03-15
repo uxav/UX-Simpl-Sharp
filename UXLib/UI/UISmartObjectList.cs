@@ -118,6 +118,7 @@ namespace UXLib.UI
                     this.Buttons[item].Title = listData[listDataIndex].Title;
                     this.Buttons[item].Icon = listData[listDataIndex].Icon;
                     this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
+                    this.Buttons[item].Enabled = listData[listDataIndex].Enabled;
                 }
 
                 if (LoadingSubPageOverlay != null)
@@ -143,10 +144,11 @@ namespace UXLib.UI
             this.LoadingSubPageOverlay = loadingSubPageOverlaySig;
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
-            this.Data.DataChange -= new ListDataChangeEventHandler(Data_DataChange);
+            if (disposing)
+                this.Data.DataChange -= new ListDataChangeEventHandler(Data_DataChange);
+            base.Dispose(disposing);
         }
     }
 }

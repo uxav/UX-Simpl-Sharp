@@ -40,6 +40,7 @@ namespace UXLib.UI
                     else
                         this.Buttons[item].Icon = UIMediaIcons.CheckboxOff;
                     this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
+                    this.Buttons[item].Enabled = listData[listDataIndex].Enabled;
                 }
 
                 if (LoadingSubPageOverlay != null)

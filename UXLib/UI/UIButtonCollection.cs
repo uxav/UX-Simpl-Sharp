@@ -62,18 +62,59 @@ namespace UXLib.UI
 
         public event UIButtonCollectionEventHandler ButtonEvent;
 
-        public virtual void Dispose()
+        public int IndexOf(UIButton button)
         {
+            return Buttons.IndexOf(button);
+        }
+
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            CrestronEnvironment.GC.SuppressFinalize(this);
+        }
+
+        bool disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                // Free any other managed objects here.
+                //
+                
+            }
+
+            // Free any unmanaged objects here.
+            //
             foreach (UIButton button in Buttons)
             {
                 button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
-        }
 
-        public int IndexOf(UIButton button)
-        {
-            return Buttons.IndexOf(button);
+            Buttons.Clear();
+            Buttons = null;
+
+            disposed = true;
         }
     }
 

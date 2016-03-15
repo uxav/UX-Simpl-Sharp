@@ -480,8 +480,7 @@ namespace UXLib.UI
         {
             // Dispose of unmanaged resources.
             Dispose(true);
-            // Suppress finalization. - Sandbox litits this currently
-            // GC.SuppressFinalize(this);
+            CrestronEnvironment.GC.SuppressFinalize(this);
         }
         
         bool disposed = false;
@@ -505,15 +504,24 @@ namespace UXLib.UI
 
             if (disposing)
             {
-                // Free any other managed objects here.
-                //
+                UnSubscribeToSigChanges();
                 
+                this.AnalogFeedbackJoin = null;
+                this.AnalogModeJoin = null;
+                this.AnalogTouchJoin = null;
+                this.EnableDigitalJoin = null;
+                this.FeedbackDigitalJoin = null;
+                if (this.holdTimer != null)
+                    this.holdTimer.Dispose();
+                this.IconSerialJoin = null;
+                this.PressDigitalJoin = null;
+                this.SmartObject = null;
+                this.TextSerialJoin = null;
+                this.TransitionCompleteDigitalJoin = null;
+                this.VisibleDigitalJoin = null;
+                this.VisibleFeedbackJoin = null;
             }
-
-            // Free any unmanaged objects here.
-            //
-            UnSubscribeToSigChanges();
-
+            
             disposed = true;
         }
     }
