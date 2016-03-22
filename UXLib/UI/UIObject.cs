@@ -303,6 +303,11 @@ namespace UXLib.UI
                 holdTimer = new CTimer(holdTimerUpdate, null, 100, 100);
             }
 
+#if DEBUG
+            CrestronConsole.PrintLine("OnPress() - {0}, Digital Join {1}", this.GetType().ToString(),
+                this.PressDigitalJoin.Number);
+#endif
+
             if (_buttonEvent != null)
                 _buttonEvent(this,
                     new UIObjectButtonEventArgs(

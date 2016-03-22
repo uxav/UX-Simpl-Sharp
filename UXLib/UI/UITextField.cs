@@ -59,6 +59,8 @@ namespace UXLib.UI
                 {
                     _Text = "";
                     TextJoinToDevice.StringValue = _Text;
+                    if (ClearButton != null)
+                        ClearButton.Visible = false;
                 }
                 if (!_Text.Equals(value))
                 {
@@ -142,6 +144,7 @@ namespace UXLib.UI
             if (VisibleJoin != null)
                 VisibleJoin.BoolValue = true;
             TextJoinToDevice = textJoinToDevice;
+            TextJoinToDevice.StringValue = "";
             TextJoinFromDevice = textJoinFromDevice;
             Device = hasFocusJoin.Owner as BasicTriList;
             TitleLabel = titleLabel;
@@ -253,7 +256,8 @@ namespace UXLib.UI
 
         public void Dispose()
         {
-            _Text = null;
+            Text = "";
+            TextJoinToDevice.StringValue = "";
             Device.SigChange -= new SigEventHandler(Device_SigChange);
             this.EnterButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
             this.EnterButton.Dispose();

@@ -23,6 +23,8 @@ namespace UXLib.UI
             this.Title = title;
         }
 
+        private new void Hide() { }
+
         public UIPage(UIController uiController, uint visibleJoinNumber)
             : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber]) { }
 
