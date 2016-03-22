@@ -53,6 +53,15 @@ namespace UXLib
         public Room MasterRoom { get; private set; }
         public Room ChildRoom { get; private set; }
         public FusionRoom FusionRoom;
+
+        public virtual void OnSourceChange(Source previousSource, Source newSource)
+        {
+            if (SourceChange != null)
+            {
+                this.SourceChange(this, new RoomSourceChangeEventArgs(previousSource, newSource));
+            }
+        }
+
         Source _Source;
         public Source Source
         {
@@ -74,10 +83,7 @@ namespace UXLib
                         ErrorLog.Notice("Room {0}, {1} now has no source selected", this.ID, this.Name);
                     }
 #endif
-                    if (SourceChange != null)
-                    {
-                        this.SourceChange(this, new RoomSourceChangeEventArgs(oldSource, _Source));
-                    }
+                    OnSourceChange(oldSource, _Source);
                 }
             }
             get
