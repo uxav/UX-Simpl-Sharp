@@ -133,8 +133,9 @@ namespace UXLib.Devices.VC.Cisco
                     {
                         if (calls[callID].Status != CallStatus.Idle)
                             calls[callID].Status = CallStatus.Idle;
-                        OnCallStatusChange(calls[callID], true);
+                        Call disconnectedCall = calls[callID];
                         calls.Remove(callID);
+                        OnCallStatusChange(disconnectedCall, true);
                     }
                     else if (!ghost)
                     {
