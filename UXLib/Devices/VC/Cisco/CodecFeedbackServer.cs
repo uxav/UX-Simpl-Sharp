@@ -13,9 +13,9 @@ namespace UXLib.Devices.VC.Cisco
     public class CodecFeedbackServer
     {
         HttpServer server;
-        Codec Codec;
+        CiscoCodec Codec;
 
-        public CodecFeedbackServer(Codec codec, EthernetAdapterType ethernetAdapterType, int port)
+        public CodecFeedbackServer(CiscoCodec codec, EthernetAdapterType ethernetAdapterType, int port)
         {
             Codec = codec;
             server = new HttpServer();

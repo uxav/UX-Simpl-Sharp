@@ -8,14 +8,14 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class CallHistoryItem
     {
-        public CallHistoryItem(Codec codec, int callHistoryID, int callID)
+        public CallHistoryItem(CiscoCodec codec, int callHistoryID, int callID)
         {
             this.Codec = codec;
             this.ID = callHistoryID;
             this.CallID = callID;
         }
 
-        public Codec Codec { get; protected set; }
+        public CiscoCodec Codec { get; protected set; }
         public int ID { get; protected set; }
         public int CallID { get; protected set; }
         public CallOccurrenceType OccurrenceType { get; set; }

@@ -12,9 +12,9 @@ using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class Codec
+    public class CiscoCodec
     {
-        public Codec(string hostNameOrIPAddress, string username, string password, EthernetAdapterType ethernetAdapter, int feedbackListenerPort)
+        public CiscoCodec(string hostNameOrIPAddress, string username, string password, EthernetAdapterType ethernetAdapter, int feedbackListenerPort)
         {
             HttpClient = new CodecHTTPClient(hostNameOrIPAddress, username, password);
             FeedbackServer = new CodecFeedbackServer(this, ethernetAdapter, feedbackListenerPort);
@@ -183,7 +183,7 @@ namespace UXLib.Devices.VC.Cisco
                 StandbyChanged(this, StandbyActive);
         }
 
-        void State_SystemStateChange(Codec Codec, SystemState State)
+        void State_SystemStateChange(CiscoCodec Codec, SystemState State)
         {
             if (State == SystemState.Initialized && !SSHClient.IsConnected)
                 SSHClient.Connect();
@@ -209,7 +209,7 @@ namespace UXLib.Devices.VC.Cisco
         }
     }
 
-    public delegate void CodecStandbyChangeEventHandler(Codec codec, bool StandbyActive);
+    public delegate void CodecStandbyChangeEventHandler(CiscoCodec codec, bool StandbyActive);
 
-    public delegate void CodecConnectedEventHandler(Codec codec);
+    public delegate void CodecConnectedEventHandler(CiscoCodec codec);
 }

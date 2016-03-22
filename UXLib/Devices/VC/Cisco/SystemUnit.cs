@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class SystemUnit
     {
-        public SystemUnit(Codec codec)
+        public SystemUnit(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -19,7 +19,7 @@ namespace UXLib.Devices.VC.Cisco
             State = new SystemUnitState(Codec);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         public SystemUnitState State { get; protected set; }
         public SystemUnitSoftware Software { get; protected set; }
@@ -39,7 +39,7 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
             foreach (XElement element in Codec.RequestPath("Status/SystemUnit", true).Elements().Where(e => !e.HasElements))
             {

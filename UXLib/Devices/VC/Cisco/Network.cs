@@ -10,13 +10,13 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Network
     {
-        public Network(Codec codec)
+        public Network(CiscoCodec codec)
         {
             Codec = codec;
             Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
         public string MacAddress { get; protected set; }
         public string Speed { get; protected set; }
         public string Address { get; protected set; }
@@ -27,7 +27,7 @@ namespace UXLib.Devices.VC.Cisco
         public string CDPPortID { get; protected set; }
         public int CDPVoIPApplianceVlanID { get; protected set; }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
             foreach (XElement networkInfo in Codec.RequestPath("Status/Network", true).FirstOrDefault().Elements())
             {

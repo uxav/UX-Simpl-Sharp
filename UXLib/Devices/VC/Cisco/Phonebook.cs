@@ -10,12 +10,12 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Phonebook
     {
-        public Phonebook(Codec codec)
+        public Phonebook(CiscoCodec codec)
         {
             Codec = codec;
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         public PhonebookSearchResults Search(PhonebookType phonebookType, string searchString)
         {

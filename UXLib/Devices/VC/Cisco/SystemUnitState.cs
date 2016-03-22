@@ -10,14 +10,14 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class SystemUnitState
     {
-        public SystemUnitState(Codec codec)
+        public SystemUnitState(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
             Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         public int MaxNumberOfActiveCalls { get; protected set; }
         public int MaxNumberOfCalls { get; protected set; }
@@ -63,7 +63,7 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
             foreach (XElement element in Codec.RequestPath("Status/SystemUnit/State", true)
                 .Elements().Where(e => !e.HasElements))
@@ -84,7 +84,7 @@ namespace UXLib.Devices.VC.Cisco
         }
     }
 
-    public delegate void SystemUnitStateSystemChangeEventHandler(Codec Codec, SystemState State);
+    public delegate void SystemUnitStateSystemChangeEventHandler(CiscoCodec Codec, SystemState State);
 
     public enum SystemState
     {

@@ -10,13 +10,13 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class SystemUnitSoftware
     {
-        public SystemUnitSoftware(Codec codec)
+        public SystemUnitSoftware(CiscoCodec codec)
         {
             Codec = codec;
             Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         public string Application { get; protected set; }
         public int MaxAudioCalls { get; protected set; }
@@ -25,7 +25,7 @@ namespace UXLib.Devices.VC.Cisco
         public DateTime ReleaseDate { get; protected set; }
         public string Version { get; protected set; }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
             foreach (XElement element in Codec.RequestPath("Status/SystemUnit/Software", true)
                 .Elements().Where(e => !e.HasElements))

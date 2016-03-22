@@ -8,14 +8,14 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Call
     {
-        public Call(Codec codec, int id)
+        public Call(CiscoCodec codec, int id)
         {
             this.Codec = codec;
             this.ID = id;
             this.StartTime = DateTime.Now;
         }
 
-        public Codec Codec;
+        public CiscoCodec Codec;
 
         public int ID { get; protected set; }
         public CallStatus Status { get; set; }

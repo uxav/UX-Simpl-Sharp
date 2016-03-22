@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Audio
     {
-        public Audio(Codec codec)
+        public Audio(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -18,7 +18,7 @@ namespace UXLib.Devices.VC.Cisco
             Microphones = new Microphones(codec);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
         public Microphones Microphones;
 
         bool _Mute;
@@ -78,7 +78,7 @@ namespace UXLib.Devices.VC.Cisco
                 VolumeChange(Codec, Volume);
         }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
             foreach (XElement element in Codec.RequestPath("Status/Audio", true).Elements().Where(e => !e.HasElements))
             {
@@ -134,6 +134,6 @@ namespace UXLib.Devices.VC.Cisco
         }
     }
 
-    public delegate void CodecAudioVolumeChangeEventHandler(Codec codec, int VolumeLevel);
-    public delegate void CodecAudioVolumeMuteChangeEventHandler(Codec codec, bool VolumeMute);
+    public delegate void CodecAudioVolumeChangeEventHandler(CiscoCodec codec, int VolumeLevel);
+    public delegate void CodecAudioVolumeMuteChangeEventHandler(CiscoCodec codec, bool VolumeMute);
 }

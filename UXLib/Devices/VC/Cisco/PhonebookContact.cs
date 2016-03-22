@@ -9,14 +9,14 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class PhonebookContact
     {
-        public PhonebookContact(Codec codec, string contactID, string name)
+        public PhonebookContact(CiscoCodec codec, string contactID, string name)
         {
             Codec = codec;
             ContactID = contactID;
             Name = name;
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
         public string ContactID { get; protected set; }
         public string Name { get; protected set; }
         public string Title { get; set; }

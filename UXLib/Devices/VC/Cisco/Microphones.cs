@@ -9,14 +9,14 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Microphones
     {
-        public Microphones(Codec codec)
+        public Microphones(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
             Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         bool _Mute;
         public bool Mute
@@ -51,7 +51,7 @@ namespace UXLib.Devices.VC.Cisco
                 MuteChange(Codec, Mute);
         }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
             XElement element = Codec.RequestPath("Status/Audio/Microphones", true).Elements().FirstOrDefault();
             if (element.XName.LocalName == "Mute")
@@ -92,5 +92,5 @@ namespace UXLib.Devices.VC.Cisco
         }
     }
 
-    public delegate void CodecAudioMicrophonesMuteChangeEventHandler(Codec codec, bool MuteValue);
+    public delegate void CodecAudioMicrophonesMuteChangeEventHandler(CiscoCodec codec, bool MuteValue);
 }

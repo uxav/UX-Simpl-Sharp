@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class CallHistory : IEnumerable<CallHistoryItem>
     {
-        public CallHistory(Codec codec, int limit)
+        public CallHistory(CiscoCodec codec, int limit)
         {
             this.Codec = codec;
 
@@ -49,7 +49,7 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         Dictionary<int, CallHistoryItem> calls = new Dictionary<int, CallHistoryItem>();
 

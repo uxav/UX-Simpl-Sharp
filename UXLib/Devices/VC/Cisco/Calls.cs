@@ -10,14 +10,14 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Calls : IEnumerable<Call>
     {
-        public Calls(Codec codec)
+        public Calls(CiscoCodec codec)
         {
             this.Codec = codec;
             this.Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
             this.Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
-        Codec Codec;
+        CiscoCodec Codec;
 
         Dictionary<int, Call> calls = new Dictionary<int, Call>();
 
@@ -184,7 +184,7 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        void Codec_HasConnected(Codec codec)
+        void Codec_HasConnected(CiscoCodec codec)
         {
 #if DEBUG
             CrestronConsole.Print("Checking for calls...");
@@ -297,5 +297,5 @@ namespace UXLib.Devices.VC.Cisco
         public CallDisconnectCauseType DisconnectCauseType;
     }
 
-    public delegate void CodecCallInfoChangeEventHandler(Codec codec, CodecCallInfoChangeEventArgs args);
+    public delegate void CodecCallInfoChangeEventHandler(CiscoCodec codec, CodecCallInfoChangeEventArgs args);
 }
