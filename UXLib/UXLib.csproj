@@ -118,6 +118,24 @@
     <Compile Include="Devices\Displays\ElectricScreenRelaysInterlocked.cs" />
     <Compile Include="Devices\Displays\ElectricScreenRelaysMomentary.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCDisplay.cs" />
+    <Compile Include="Devices\VC\Cisco\Audio.cs" />
+    <Compile Include="Devices\VC\Cisco\Call.cs" />
+    <Compile Include="Devices\VC\Cisco\CallHistory.cs" />
+    <Compile Include="Devices\VC\Cisco\CallHistoryItem.cs" />
+    <Compile Include="Devices\VC\Cisco\Calls.cs" />
+    <Compile Include="Devices\VC\Cisco\Codec.cs" />
+    <Compile Include="Devices\VC\Cisco\CodecFeedbackServer.cs" />
+    <Compile Include="Devices\VC\Cisco\CodecHTTPClient.cs" />
+    <Compile Include="Devices\VC\Cisco\CodecSSHClient.cs" />
+    <Compile Include="Devices\VC\Cisco\Microphones.cs" />
+    <Compile Include="Devices\VC\Cisco\Network.cs" />
+    <Compile Include="Devices\VC\Cisco\Phonebook.cs" />
+    <Compile Include="Devices\VC\Cisco\PhonebookContact.cs" />
+    <Compile Include="Devices\VC\Cisco\PhonebookContactMethod.cs" />
+    <Compile Include="Devices\VC\Cisco\PhonebookSearchResults.cs" />
+    <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
+    <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
+    <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -170,9 +188,9 @@
         <ProgramIdTag>UXLib</ProgramIdTag>
         <SystemName>UXLib</SystemName>
         <Programmer>Mike Jobson</Programmer>
-        <ArchiveFilename>C:\Users\mike\Developer\cglondon\CGLondon\lib\uxlib\UXLib\bin\UXLib.cplz</ArchiveFilename>
+        <ArchiveFilename>C:\Users\mike\Developer\twobirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>11/03/2016 07:56:41</CompiledOn>
+        <CompiledOn>22/03/2016 12:10:18</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

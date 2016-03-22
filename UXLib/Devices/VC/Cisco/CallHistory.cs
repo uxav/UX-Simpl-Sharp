@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronXml;
+using Crestron.SimplSharp.CrestronXmlLinq;
+
+namespace UXLib.Devices.VC.Cisco
+{
+    public class CallHistory : IEnumerable<CallHistoryItem>
+    {
+        public CallHistory(Codec codec, int limit)
+        {
+            this.Codec = codec;
+
+            CommandArgs args = new CommandArgs();
+
+            args.Add("Filter", "All");
+            args.Add("DetailLevel", "Full");
+            args.Add("Limit", limit);
+
+            bool useHttp = false;
+            if (limit > 1) useHttp = true;
+
+            XDocument xml = Codec.SendCommand("Command/CallHistory/Get", args, useHttp);
+
+            foreach (XElement item in xml.Root.Elements().Elements("Entry"))
+            {
+                CallHistoryItem call = new CallHistoryItem(Codec,
+                    int.Parse(item.Element("CallHistoryId").Value),
+                    int.Parse(item.Element("CallId").Value));
+
+                calls.Add(call.ID, call);
+
+                call.CallbackNumber = item.Element("CallbackNumber").Value;
+                call.RemoteNumber = item.Element("RemoteNumber").Value;
+                call.DisplayName = item.Element("DisplayName").Value;
+                call.Direction = (CallDirection)Enum.Parse(
+                    typeof(CallDirection), item.Element("Direction").Value, false);
+                call.OccurrenceType = (CallOccurrenceType)Enum.Parse(
+                    typeof(CallOccurrenceType), item.Element("OccurrenceType").Value, false);
+                call.Protocol = item.Element("Protocol").Value;
+                call.StartTime = DateTime.Parse(item.Element("StartTime").Value);
+                call.EndTime = DateTime.Parse(item.Element("EndTime").Value);
+                call.DisconnectCause = item.Element("DisconnectCause").Value;
+                call.DisconnectCauseType = (CallDisconnectCauseType)Enum.Parse(
+                    typeof(CallDisconnectCauseType), item.Element("DisconnectCauseType").Value, false);
+            }
+        }
+
+        Codec Codec;
+
+        Dictionary<int, CallHistoryItem> calls = new Dictionary<int, CallHistoryItem>();
+
+        public CallHistoryItem this[int callHistoryID]
+        {
+            get
+            {
+                return calls[callHistoryID];
+            }
+        }
+
+        public int Count { get { return calls.Count; } }
+
+        #region IEnumerable<CallHistoryItem> Members
+
+        public IEnumerator<CallHistoryItem> GetEnumerator()
+        {
+            return calls.Values.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        #endregion
+    }
+}
