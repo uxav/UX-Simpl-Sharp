@@ -63,8 +63,16 @@ namespace UXLib
                     Source oldSource = _Source;
                     _Source = value;
 #if DEBUG
-                    CrestronConsole.PrintLine("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
-                    ErrorLog.Notice("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name); 
+                    if (value != null)
+                    {
+                        CrestronConsole.PrintLine("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
+                        ErrorLog.Notice("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
+                    }
+                    else
+                    {
+                        CrestronConsole.PrintLine("Room {0}, {1} now has no source selected", this.ID, this.Name);
+                        ErrorLog.Notice("Room {0}, {1} now has no source selected", this.ID, this.Name);
+                    }
 #endif
                     if (SourceChange != null)
                     {
