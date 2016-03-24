@@ -80,8 +80,11 @@ namespace UXLib.UI
 
         protected override void Dispose(bool disposing)
         {
-            this.TimeOut.TimedOut -= new UITimeOutEventHandler(TimeOut_TimedOut);
-            this.TimeOut.Dispose();
+            if (this.TimeOut != null)
+            {
+                this.TimeOut.TimedOut -= new UITimeOutEventHandler(TimeOut_TimedOut);
+                this.TimeOut.Dispose();
+            }
             base.Dispose(disposing);
         }
     }

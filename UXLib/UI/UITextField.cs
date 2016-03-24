@@ -11,6 +11,45 @@ namespace UXLib.UI
 {
     public class UITextField : IDisposable
     {
+        public UITextField(BoolOutputSig hasFocusJoin, BoolInputSig setFocusJoinOn, BoolInputSig setFocusJoinOff,
+            BoolInputSig enableJoin, BoolInputSig visibleJoin, StringInputSig textJoinToDevice,
+            StringOutputSig textJoinFromDevice, UILabel titleLabel, UIButton enterButton, UIButton escButton, UIButton clearButton)
+        {
+            HasFocusJoin = hasFocusJoin;
+            SetFocusJoinOn = setFocusJoinOn;
+            SetFocusJoinOff = setFocusJoinOff;
+            EnableJoin = enableJoin;
+            if (EnableJoin != null)
+                EnableJoin.BoolValue = true;
+            VisibleJoin = visibleJoin;
+            if (VisibleJoin != null)
+                VisibleJoin.BoolValue = true;
+            TextJoinToDevice = textJoinToDevice;
+            TextJoinToDevice.StringValue = "";
+            TextJoinFromDevice = textJoinFromDevice;
+            Device = hasFocusJoin.Owner as BasicTriList;
+            TitleLabel = titleLabel;
+            this.EnterButton = enterButton;
+            this.EnterButton.Title = "Enter";
+            this.EscButton = escButton;
+            this.EscButton.Title = "Escape";
+            this.ClearButton = clearButton;
+        }
+
+        public void Setup(string title, string startText)
+        {
+            this.Title = title;
+            this.Text = startText;
+        }
+
+        public void Setup(string title, string startText, string enterButtonTitle, string escButtonTitle)
+        {
+            this.Title = title;
+            this.Text = startText;
+            this.EnterButton.Title = enterButtonTitle;
+            this.EscButton.Title = escButtonTitle;
+        }
+
         BoolOutputSig HasFocusJoin;
         BoolInputSig SetFocusJoinOn;
         BoolInputSig SetFocusJoinOff;
@@ -23,8 +62,6 @@ namespace UXLib.UI
         public UIButton EnterButton;
         public UIButton EscButton;
         public UIButton ClearButton;
-
-        public event UITextFieldEventHandler TextFieldEvent;
 
         public bool Visible
         {
@@ -71,9 +108,7 @@ namespace UXLib.UI
                         ClearButton.Visible = true;
                     else if (ClearButton != null)
                         ClearButton.Visible = false;
-                    if (this.TextFieldEvent != null)
-                        this.TextFieldEvent(this, new UITextFieldEventArgs(
-                            eUITextFieldEventType.TextChanged, this.HasFocus, this.InitialText, this.Text));
+                    OnTextFieldEvent(UITextFieldEventType.TextChanged);
                 }
             }
             get
@@ -96,16 +131,12 @@ namespace UXLib.UI
                     {
                         SetFocusJoinOn.Pulse();
                         InitialText = String.Copy(this.Text);
-                        if (this.TextFieldEvent != null)
-                            this.TextFieldEvent(this, new UITextFieldEventArgs(
-                                eUITextFieldEventType.OnFocus, true, this.InitialText, this.Text));
+                        OnTextFieldEvent(UITextFieldEventType.OnFocus);
                     }
                     else
                     {
                         SetFocusJoinOff.Pulse();
-                        if (this.TextFieldEvent != null)
-                            this.TextFieldEvent(this, new UITextFieldEventArgs(
-                                eUITextFieldEventType.OffFocus, true, this.InitialText, this.Text));
+                        OnTextFieldEvent(UITextFieldEventType.OffFocus);
                     }
                 }
             }
@@ -130,54 +161,54 @@ namespace UXLib.UI
             }
         }
 
-        public UITextField(BoolOutputSig hasFocusJoin, BoolInputSig setFocusJoinOn, BoolInputSig setFocusJoinOff,
-            BoolInputSig enableJoin, BoolInputSig visibleJoin, StringInputSig textJoinToDevice,
-            StringOutputSig textJoinFromDevice, UILabel titleLabel, UIButton enterButton, UIButton escButton, UIButton clearButton)
+        protected virtual void OnTextFieldEvent(UITextFieldEventType eventType)
         {
-            HasFocusJoin = hasFocusJoin;
-            SetFocusJoinOn = setFocusJoinOn;
-            SetFocusJoinOff = setFocusJoinOff;
-            EnableJoin = enableJoin;
-            if (EnableJoin != null)
-                EnableJoin.BoolValue = true;
-            VisibleJoin = visibleJoin;
-            if (VisibleJoin != null)
-                VisibleJoin.BoolValue = true;
-            TextJoinToDevice = textJoinToDevice;
-            TextJoinToDevice.StringValue = "";
-            TextJoinFromDevice = textJoinFromDevice;
-            Device = hasFocusJoin.Owner as BasicTriList;
-            TitleLabel = titleLabel;
-            this.EnterButton = enterButton;
-            if (EnterButton != null)
+            if (_TextFieldEvent != null)
             {
-                this.EnterButton.Title = "Enter";
-                this.EnterButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                _TextFieldEvent(this, new UITextFieldEventArgs(eventType, this.HasFocus, this.InitialText, this.Text));
             }
-            this.EscButton = escButton;
-            if (EscButton != null)
-            {
-                this.EscButton.Title = "Escape";
-                this.EscButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
-            }
-            this.ClearButton = clearButton;
-            if (ClearButton != null)
-                this.ClearButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
-            Device.SigChange += new SigEventHandler(Device_SigChange);
         }
 
-        public void Setup(string title, string startText)
-        {
-            this.Title = title;
-            this.Text = startText;
-        }
+        private event UITextFieldEventHandler _TextFieldEvent;
 
-        public void Setup(string title, string startText, string enterButtonTitle, string escButtonTitle)
+        int subscribeCount = 0;
+
+        public event UITextFieldEventHandler TextFieldEvent
         {
-            this.Title = title;
-            this.Text = startText;
-            this.EnterButton.Title = enterButtonTitle;
-            this.EscButton.Title = escButtonTitle;
+            add
+            {
+                if (subscribeCount == 0)
+                {
+                    if (EnterButton != null)
+                        this.EnterButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                    if (EscButton != null)
+                        this.EscButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                    if (ClearButton != null)
+                        this.ClearButton.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                    Device.SigChange += new SigEventHandler(Device_SigChange);
+                }
+
+                subscribeCount++;
+
+                _TextFieldEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                {
+                    if (EnterButton != null)
+                        this.EnterButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+                    if (EscButton != null)
+                        this.EscButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+                    if (ClearButton != null)
+                        this.ClearButton.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+                    Device.SigChange -= new SigEventHandler(Device_SigChange);
+                }
+
+                _TextFieldEvent -= value;
+            }
         }
 
         protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
@@ -189,24 +220,18 @@ namespace UXLib.UI
                 if (button == this.EnterButton)
                 {
                     this.HasFocus = false;
-                    if (this.TextFieldEvent != null)
-                        this.TextFieldEvent(this, new UITextFieldEventArgs(
-                            eUITextFieldEventType.Entered, this.HasFocus, this.InitialText, this.Text));
+                    OnTextFieldEvent(UITextFieldEventType.Entered);
                 }
                 else if (button == this.EscButton)
                 {
                     this.HasFocus = false;
                     this.Text = InitialText;
-                    if (this.TextFieldEvent != null)
-                        this.TextFieldEvent(this, new UITextFieldEventArgs(
-                            eUITextFieldEventType.Escaped, this.HasFocus, this.InitialText, this.Text));
+                    OnTextFieldEvent(UITextFieldEventType.Escaped);
                 }
                 else if (button == this.ClearButton)
                 {
                     this.Text = "";
-                    if (this.TextFieldEvent != null)
-                        this.TextFieldEvent(this, new UITextFieldEventArgs(
-                            eUITextFieldEventType.ClearedByUser, this.HasFocus, this.InitialText, this.Text));
+                    OnTextFieldEvent(UITextFieldEventType.ClearedByUser);
                 }
             }
         }
@@ -249,9 +274,7 @@ namespace UXLib.UI
         {
             this.HasFocus = false;
             this.Text = InitialText;
-            if (this.TextFieldEvent != null)
-                this.TextFieldEvent(this, new UITextFieldEventArgs(
-                    eUITextFieldEventType.Escaped, this.HasFocus, this.InitialText, this.Text));
+            OnTextFieldEvent(UITextFieldEventType.Escaped);
         }
 
         public void Dispose()
@@ -272,11 +295,11 @@ namespace UXLib.UI
 
     public class UITextFieldEventArgs : EventArgs
     {
-        public eUITextFieldEventType EventType;
+        public UITextFieldEventType EventType;
         public string InitialText;
         public string CurrentText;
         public bool HasFocus;
-        public UITextFieldEventArgs(eUITextFieldEventType type, bool hasFocus, string initialText, string currentText)
+        public UITextFieldEventArgs(UITextFieldEventType type, bool hasFocus, string initialText, string currentText)
             : base()
         {
             this.EventType = type;
@@ -286,7 +309,7 @@ namespace UXLib.UI
         }
     }
 
-    public enum eUITextFieldEventType
+    public enum UITextFieldEventType
     {
         OnFocus,
         OffFocus,

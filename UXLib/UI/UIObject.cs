@@ -424,6 +424,8 @@ namespace UXLib.UI
 
         private event UIObjectButtonEventHandler _buttonEvent;
 
+        int subscribeCount = 0;
+
         /// <summary>
         /// Called once a digital press join event is triggered
         /// </summary>
@@ -431,12 +433,16 @@ namespace UXLib.UI
         {
             add
             {
+                subscribeCount++;
                 if (!subscribed)
                     SubscribeToSigChanges();
                 _buttonEvent += value;
             }
             remove
             {
+                subscribeCount--;
+                if (subscribeCount == 0)
+                    UnSubscribeToSigChanges();
                 _buttonEvent -= value;
             }
         }
@@ -487,14 +493,18 @@ namespace UXLib.UI
             Dispose(true);
             CrestronEnvironment.GC.SuppressFinalize(this);
         }
-        
-        bool disposed = false;
+
+        bool _Disposed = false;
 
         public bool Disposed
         {
             get
             {
-                return disposed;
+                return _Disposed;
+            }
+            protected set
+            {
+                _Disposed = value;
             }
         }
 
@@ -504,7 +514,7 @@ namespace UXLib.UI
         /// <param name="disposing">true is Dispose() has been called</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (Disposed)
                 return;
 
             if (disposing)
@@ -527,7 +537,7 @@ namespace UXLib.UI
                 this.VisibleFeedbackJoin = null;
             }
             
-            disposed = true;
+            Disposed = true;
         }
     }
 

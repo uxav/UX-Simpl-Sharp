@@ -16,7 +16,6 @@ namespace UXLib.UI
         }
         protected SmartObject DeviceSmartObject;
         public UISmartObjectButtonCollection Buttons { get; protected set; }
-        public event UISmartObjectButtonEventHandler ButtonEvent;
         protected BoolInputSig EnableJoin { get; set; }
         protected BoolInputSig VisibleJoin { get; set; }
 
@@ -24,22 +23,14 @@ namespace UXLib.UI
         {
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
-            this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
         }
 
         public UISmartObject(SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
         {
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
-            this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             EnableJoin = objectEnableJoin;
             VisibleJoin = objectVisibleJoin;
-        }
-
-        protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
-        {
-            if (this.ButtonEvent != null)
-                this.ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
         }
 
         public void AddButton(UISmartObjectButton button)
@@ -133,6 +124,38 @@ namespace UXLib.UI
             this.Enabled = false;
         }
 
+        private event UISmartObjectButtonEventHandler _ButtonEvent;
+
+        int subscribeCount = 0;
+
+        public event UISmartObjectButtonEventHandler ButtonEvent
+        {
+            add
+            {
+                if (subscribeCount == 0)
+                    this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+
+                subscribeCount++;
+
+                _ButtonEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+
+                _ButtonEvent -= value;
+            }
+        }
+
+        protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
+        {
+            if (this._ButtonEvent != null)
+                this._ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
+        }
+
         /// <summary>
         /// Unregister from any sig changes and dispose of resources
         /// </summary>
@@ -170,7 +193,8 @@ namespace UXLib.UI
 
             // Free any unmanaged objects here.
             //
-            this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+            if (subscribeCount > 0)
+                this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.Buttons.Dispose();
 
             disposed = true;

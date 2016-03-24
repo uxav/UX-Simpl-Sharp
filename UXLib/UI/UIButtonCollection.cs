@@ -38,15 +38,16 @@ namespace UXLib.UI
             if (!this.Buttons.Contains(button))
             {
                 this.Buttons.Add(button);
-                button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                if (subscribeCount > 0)
+                    button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
             }
         }
 
         protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
         {
-            if (this.ButtonEvent != null)
+            if (this._ButtonEvent != null)
             {
-                this.ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime, Buttons.IndexOf(currentObject as UIButton)));
+                this._ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime, Buttons.IndexOf(currentObject as UIButton)));
             }
         }
 
@@ -60,7 +61,33 @@ namespace UXLib.UI
             return this.GetEnumerator();
         }
 
-        public event UIButtonCollectionEventHandler ButtonEvent;
+        private event UIButtonCollectionEventHandler _ButtonEvent;
+
+        int subscribeCount = 0;
+
+        public event UIButtonCollectionEventHandler ButtonEvent
+        {
+            add
+            {
+                if(subscribeCount == 0)
+                    foreach (UIButton button in Buttons)
+                        button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                
+                subscribeCount++;
+
+                _ButtonEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    foreach (UIButton button in Buttons)
+                        button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+
+                _ButtonEvent -= value;
+            }
+        }
 
         public int IndexOf(UIButton button)
         {
@@ -107,7 +134,8 @@ namespace UXLib.UI
             //
             foreach (UIButton button in Buttons)
             {
-                button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+                if (subscribeCount > 0)
+                    button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
 

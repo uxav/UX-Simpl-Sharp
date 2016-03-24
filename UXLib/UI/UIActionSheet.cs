@@ -10,27 +10,16 @@ namespace UXLib.UI
     {
         UISubPage SubPage;
         public UIButtonCollection Buttons;
-        Action<eActionSheetButtonAction> CallBack;
+        Action<UIActionSheet, ActionSheetButtonAction> CallBack;
 
-        public UIActionSheet(UISubPage subPage, string title, string subTitle, Action<eActionSheetButtonAction> callBack)
+        public UIActionSheet(UISubPage subPage, string title, string subTitle, Action<UIActionSheet, ActionSheetButtonAction> callBack)
         {
             this.SubPage = subPage;
+            this.SubPage.VisibilityChange += new UIViewBaseVisibitlityEventHandler(SubPage_VisibilityChange);
             this.SubPage.Title = title;
             this.SubPage.SubTitle = subTitle;
             this.Buttons = new UIButtonCollection();
-            this.Buttons.ButtonEvent += new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.CallBack = callBack;
-        }
-
-        void Buttons_ButtonEvent(UIButtonCollection group, UIButtonCollectionEventArgs args)
-        {
-            if (args.EventType == UIButtonEventType.Released)
-            {
-                UIActionSheetButton responseButton = args.Button as UIActionSheetButton;
-                this.SubPage.Hide();
-                this.CallBack(responseButton.Action);
-                this.Dispose();
-            }
         }
 
         public virtual void AddButton(UIActionSheetButton button)
@@ -40,16 +29,93 @@ namespace UXLib.UI
 
         public virtual void Show()
         {
+            action = ActionSheetButtonAction.TimedOut;
             this.SubPage.Show();
         }
 
-        public virtual void Dispose()
+        public bool Visible
         {
-            foreach (UIButton button in Buttons)
+            get
             {
-                button.Dispose();
+                return this.SubPage.Visible;
             }
-            this.SubPage.Dispose();
+        }
+
+        ActionSheetButtonAction action;
+
+        void SubPage_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("{0} SubPage Visibility Changed: {1}", this.GetType().ToString(), args.EventType.ToString());
+#endif
+            if (args.EventType == eViewEventType.WillShow)
+            {
+                this.Buttons.ButtonEvent += new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
+            }
+            else if (args.EventType == eViewEventType.DidHide)
+            {
+                this.SubPage.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(SubPage_VisibilityChange);
+                this.Buttons.ButtonEvent -= new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
+                this.CallBack(this, action);
+            }
+        }
+
+        void Buttons_ButtonEvent(UIButtonCollection group, UIButtonCollectionEventArgs args)
+        {
+            if (args.EventType == UIButtonEventType.Released)
+            {
+                UIActionSheetButton responseButton = args.Button as UIActionSheetButton;
+                action = responseButton.Action;
+                this.SubPage.Hide();
+            }
+        }
+
+        bool _Disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return _Disposed;
+            }
+            protected set
+            {
+                _Disposed = value;
+            }
+        }
+
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("{0} Dispose() Called!", this.GetType().ToString());
+#endif
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            CrestronEnvironment.GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Disposed)
+                return;
+
+            if (disposing)
+            {
+                if (this.Visible)
+                    this.SubPage.Hide();
+                foreach (UIButton button in Buttons)
+                {
+                    button.Dispose();
+                }
+                this.SubPage.Dispose();
+            }
         }
     }
 }

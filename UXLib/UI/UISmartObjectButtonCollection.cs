@@ -37,15 +37,16 @@ namespace UXLib.UI
             if (!this.Buttons.Contains(button))
             {
                 this.Buttons.Add(button);
-                button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                if (subscribeCount > 0)
+                    button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
             }
         }
 
         protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
         {
-            if (this.ButtonEvent != null)
+            if (this._ButtonEvent != null)
             {
-                this.ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(currentObject as UISmartObjectButton, args.EventType, args.HoldTime));
+                this._ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(currentObject as UISmartObjectButton, args.EventType, args.HoldTime));
             }
         }
 
@@ -59,7 +60,33 @@ namespace UXLib.UI
             return this.GetEnumerator();
         }
 
-        public event UISmartObjectButtonCollectionEventHandler ButtonEvent;
+        private event UISmartObjectButtonCollectionEventHandler _ButtonEvent;
+
+        int subscribeCount = 0;
+
+        public event UISmartObjectButtonCollectionEventHandler ButtonEvent
+        {
+            add
+            {
+                if(subscribeCount == 0)
+                    foreach(UISmartObjectButton button in this.Buttons)
+                        button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+
+                subscribeCount++;
+
+                _ButtonEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    foreach (UISmartObjectButton button in this.Buttons)
+                        button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+
+                _ButtonEvent -= value;
+            }
+        }
 
         public UISmartObjectButton UISmartObjectButtonBySigNumber(uint pressDigitalJoinNumber)
         {
@@ -106,7 +133,8 @@ namespace UXLib.UI
             //
             foreach (UISmartObjectButton button in Buttons)
             {
-                button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+                if (subscribeCount > 0)
+                    button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
 

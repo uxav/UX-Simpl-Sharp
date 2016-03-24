@@ -13,7 +13,6 @@ namespace UXLib.UI
         public UIKeypad(BoolOutputSig digitalStartJoin)
         {
             this.PressDigitalJoin = digitalStartJoin;
-            this.SubscribeToSigChanges();
         }
 
         protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
@@ -23,7 +22,7 @@ namespace UXLib.UI
                 && args.Sig.Number >= this.PressDigitalJoin.Number
                 && args.Sig.Number <= (this.PressDigitalJoin.Number + 12))
             {
-                if (ButtonPressed != null)
+                if (_ButtonPressed != null)
                 {
                     uint index = args.Sig.Number - this.PressDigitalJoin.Number;
 
@@ -46,7 +45,7 @@ namespace UXLib.UI
                         default: button = UIKeypadButton.Digit0; break;
                     }
 
-                    ButtonPressed(this, new UIKeypadEventArgs(
+                    _ButtonPressed(this, new UIKeypadEventArgs(
                         index,
                         args.Sig.Number,
                         this.Device,
@@ -57,7 +56,31 @@ namespace UXLib.UI
             base.OnSigChange(currentDevice, args);
         }
 
-        public event UIKeypadEventHandler ButtonPressed;
+        private event UIKeypadEventHandler _ButtonPressed;
+
+        int subscribeCount = 0;
+
+        public event UIKeypadEventHandler ButtonPressed
+        {
+            add
+            {
+                if (subscribeCount == 0)
+                    this.SubscribeToSigChanges();
+
+                subscribeCount++;
+
+                _ButtonPressed += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    this.UnSubscribeToSigChanges();
+
+                _ButtonPressed -= value;
+            }
+        }
     }
 
     public delegate void UIKeypadEventHandler(UIKeypad keypad, UIKeypadEventArgs args);
