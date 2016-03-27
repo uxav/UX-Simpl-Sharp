@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharpPro.DeviceSupport;
+using UXLib.Models;
 
 namespace UXLib.UI
 {
