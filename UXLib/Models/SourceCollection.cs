@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -8,6 +9,16 @@ namespace UXLib.Models
 {
     public class SourceCollection : IEnumerable<Source>
     {
+        public SourceCollection()
+        {
+            this.Sources = new List<Source>();
+        }
+
+        public SourceCollection(List<Source> listOfSources)
+        {
+            this.Sources = new List<Source>(listOfSources);
+        }
+
         List<Source> Sources;
 
         public Source this[uint id]
@@ -18,22 +29,12 @@ namespace UXLib.Models
             }
         }
 
-        public int NumberOfSources
+        public int Count
         {
             get
             {
                 return this.Sources.Count;
             }
-        }
-
-        public SourceCollection()
-        {
-            this.Sources = new List<Source>();
-        }
-
-        public SourceCollection(List<Source> listOfSources)
-        {
-            this.Sources = listOfSources;
         }
 
         public void AddSource(Source newSource)
@@ -44,18 +45,13 @@ namespace UXLib.Models
             }
         }
 
-        public int GroupCount(string groupName)
-        {
-            return Sources.Where(s => s.GroupName == groupName).ToList().Count;
-        }
-
         public SourceCollection GetSingleSources()
         {
             List<Source> singleSources = new List<Source>();
 
             foreach (Source source in this)
             {
-                if (this.GroupCount(source.GroupName) <= 1)
+                if (this.SourcesInGroup(source.GroupName).Count <= 1)
                 {
                     singleSources.Add(source);
                 }
@@ -64,29 +60,34 @@ namespace UXLib.Models
             return new SourceCollection(singleSources);
         }
 
-        public List<string> GetGroupedSourcesGroupNames()
+        public SourceCollection SourcesInGroup(string groupName)
+        {
+            return new SourceCollection(this.Sources.Where(s => s.GroupName == groupName).ToList());
+        }
+
+        public SourceCollection SourcesOfType(SourceType sourceType)
+        {
+            return new SourceCollection(this.Sources.Where(s => s.SourceType == sourceType).ToList());
+        }
+
+        public ReadOnlyCollection<string> GetGroupedSourcesGroupNames()
         {
             List<string> results = new List<string>();
 
             foreach (Source source in this)
             {
-                if (this.GroupCount(source.GroupName) > 1 && !results.Contains(source.GroupName))
+                if (this.SourcesInGroup(source.GroupName).Count > 1 && !results.Contains(source.GroupName))
                 {
                     results.Add(source.GroupName);
                 }
             }
 
-            return results;
+            return results.AsReadOnly();
         }
 
         public SourceCollection ForRoom(Room room)
         {
             return new SourceCollection(this.Sources.Where(s => s.Room == room).ToList());
-        }
-
-        public SourceCollection SourcesWithGroupName(string groupName)
-        {
-            return new SourceCollection(this.Sources.Where(s => s.GroupName == groupName).ToList());
         }
 
         public IEnumerator<Source> GetEnumerator()

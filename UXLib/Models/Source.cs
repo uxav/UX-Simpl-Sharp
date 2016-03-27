@@ -8,36 +8,55 @@ namespace UXLib.Models
 {
     public class Source
     {
-        public uint ID;
-        public string Name;
-        public string Icon;
-        public string GroupName;
-        public SourceType SourceType;
-        public object SourceController;
-        public Room Room { get; private set; }
-
-        public Source(uint id)
-        {
-            this.ID = id;
-            this.Name = "Unknown Source";
-        }
-
-        public Source(uint id, string name, SourceType sourceType, string groupName)
+        public Source(uint id, string name, SourceType sourceType)
         {
             this.ID = id;
             this.Name = name;
             this.SourceType = sourceType;
-            this.GroupName = groupName;
         }
 
-        public Source(uint id, string name, SourceType sourceType, string groupName, object sourceControllerObject)
+        public Source(uint id, string name, SourceType sourceType, uint inputIndex)
         {
             this.ID = id;
             this.Name = name;
             this.SourceType = sourceType;
+            this.InputIndex = inputIndex;
+        }
+
+        public Source(uint id, string name, SourceType sourceType, uint inputIndex, string groupName)
+            : this(id, name, sourceType, inputIndex)
+        {
             this.GroupName = groupName;
+        }
+
+        public Source(uint id, string name, SourceType sourceType, uint inputIndex, string groupName, object sourceControllerObject)
+            : this(id, name, sourceType, inputIndex, groupName)
+        {
             this.SourceController = sourceControllerObject;
         }
+
+        public uint ID { get; protected set; }
+        public string Name { get; protected set; }
+        public string Icon { get; set; }
+        string _GroupName;
+        public string GroupName
+        {
+            get
+            {
+                if (_GroupName == null || _GroupName == string.Empty)
+                    return this.Name;
+                else
+                    return _GroupName;
+            }
+            protected set
+            {
+                _GroupName = value;
+            }
+        }
+        public SourceType SourceType { get; protected set; }
+        public uint InputIndex { get; protected set; }
+        public object SourceController { get; protected set; }
+        public Room Room { get; protected set; }
 
         public void AssignToRoom(Room room)
         {

@@ -7,6 +7,11 @@ namespace UXLib.Models
 {
     public class RoomCollection : IEnumerable<Room>
     {
+        public RoomCollection()
+        {
+            this.RoomList = new List<Room>();
+        }
+        
         private List<Room> RoomList;
 
         public Room this[uint id]
@@ -23,12 +28,6 @@ namespace UXLib.Models
             {
                 return this.RoomList.Count;
             }
-        }
-        
-        public RoomCollection()
-            : base()
-        {
-            this.RoomList = new List<Room>();
         }
 
         public void Add(Room room)
