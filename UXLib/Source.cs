@@ -12,7 +12,7 @@ namespace UXLib
         public string Name;
         public string Icon;
         public string GroupName;
-        public eSourceType SourceType;
+        public SourceType SourceType;
         public object SourceController;
         public Room Room { get; private set; }
 
@@ -22,7 +22,7 @@ namespace UXLib
             this.Name = "Unknown Source";
         }
 
-        public Source(uint id, string name, eSourceType sourceType, string groupName)
+        public Source(uint id, string name, SourceType sourceType, string groupName)
         {
             this.ID = id;
             this.Name = name;
@@ -30,7 +30,7 @@ namespace UXLib
             this.GroupName = groupName;
         }
 
-        public Source(uint id, string name, eSourceType sourceType, string groupName, object sourceControllerObject)
+        public Source(uint id, string name, SourceType sourceType, string groupName, object sourceControllerObject)
         {
             this.ID = id;
             this.Name = name;
@@ -45,7 +45,7 @@ namespace UXLib
         }
     }
 
-    public enum eSourceType
+    public enum SourceType
     {
         Unknown,
         VideoConference,
