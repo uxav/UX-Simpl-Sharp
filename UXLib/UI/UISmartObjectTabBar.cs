@@ -18,7 +18,7 @@ namespace UXLib.UI
             {
                 while (smartObject.BooleanOutput.Contains(string.Format("Tab Button {0} Press", item)))
                 {
-                    UISmartObjectButton tabButton = new UISmartObjectButton(
+                    UISmartObjectButton tabButton = new UISmartObjectButton(this,
                         item, this.DeviceSmartObject,
                         string.Format("Tab Button {0} Press", item),
                         string.Format("Tab Button {0} Select", item)

@@ -9,38 +9,39 @@ namespace UXLib.UI
 {
     public class UISmartObjectButton : UIObject
     {
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string pressDigitalJoinName)
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName)
         {
             this.ItemIndex = itemIndex;
             this.SmartObject = smartObject;
             this.PressDigitalJoin = this.SmartObject.BooleanOutput[pressDigitalJoinName];
+            this.Owner = owner;
         }
 
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
             string feedbackDigitalJoinName)
-            : this(itemIndex, smartObject, pressDigitalJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName)
         {
             this.FeedbackDigitalJoin = this.SmartObject.BooleanInput[feedbackDigitalJoinName];
         }
 
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
             string feedbackDigitalJoinName, string textSerialJoinName)
-            : this(itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName)
         {
             this.TextSerialJoin = this.SmartObject.StringInput[textSerialJoinName];
         }
 
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
             string feedbackDigitalJoinName, string textSerialJoinName, string iconSerialJoinName)
-            : this(itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName, textSerialJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName, textSerialJoinName)
         {
             this.IconSerialJoin = this.SmartObject.StringInput[iconSerialJoinName];
         }
 
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
             string feedbackDigitalJoinName, string textSerialJoinName, string iconSerialJoinName,
             string enableDigitalJoinName, string visibleDigitalJoinName)
-            : this(itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName,
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName,
             textSerialJoinName, iconSerialJoinName)
         {
             this.EnableDigitalJoin = this.SmartObject.BooleanInput[enableDigitalJoinName];
@@ -50,6 +51,8 @@ namespace UXLib.UI
         public object LinkedObject { get; set; }
         
         public uint ItemIndex { get; protected set; }
+
+        public UISmartObject Owner { get; protected set; }
 
         protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
         {

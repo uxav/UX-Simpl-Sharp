@@ -19,7 +19,7 @@ namespace UXLib.UI
             {
                 while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Pressed", item)))
                 {
-                    UISmartObjectButton listButton = new UISmartObjectButton(
+                    UISmartObjectButton listButton = new UISmartObjectButton(this,
                         item, this.DeviceSmartObject,
                         string.Format("Item {0} Pressed", item),
                         string.Format("Item {0} Selected", item),

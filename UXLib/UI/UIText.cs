@@ -92,5 +92,15 @@ namespace UXLib.UI
             element.SetAttributeValue("size", size);
             return this;
         }
+
+        public UIText PadBy(uint numberOfSpaces)
+        {
+            XElement element = xml.Element("FONT");
+            string temp = "";
+            for(uint c = 0; c < numberOfSpaces; c ++)
+                temp = temp + " ";
+            element.Value = temp + element.Value;
+            return this;
+        }
     }
 }

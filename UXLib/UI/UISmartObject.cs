@@ -42,7 +42,7 @@ namespace UXLib.UI
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UISmartObjectButton newButton = new UISmartObjectButton(
+                UISmartObjectButton newButton = new UISmartObjectButton(this,
                     itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName
                     );
                 this.Buttons.Add(newButton);
@@ -54,7 +54,7 @@ namespace UXLib.UI
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UISmartObjectButton newButton = new UISmartObjectButton(
+                UISmartObjectButton newButton = new UISmartObjectButton(this,
                     itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName,
                     titleFeedbackSigName, iconFeedbackSigName
                     );
@@ -67,7 +67,7 @@ namespace UXLib.UI
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UISmartObjectButton newButton = new UISmartObjectButton(
+                UISmartObjectButton newButton = new UISmartObjectButton(this,
                     itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName,
                     titleFeedbackSigName, iconFeedbackSigName, enableSigName, visibleSigName
                     );

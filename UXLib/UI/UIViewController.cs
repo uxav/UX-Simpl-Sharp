@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
@@ -26,6 +27,13 @@ namespace UXLib.UI
         public event UIViewControllerEventHandler VisibilityChange;
         public UIController UIController { get; protected set; }
         public UIViewController Owner { get; protected set; }
+        public BasicTriList Device
+        {
+            get
+            {
+                return this.UIController.Device;
+            }
+        }
 
         void View_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
         {
