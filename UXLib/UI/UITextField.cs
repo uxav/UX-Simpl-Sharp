@@ -34,6 +34,7 @@ namespace UXLib.UI
             this.EscButton = escButton;
             this.EscButton.Title = "Escape";
             this.ClearButton = clearButton;
+            this.ClearButton.Enable();
         }
 
         public void Setup(string title, string startText)
@@ -90,30 +91,18 @@ namespace UXLib.UI
         string _Text;
         public string Text
         {
-            set
-            {
-                if (_Text == null)
-                {
-                    _Text = "";
-                    TextJoinToDevice.StringValue = _Text;
-                    if (ClearButton != null)
-                        ClearButton.Visible = false;
-                }
-                if (!_Text.Equals(value))
-                {
-                    _Text = String.Copy(value);
-                    if (!TextJoinFromDevice.StringValue.Equals(value) || value == "")
-                        TextJoinToDevice.StringValue = _Text;
-                    if (_Text.Length > 0 && ClearButton != null)
-                        ClearButton.Visible = true;
-                    else if (ClearButton != null)
-                        ClearButton.Visible = false;
-                    OnTextFieldEvent(UITextFieldEventType.TextChanged);
-                }
-            }
             get
             {
                 return _Text;
+            }
+            set
+            {
+                if(_Text != value)
+                {
+                    _Text = value;
+                    TextJoinToDevice.StringValue = _Text;
+                    OnTextFieldEvent(UITextFieldEventType.TextChanged);
+                }
             }
         }
 
@@ -166,6 +155,14 @@ namespace UXLib.UI
             if (_TextFieldEvent != null)
             {
                 _TextFieldEvent(this, new UITextFieldEventArgs(eventType, this.HasFocus, this.InitialText, this.Text));
+            }
+
+            if (this.ClearButton != null)
+            {
+                if (this.Text.Length > 0)
+                    this.ClearButton.Show();
+                else
+                    this.ClearButton.Hide();
             }
         }
 
@@ -243,7 +240,8 @@ namespace UXLib.UI
                 case eSigType.String:
                     if (args.Sig == TextJoinFromDevice)
                     {
-                        this.Text = args.Sig.StringValue;
+                        _Text = args.Sig.StringValue;
+                        OnTextFieldEvent(UITextFieldEventType.TextChanged);
                         return;
                     }
                     break;

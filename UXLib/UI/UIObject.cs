@@ -489,9 +489,12 @@ namespace UXLib.UI
         /// </summary>
         public void Dispose()
         {
-            // Dispose of unmanaged resources.
-            Dispose(true);
-            CrestronEnvironment.GC.SuppressFinalize(this);
+            if (!Disposed)
+            {
+                // Dispose of unmanaged resources.
+                Dispose(true);
+                CrestronEnvironment.GC.SuppressFinalize(this);
+            }
         }
 
         bool _Disposed = false;
