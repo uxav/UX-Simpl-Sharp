@@ -29,6 +29,11 @@ namespace UXLib
             }
         }
 
+        public int IndexOf(ListDataObject item)
+        {
+            return this.Data.IndexOf(item);
+        }
+
         public ListData()
         {
             this.Data = new List<ListDataObject>();
