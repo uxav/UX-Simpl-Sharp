@@ -338,6 +338,26 @@ namespace UXLib.UI
         }
 
         /// <summary>
+        /// Simulate a push and release event on the button
+        /// </summary>
+        public virtual void DoPush()
+        {
+            OnPress();
+            OnRelease();
+        }
+
+        /// <summary>
+        /// Simulate a push and release event on the button
+        /// </summary>
+        /// <param name="push">True - Trigger OnPush(), False - Trigger OnRelease()</param>
+        /// <returns></returns>
+        public virtual void DoPush(bool push)
+        {
+            if (push) OnPress();
+            else OnRelease();
+        }
+
+        /// <summary>
         /// Called once a value from an analog touch join has been changed
         /// Will send any subscribed notifications
         /// </summary>
