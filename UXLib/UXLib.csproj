@@ -136,6 +136,7 @@
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
+    <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -190,9 +191,9 @@
         <ProgramIdTag>UXLib</ProgramIdTag>
         <SystemName>UXLib</SystemName>
         <Programmer>Mike Jobson</Programmer>
-        <ArchiveFilename>C:\Users\mike\Developer\twobirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
+        <ArchiveFilename>C:\Users\mike\Developer\TwoBirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>22/03/2016 12:10:18</CompiledOn>
+        <CompiledOn>01/04/2016 11:31:12</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />
