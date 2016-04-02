@@ -44,6 +44,16 @@ namespace UXLib.Devices.Audio.Polycom
             return this.VirtualChannels.Count();
         }
 
+        public bool ContainsMics
+        {
+            get
+            {
+                if (VirtualChannels.OfType<VirtualChannel>().Where(c => c.IsMic).Count() > 0)
+                    return true;
+                return false;
+            }
+        }
+
         public bool SupportsFader
         {
             get

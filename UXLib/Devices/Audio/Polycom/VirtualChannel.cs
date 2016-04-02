@@ -66,6 +66,8 @@ namespace UXLib.Devices.Audio.Polycom
                     case SoundstructurePhysicalChannelType.SR_LINE_OUT:
                     case SoundstructurePhysicalChannelType.PSTN_IN:
                     case SoundstructurePhysicalChannelType.PSTN_OUT:
+                    case SoundstructurePhysicalChannelType.VOIP_IN:
+                    case SoundstructurePhysicalChannelType.VOIP_OUT:
                     case SoundstructurePhysicalChannelType.CLINK_OUT:
                     case SoundstructurePhysicalChannelType.CLINK_IN:
                     case SoundstructurePhysicalChannelType.SUBMIX:
@@ -108,10 +110,54 @@ namespace UXLib.Devices.Audio.Polycom
                     case SoundstructurePhysicalChannelType.SR_LINE_OUT:
                     case SoundstructurePhysicalChannelType.PSTN_IN:
                     case SoundstructurePhysicalChannelType.PSTN_OUT:
+                    case SoundstructurePhysicalChannelType.VOIP_IN:
+                    case SoundstructurePhysicalChannelType.VOIP_OUT:
                     case SoundstructurePhysicalChannelType.CLINK_OUT:
                     case SoundstructurePhysicalChannelType.CLINK_IN:
                     case SoundstructurePhysicalChannelType.SUBMIX:
                     case SoundstructurePhysicalChannelType.SIG_GEN:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool IsMic
+        {
+            get
+            {
+                switch (this.PhysicalChannelType)
+                {
+                    case SoundstructurePhysicalChannelType.SR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_MIC_IN:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool IsVoip
+        {
+            get
+            {
+                switch (this.PhysicalChannelType)
+                {
+                    case SoundstructurePhysicalChannelType.VOIP_IN:
+                    case SoundstructurePhysicalChannelType.VOIP_OUT:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool IsPSTN
+        {
+            get
+            {
+                switch (this.PhysicalChannelType)
+                {
+                    case SoundstructurePhysicalChannelType.PSTN_IN:
+                    case SoundstructurePhysicalChannelType.PSTN_OUT:
                         return true;
                 }
                 return false;

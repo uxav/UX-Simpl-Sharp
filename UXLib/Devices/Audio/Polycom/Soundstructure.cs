@@ -212,26 +212,42 @@ namespace UXLib.Devices.Audio.Polycom
                         {
                             try
                             {
-                                SoundstructureCommandType commandType = (SoundstructureCommandType)Enum.Parse(typeof(SoundstructureCommandType), elements[1], true);
-
-                                switch (commandType)
+                                bool commandOK = false;
+                                SoundstructureCommandType commandType = SoundstructureCommandType.FADER;
+                                
+                                try
                                 {
-                                    case SoundstructureCommandType.MATRIX_MUTE:
-                                        CrestronConsole.PrintLine("Matrix Mute Input: \x22{0}\x22 Output: \x22{1}\x22 Value: {2}", elements[2], elements[3], elements[4]);
-                                        break;
-                                    case SoundstructureCommandType.FADER:
-                                        if (elements[2] == "min" || elements[2] == "max")
-                                        {
-                                            OnValueChange(elements[3], commandType, elements[2], Convert.ToDouble(elements[4]));
-                                        }
-                                        else
-                                        {
+                                    commandType = (SoundstructureCommandType)Enum.Parse(typeof(SoundstructureCommandType), elements[1], true);
+                                    commandOK = true;
+                                }
+                                catch
+                                {
+#if DEBUG
+                                    CrestronConsole.PrintLine("Unknown SoundstructureCommandType {0}, Rx: {1}", elements[1], receivedString);
+#endif
+                                }
+
+                                if (commandOK)
+                                {
+                                    switch (commandType)
+                                    {
+                                        case SoundstructureCommandType.MATRIX_MUTE:
+                                            CrestronConsole.PrintLine("Matrix Mute Input: \x22{0}\x22 Output: \x22{1}\x22 Value: {2}", elements[2], elements[3], elements[4]);
+                                            break;
+                                        case SoundstructureCommandType.FADER:
+                                            if (elements[2] == "min" || elements[2] == "max")
+                                            {
+                                                OnValueChange(elements[3], commandType, elements[2], Convert.ToDouble(elements[4]));
+                                            }
+                                            else
+                                            {
+                                                OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
+                                            }
+                                            break;
+                                        default:
                                             OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
-                                        }
-                                        break;
-                                    default:
-                                        OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
-                                        break;
+                                            break;
+                                    }
                                 }
                             }
                             catch  (Exception e)
