@@ -118,15 +118,32 @@ namespace UXLib
                 }
 
                 item.IsSelected = true;
+                
+                if (this.DataChange != null)
+                    this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
             }
             else
+                this.SelectSingleItem(0);
+        }
+
+        public void SelectItemWithKeyName(string keyName)
+        {
+            ListDataObject item = Data.FirstOrDefault(o => o.KeyName == keyName);
+            if (item != null)
             {
                 foreach (ListDataObject dataObject in Data)
-                    dataObject.IsSelected = false;
-            }
+                {
+                    if (dataObject != item)
+                        dataObject.IsSelected = false;
+                }
 
-            if (this.DataChange != null)
-                this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+                item.IsSelected = true;
+
+                if (this.DataChange != null)
+                    this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.ItemSelectionHasChanged));
+            }
+            else
+                this.SelectSingleItem(0);
         }
 
         public void SelectItemWithLinkedObjectValue(object linkedObject)

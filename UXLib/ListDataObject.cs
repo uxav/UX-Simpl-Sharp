@@ -9,24 +9,38 @@ namespace UXLib
     public class ListDataObject : IDisposable
     {
         public string Title;
+        public string KeyName { get; protected set; }
         public string Icon;
         public object DataObject;
         public bool IsSelected;
         public bool Enabled;
 
-        public ListDataObject(string title, object dataObject)
-            : this(title, UXLib.UI.UIMediaIcons.Blank, dataObject) { }
+        public ListDataObject(string keyName, object dataObject)
+            : this(keyName, UXLib.UI.UIMediaIcons.Blank, dataObject) { }
 
-        public ListDataObject(string title, string icon, object dataObject)
-            : this(title, icon, dataObject, true) { }
+        public ListDataObject(string keyName, string icon, object dataObject)
+            : this(keyName, icon, dataObject, true) { }
 
-        public ListDataObject(string title, string icon, object dataObject, bool enabled)
+        public ListDataObject(string keyName, string icon, object dataObject, bool enabled)
         {
-            this.Title = title;
+            this.Title = keyName;
+            this.KeyName = keyName;
             this.Icon = icon;
             this.DataObject = dataObject;
             this.IsSelected = false;
             this.Enabled = enabled;
+        }
+
+        public ListDataObject(string keyName, string title, string icon, object dataObject)
+            : this(keyName, icon, dataObject, true)
+        {
+            this.Title = title;
+        }
+
+        public ListDataObject(string keyName, string title, string icon, object dataObject, bool enabled)
+            : this(keyName, icon, dataObject, enabled)
+        {
+            this.Title = title;
         }
 
         /// <summary>
