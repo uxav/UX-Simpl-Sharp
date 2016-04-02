@@ -22,15 +22,18 @@ namespace UXLib.Devices.Audio.Polycom
         public SoundstructureItemCollection VirtualChannels { get; protected set; }
         public SoundstructureItemCollection VirtualChannelGroups { get; protected set; }
 
-        public void Init()
+        public bool Initialised { get; protected set; }
+
+        public void Initialise()
         {
+            this.Initialised = false;
             listedItems.Clear();
-            Socket.Send("vclist");
+            this.Send("vclist");
         }
 
-        void Init(object obj)
+        void Initialise(object obj)
         {
-            this.Init();
+            this.Initialise();
         }
 
         void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
@@ -40,7 +43,8 @@ namespace UXLib.Devices.Audio.Polycom
 
         void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
-            new CTimer(Init, 2000);
+            if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
+                new CTimer(Initialise, 1000);
         }
 
         #region ISocketDevice Members
@@ -76,7 +80,10 @@ namespace UXLib.Devices.Audio.Polycom
 
         public void Send(string stringToSend)
         {
-            this.Socket.Send(stringToSend);
+            Crestron.SimplSharp.CrestronSockets.SocketErrorCodes error = this.Socket.Send(stringToSend);
+
+            if (error != Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
+                throw new SocketException("An error occured trying to send a command to the Soundstructure socket");
         }
 
         public event SoundstructureValueChangeHandler ValueChange;
@@ -261,6 +268,8 @@ namespace UXLib.Devices.Audio.Polycom
                             item.Init();
                         }
                     }
+
+                    Initialised = true;
                 }
             }
         }

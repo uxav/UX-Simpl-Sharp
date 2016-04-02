@@ -56,7 +56,8 @@ namespace UXLib.UI
             {
                 this.SubPage.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(SubPage_VisibilityChange);
                 this.Buttons.ButtonEvent -= new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
-                this.CallBack(this, action);
+                if (this.CallBack != null)
+                    this.CallBack(this, action);
             }
         }
 
