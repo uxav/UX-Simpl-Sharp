@@ -14,6 +14,7 @@ namespace UXLib.Sockets
         {
             socket = new TCPClient(address, port, bufferSize);
             this.BufferSize = bufferSize;
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
         }
 
         TCPClient socket;
@@ -66,6 +67,12 @@ namespace UXLib.Sockets
 
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
                 socket.DisconnectFromServer();
+        }
+
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (programEventType == eProgramStatusEventType.Stopping && this.Connected)
+                this.Disconnect();
         }
 
         public event SimpleClientSocketConnectionEventHandler SocketConnectionEvent;
