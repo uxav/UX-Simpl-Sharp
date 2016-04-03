@@ -63,17 +63,17 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
-        double _faderValue;
+        double _Fader;
         public double Fader
         {
             get
             {
-                return _faderValue;
+                return _Fader;
             }
             set
             {
                 if (this.Device.Socket.Set(this, SoundstructureCommandType.FADER, value))
-                    _faderValue = value;
+                    _Fader = value;
             }
         }
 
@@ -110,9 +110,6 @@ namespace UXLib.Devices.Audio.Polycom
                 {
                     case SoundstructureCommandType.MUTE:
                         _mute = Convert.ToBoolean(args.Value);
-#if DEBUG
-                        CrestronConsole.PrintLine("{0} Mute = {1}", this.Name, _mute);
-#endif
                         break;
                     case SoundstructureCommandType.FADER:
                         if (args.CommandModifier == "min")
@@ -120,12 +117,7 @@ namespace UXLib.Devices.Audio.Polycom
                         else if (args.CommandModifier == "max")
                             FaderMax = args.Value;
                         else
-                        {
-                            _faderValue = args.Value;
-#if DEBUG
-                            CrestronConsole.PrintLine("{0} Fader = {1:0.00}", this.Name, this.Fader);
-#endif
-                        }
+                            _Fader = args.Value;
                         break;
                 }
             }

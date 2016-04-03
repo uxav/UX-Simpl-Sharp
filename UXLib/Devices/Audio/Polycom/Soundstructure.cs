@@ -88,6 +88,8 @@ namespace UXLib.Devices.Audio.Polycom
 
         public event SoundstructureValueChangeHandler ValueChange;
 
+        public event SoundstructureVoipInfoReceivedHandler VoipInfoReceived;
+
         void OnValueChange(string name, SoundstructureCommandType commandType, double value)
         {
             ISoundstructureItem item = GetItemForName(name);
@@ -120,8 +122,9 @@ namespace UXLib.Devices.Audio.Polycom
 
         public void OnReceive(string receivedString)
         {
-            //CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
-            
+#if DEBUG
+            CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
+#endif
             if (receivedString.Contains(' '))
             {
                 List<string> elements = SoundstructureSocket.ElementsFromString(receivedString);
@@ -139,12 +142,22 @@ namespace UXLib.Devices.Audio.Polycom
                                 values.Add(Convert.ToUInt32(elements[element]));
                             }
 
-                            VirtualChannel channel = new VirtualChannel(this, elements[1],
-                                (SoundstructureVirtualChannelType)Enum.Parse(typeof(SoundstructureVirtualChannelType), elements[2], true),
-                                (SoundstructurePhysicalChannelType)Enum.Parse(typeof(SoundstructurePhysicalChannelType), elements[3], true),
-                                values.ToArray());
-                            
-                            listedItems.Add(channel);
+                            SoundstructurePhysicalChannelType type = (SoundstructurePhysicalChannelType)Enum.Parse(typeof(SoundstructurePhysicalChannelType), elements[3], true);
+
+                            if (type == SoundstructurePhysicalChannelType.VOIP_OUT)
+                            {
+                                listedItems.Add(new VoipOutChannel(this, elements[1], values.ToArray()));
+                            }
+                            else if (type == SoundstructurePhysicalChannelType.VOIP_IN)
+                            {
+                                listedItems.Add(new VoipInChannel(this, elements[1], values.ToArray()));
+                            }
+                            else
+                            {
+                                listedItems.Add(new VirtualChannel(this, elements[1],
+                                    (SoundstructureVirtualChannelType)Enum.Parse(typeof(SoundstructureVirtualChannelType), elements[2], true),
+                                    type, values.ToArray()));
+                            }
                         }
                         catch (Exception e)
                         {
@@ -222,9 +235,16 @@ namespace UXLib.Devices.Audio.Polycom
                                 }
                                 catch
                                 {
-#if DEBUG
-                                    CrestronConsole.PrintLine("Unknown SoundstructureCommandType {0}, Rx: {1}", elements[1], receivedString);
-#endif
+                                    if (elements[1].StartsWith("voip_") && this.VirtualChannels.Contains(elements[2]))
+                                    {
+                                        VirtualChannel channel = this.VirtualChannels[elements[2]] as VirtualChannel;
+                                        if (channel.IsVoip && VoipInfoReceived != null)
+                                        {
+                                            string info = receivedString.Substring(receivedString.IndexOf(channel.Name) + channel.Name.Length + 2,
+                                                receivedString.Length - receivedString.IndexOf(channel.Name) - channel.Name.Length - 2);
+                                            VoipInfoReceived(channel, new SoundstructureVoipInfoReceivedEventArgs(elements[1], info));
+                                        }
+                                    }
                                 }
 
                                 if (commandOK)
@@ -364,10 +384,18 @@ namespace UXLib.Devices.Audio.Polycom
         PHONE_DIAL,
         PHONE_REJECT,
         PHONE_IGNORE,
-        PHONE_RING
+        PHONE_RING,
+        VOIP_HOLD,
+        VOIP_RESUME,
+        VOIP_SEND,
+        VOIP_ANSWER,
+        VOIP_LINE,
+        VOIP_DND
     }
 
     public delegate void SoundstructureValueChangeHandler(ISoundstructureItem item, SoundstructureValueChangeEventArgs args);
+
+    public delegate void SoundstructureVoipInfoReceivedHandler(ISoundstructureItem item, SoundstructureVoipInfoReceivedEventArgs args);
 
     public class SoundstructureValueChangeEventArgs : EventArgs
     {
@@ -387,5 +415,17 @@ namespace UXLib.Devices.Audio.Polycom
         public SoundstructureCommandType CommandType;
         public string CommandModifier;
         public double Value;
+    }
+
+    public class SoundstructureVoipInfoReceivedEventArgs : EventArgs
+    {
+        public SoundstructureVoipInfoReceivedEventArgs(string command, string info)
+        {
+            this.Command = command;
+            this.Info = info;
+        }
+
+        public string Command;
+        public string Info;
     }
 }

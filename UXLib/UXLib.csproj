@@ -100,11 +100,15 @@
     <Compile Include="Devices\Audio\BSS\SoundWebObject.cs" />
     <Compile Include="Devices\Audio\BSS\SoundWebSocket.cs" />
     <Compile Include="Devices\Audio\Polycom\ISoundStructureItem.cs" />
+    <Compile Include="Devices\Audio\Polycom\ISoundstructurePhoneOutChannel.cs" />
     <Compile Include="Devices\Audio\Polycom\Soundstructure.cs" />
     <Compile Include="Devices\Audio\Polycom\SoundstructureSocket.cs" />
     <Compile Include="Devices\Audio\Polycom\VirtualChannel.cs" />
     <Compile Include="Devices\Audio\Polycom\SoundstructureItemCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VirtualChannelGroup.cs" />
+    <Compile Include="Devices\Audio\Polycom\VoipChannel.cs" />
+    <Compile Include="Devices\Audio\Polycom\VoipInChannel.cs" />
+    <Compile Include="Devices\Audio\Polycom\VoipOutChannel.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
@@ -193,10 +197,13 @@
         <Programmer>Mike Jobson</Programmer>
         <ArchiveFilename>C:\Users\mike\Developer\TwoBirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>02/04/2016 01:10:21</CompiledOn>
+        <CompiledOn>03/04/2016 15:48:11</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
-        <CopyTo />
+        <CopyTo>
+          <DebugAnyCPU />
+          <ReleaseAnyCPU />
+        </CopyTo>
         <OriginalReferenceSources />
       </FlavorProperties>
     </VisualStudio>
