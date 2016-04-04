@@ -85,6 +85,27 @@ namespace UXLib.Models
             return results.AsReadOnly();
         }
 
+        public uint GetNextUnusedSourceID()
+        {
+            for (uint id = 1; id < uint.MaxValue; id++)
+            {
+                bool exists = false;
+                foreach (Source source in Sources)
+                {
+                    if (source.ID == id)
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists)
+                    return id;
+            }
+
+            return 0;
+        }
+
         public SourceCollection ForRoom(Room room)
         {
             return new SourceCollection(this.Sources.Where(s => s.Room == room).ToList());
