@@ -21,12 +21,17 @@ namespace UXLib.Devices.Audio.Polycom
         private List<ISoundstructureItem> listedItems = new List<ISoundstructureItem>();
         public SoundstructureItemCollection VirtualChannels { get; protected set; }
         public SoundstructureItemCollection VirtualChannelGroups { get; protected set; }
+        public SoundstructureEthernetSettings LanAdapter { get; protected set; }
 
         public bool Initialised { get; protected set; }
 
         public void Initialise()
         {
+#if DEBUG
+            CrestronConsole.PrintLine("Initialise() Soundstructure");
+#endif
             this.Initialised = false;
+            this.Send("get eth_settings 1");
             listedItems.Clear();
             this.Send("vclist");
         }
@@ -44,7 +49,12 @@ namespace UXLib.Devices.Audio.Polycom
         void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
-                new CTimer(Initialise, 1000);
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("Soundstructure Connected!");
+#endif
+                this.Initialise();
+            }
         }
 
         #region ISocketDevice Members
@@ -123,7 +133,7 @@ namespace UXLib.Devices.Audio.Polycom
         public void OnReceive(string receivedString)
         {
 #if DEBUG
-            CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
+            //CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
 #endif
             if (receivedString.Contains(' '))
             {
@@ -225,6 +235,12 @@ namespace UXLib.Devices.Audio.Polycom
                         {
                             try
                             {
+                                if (elements[1] == "eth_settings" && elements[2] == "1")
+                                {
+                                    this.LanAdapter = new SoundstructureEthernetSettings(elements[3]);
+                                    break;
+                                }
+
                                 bool commandOK = false;
                                 SoundstructureCommandType commandType = SoundstructureCommandType.FADER;
                                 
@@ -306,9 +322,13 @@ namespace UXLib.Devices.Audio.Polycom
                     }
 
                     Initialised = true;
+                    if (HasInitialised != null)
+                        HasInitialised(this);
                 }
             }
         }
+
+        public event SoundstructureInitialisedCompleteEventHandler HasInitialised;
 
         bool ChannelIsGrouped(ISoundstructureItem channel)
         {
@@ -428,4 +448,6 @@ namespace UXLib.Devices.Audio.Polycom
         public string Command;
         public string Info;
     }
+
+    public delegate void SoundstructureInitialisedCompleteEventHandler(Soundstructure SoundStructureDevice);
 }

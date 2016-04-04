@@ -21,9 +21,15 @@ namespace UXLib.Devices.Audio.Polycom
 
         protected virtual void OnVoipInfoReceived(string command, string info)
         {
-//#if DEBUG
+#if DEBUG
             CrestronConsole.PrintLine("{0}, {1} = {2}", this.Name, command, info);
-//#endif
+            CrestronConsole.Print("  elements =");
+            foreach (string element in SoundstructureSocket.ElementsFromString(info))
+            {
+                CrestronConsole.Print(" {0}", element);
+            }
+            CrestronConsole.PrintLine("");
+#endif
         }
 
         void Device_VoipInfoReceived(ISoundstructureItem item, SoundstructureVoipInfoReceivedEventArgs args)

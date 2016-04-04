@@ -10,6 +10,32 @@ namespace UXLib.Models
 {
     public class Room
     {
+        public Room(uint id)
+            : this(id, null) { }
+
+        public Room(uint id, Room parentRoom)
+        {
+            // Room created with parent!
+            this.ID = id;
+            this._Name = "";
+            this._Location = "";
+            if (parentRoom != null)
+            {
+                this.ParentRoom = parentRoom;
+                this.ParentRoom.ChildRoom = this;
+
+                // Find the master room by looping through the parents.
+                Room room = parentRoom;
+                while (room.IsChild)
+                {
+                    room = room.ParentRoom;
+                }
+
+                // This room shouldn't have a parent (isn't a child) and is the master room.
+                this.MasterRoom = room;
+            }
+        }
+
         /// <summary>
         /// This is the unique ID of the room. Try to use an ordered index
         /// </summary>
@@ -167,37 +193,6 @@ namespace UXLib.Models
 
                 return result;
             }
-        }
-
-        public Room(uint id)
-        {
-            // Room created with no parent so give it the id and init other properties.
-            this.ID = id;
-            this._Name = "";
-            this._Location = "";
-            this.ParentRoom = null;
-            this.MasterRoom = null;
-            this.ChildRoom = null;
-        }
-
-        public Room(uint id, Room parentRoom)
-        {
-            // Room created with parent!
-            this.ID = id;
-            this._Name = "";
-            this._Location = "";
-            this.ParentRoom = parentRoom;
-            this.ParentRoom.ChildRoom = this;
-
-            // Find the master room by looping through the parents.
-            Room room = parentRoom;
-            while (room.IsChild)
-            {
-                room = room.ParentRoom;
-            }
-
-            // This room shouldn't have a parent (isn't a child) and is the master room.
-            this.MasterRoom = room;
         }
 
         public void FusionRegister(uint ipId, CrestronControlSystem controlSystem)

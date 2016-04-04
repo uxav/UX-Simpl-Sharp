@@ -25,38 +25,13 @@ namespace UXLib.Devices.Audio.Polycom
             {
                 case "voip_eth_settings":
                     info = info.Substring(1, info.Length - 2);
-                    info = info.Replace("\'", "");
-                    string[] infoParts = info.Split(',');
-                    foreach (string part in infoParts)
-                    {
-                        string paramName = part.Split('=')[0];
-                        string value = part.Split('=')[1];
-
-                        switch (paramName)
-                        {
-                            case "addr": IPAddress = value; break;
-                            case "gw": Gateway = value; break;
-                            case "nm": SubnetMask = value; break;
-                            default:
-                                if (paramName == "mode")
-                                {
-                                    if (value == "dhcp")
-                                        IsDHCP = true;
-                                    else
-                                        IsDHCP = false;
-                                }
-                                break;
-                        }
-                    }
+                    LanAdapter = new SoundstructureEthernetSettings(info);
                     break;
             }
 
             base.OnVoipInfoReceived(command, info);
         }
 
-        public string IPAddress { get; protected set; }
-        public bool IsDHCP { get; protected set; }
-        public string Gateway { get; protected set; }
-        public string SubnetMask { get; protected set; }
+        public SoundstructureEthernetSettings LanAdapter { get; protected set; }
     }
 }

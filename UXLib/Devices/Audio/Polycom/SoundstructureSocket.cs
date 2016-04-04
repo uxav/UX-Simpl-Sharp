@@ -21,7 +21,9 @@ namespace UXLib.Devices.Audio.Polycom
         {
             str = str + "\x0d";
 
+#if DEBUG
             //CrestronConsole.PrintLine("Soundstructure Tx: {0}", str);
+#endif
             return base.Send(str);
         }
 
