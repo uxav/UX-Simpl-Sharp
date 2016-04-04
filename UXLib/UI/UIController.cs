@@ -73,7 +73,7 @@ namespace UXLib.UI
             }
         }
 
-        public Source Source
+        public virtual Source Source
         {
             get
             {
