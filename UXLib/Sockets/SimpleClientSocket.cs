@@ -53,7 +53,12 @@ namespace UXLib.Sockets
             this.shouldReconnect = shouldReconnect;
             if (socket.ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
             {
-                socket.ConnectToServerAsync(OnConnect);
+                SocketErrorCodes error = socket.ConnectToServerAsync(OnConnect);
+                if (error != SocketErrorCodes.SOCKET_OPERATION_PENDING
+                    && error != SocketErrorCodes.SOCKET_OK)
+                {
+                    ErrorLog.Error("Error in socket.ConnectToServerAsync(), {0}", error.ToString());
+                }
             }
             else
             {
