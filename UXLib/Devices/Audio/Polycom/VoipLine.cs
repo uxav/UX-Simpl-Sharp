@@ -143,8 +143,8 @@ namespace UXLib.Devices.Audio.Polycom
 
     public enum VoipLineState
     {
-        Line_Registered,
         Line_Not_Registered,
+        Line_Registered,
         Proceed,
         Offering,
         Call_Active,
