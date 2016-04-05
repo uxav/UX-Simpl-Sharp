@@ -39,6 +39,9 @@ namespace UXLib.Devices.Audio.Polycom
                                     if (StateChanged != null)
                                         StateChanged(this, this.State);
                                     break;
+                                case "voip_line_label":
+                                    this.Label = elements[1];
+                                    break;
                                 case "voip_call_appearance_line":
                                     this.CallAppearance = uint.Parse(elements[1]);
                                     break;
@@ -71,6 +74,8 @@ namespace UXLib.Devices.Audio.Polycom
         public event VoipLineStateEventHandler StateChanged;
 
         public uint CallAppearance { get; protected set; }
+
+        public string Label { get; protected set; }
 
         public VoipCallAppearanceState CallAppearanceState { get; protected set; }
 
@@ -131,13 +136,13 @@ namespace UXLib.Devices.Audio.Polycom
     public enum VoipCallAppearanceState
     {
         Free,
-        Disconnected,
         DialTone,
+        Setup,
         Proceeding,
         Offering,
-        Setup,
         Ringback,
         Ncas_Call_Hold,
+        Disconnected,
         Connected
     }
 
