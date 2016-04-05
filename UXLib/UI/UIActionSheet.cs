@@ -15,7 +15,6 @@ namespace UXLib.UI
         public UIActionSheet(UISubPage subPage, string title, string subTitle, Action<UIActionSheet, ActionSheetButtonAction> callBack)
         {
             this.SubPage = subPage;
-            this.SubPage.VisibilityChange += new UIViewBaseVisibitlityEventHandler(SubPage_VisibilityChange);
             this.SubPage.Title = title;
             this.SubPage.SubTitle = subTitle;
             this.Buttons = new UIButtonCollection();
@@ -30,7 +29,16 @@ namespace UXLib.UI
         public virtual void Show()
         {
             action = ActionSheetButtonAction.TimedOut;
-            this.SubPage.Show();
+            if (!this.Visible)
+            {
+                this.SubPage.VisibilityChange += new UIViewBaseVisibitlityEventHandler(SubPage_VisibilityChange);
+                this.SubPage.Show();
+            }
+        }
+
+        public virtual void Hide()
+        {
+            this.SubPage.Hide();
         }
 
         public bool Visible
@@ -39,6 +47,18 @@ namespace UXLib.UI
             {
                 return this.SubPage.Visible;
             }
+        }
+
+        public string Title
+        {
+            get { return this.SubPage.Title; }
+            set { this.SubPage.Title = value; }
+        }
+
+        public string SubTitle
+        {
+            get { return this.SubPage.SubTitle; }
+            set { this.SubPage.SubTitle = value; }
         }
 
         ActionSheetButtonAction action;
@@ -67,7 +87,7 @@ namespace UXLib.UI
             {
                 UIActionSheetButton responseButton = args.Button as UIActionSheetButton;
                 action = responseButton.Action;
-                this.SubPage.Hide();
+                this.Hide();
             }
         }
 

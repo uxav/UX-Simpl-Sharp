@@ -85,6 +85,8 @@ namespace UXLib.UI
             }
         }
 
+        bool visibleInTransition = false;
+
         public override bool Visible
         {
             get
@@ -93,14 +95,16 @@ namespace UXLib.UI
             }
             set
             {
-                if (this.Visible != value)
+                if (this.Visible != value && !visibleInTransition)
                 {
+                    visibleInTransition = true;
                     if (value && this.VisibilityChange != null)
                         this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
                     if (!value && this.VisibilityChange != null)
                         this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
 
                     base.Visible = value;
+                    visibleInTransition = false;
                 }
             }
         }
