@@ -20,7 +20,7 @@ namespace UXLib.UI
             if (args.Event == eSigEvent.BoolChange
                 && args.Sig.BoolValue == true
                 && args.Sig.Number >= this.PressDigitalJoin.Number
-                && args.Sig.Number <= (this.PressDigitalJoin.Number + 12))
+                && args.Sig.Number <= (this.PressDigitalJoin.Number + 11))
             {
                 if (_ButtonPressed != null)
                 {
