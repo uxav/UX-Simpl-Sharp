@@ -78,5 +78,10 @@ namespace UXLib.Devices.VC.Cisco
                 }
             }
         }
+
+        public void Update()
+        {
+            Codec_HasConnected(this.Codec);
+        }
     }
 }
