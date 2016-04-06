@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro;
 
 namespace UXLib
 {
-    public class Tools
+    public static class Tools
     {
         public static void PrintLibInfo(string projectName, Assembly projectAssembly)
         {

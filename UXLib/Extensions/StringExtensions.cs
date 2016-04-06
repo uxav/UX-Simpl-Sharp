@@ -7,7 +7,7 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Extensions
 {
-    public static class StringExtension
+    public static class StringExtensions
     {
         public static string SplitCamelCase(this string s)
         {
