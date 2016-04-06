@@ -80,6 +80,26 @@ namespace UXLib.Devices.Audio.Polycom
         public double FaderMin { get; protected set; }
         public double FaderMax { get; protected set; }
 
+        public ushort FaderScaled
+        {
+            get
+            {
+                return (ushort)Soundstructure.ScaleRange(this.Fader, this.FaderMin, this.FaderMax, ushort.MinValue, ushort.MaxValue);
+            }
+            set
+            {
+                this.Fader = Soundstructure.ScaleRange(value, ushort.MinValue, ushort.MaxValue, this.FaderMin, this.FaderMax);
+            }
+        }
+
+        public event SoundstructureItemFaderChangeEventHandler FaderChanged;
+
+        protected virtual void OnFaderChange()
+        {
+            if (FaderChanged != null)
+                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.FaderScaled));
+        }
+
         public bool SupportsMute
         {
             get
@@ -100,6 +120,14 @@ namespace UXLib.Devices.Audio.Polycom
                 if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
                     _mute = value;
             }
+        }
+
+        public event SoundstructureItemMuteChangeEventHandler MuteChanged;
+
+        protected virtual void OnMuteChange()
+        {
+            if (MuteChanged != null)
+                MuteChanged(this, this.Mute);
         }
 
         void Device_ValueChange(ISoundstructureItem item, SoundstructureValueChangeEventArgs args)

@@ -81,8 +81,6 @@ namespace UXLib.Devices.Audio.Polycom
 
         #endregion
 
-        #region ICommDevice Members
-
         public bool DeviceCommunicating
         {
             get { throw new NotImplementedException(); }
@@ -340,7 +338,21 @@ namespace UXLib.Devices.Audio.Polycom
             return false;
         }
 
-        #endregion
+        public static double ScaleRange(double Value,
+           double FromMinValue, double FromMaxValue,
+           double ToMinValue, double ToMaxValue)
+        {
+            try
+            {
+                return (Value - FromMinValue) *
+                    (ToMaxValue - ToMinValue) /
+                    (FromMaxValue - FromMinValue) + ToMinValue;
+            }
+            catch
+            {
+                return double.NaN;
+            }
+        }
 
         #region IDevice Members
 

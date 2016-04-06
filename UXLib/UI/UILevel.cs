@@ -16,8 +16,8 @@ namespace UXLib.UI
         /// <param name="analogFeedbackJoin">The analog input signal join</param>
         public UILevel(UShortInputSig analogFeedbackJoin)
         {
-            this.LevelMinimumValue = 0;
-            this.LevelMaximumValue = 65535;
+            this.LevelMinimumValue = ushort.MinValue;
+            this.LevelMaximumValue = ushort.MaxValue;
             this.AnalogFeedbackJoin = analogFeedbackJoin;
         }
 

@@ -98,6 +98,26 @@ namespace UXLib.Devices.Audio.Polycom
         public double FaderMin { get; protected set; }
         public double FaderMax { get; protected set; }
 
+        public ushort FaderScaled
+        {
+            get
+            {
+                return (ushort)Soundstructure.ScaleRange(this.Fader, this.FaderMin, this.FaderMax, ushort.MinValue, ushort.MaxValue);
+            }
+            set
+            {
+                this.Fader = Soundstructure.ScaleRange(value, ushort.MinValue, ushort.MaxValue, this.FaderMin, this.FaderMax);
+            }
+        }
+
+        public event SoundstructureItemFaderChangeEventHandler FaderChanged;
+
+        protected virtual void OnFaderChange()
+        {
+            if (FaderChanged != null)
+                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.FaderScaled));
+        }
+
         public bool SupportsMute
         {
             get
@@ -120,6 +140,28 @@ namespace UXLib.Devices.Audio.Polycom
                 }
                 return false;
             }
+        }
+
+        bool _mute;
+        public bool Mute
+        {
+            get
+            {
+                return _mute;
+            }
+            set
+            {
+                if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
+                    _mute = value;
+            }
+        }
+
+        public event SoundstructureItemMuteChangeEventHandler MuteChanged;
+
+        protected virtual void OnMuteChange()
+        {
+            if (MuteChanged != null)
+                MuteChanged(this, this.Mute);
         }
 
         public bool IsMic
@@ -164,25 +206,12 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
-        bool _mute;
-        public bool Mute
-        {
-            get
-            {
-                return _mute;
-            }
-            set
-            {
-                if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
-                    _mute = value;
-            }
-        }
-
         protected virtual void OnFeedbackReceived(SoundstructureCommandType commandType, string commandModifier, double value)
         {
             switch (commandType)
             {
                 case SoundstructureCommandType.MUTE: _mute = Convert.ToBoolean(value);
+                    OnMuteChange();
                     break;
                 case SoundstructureCommandType.FADER:
                     if (commandModifier == "min")
@@ -191,6 +220,7 @@ namespace UXLib.Devices.Audio.Polycom
                         FaderMax = value;
                     else
                         _Fader = value;
+                    OnFaderChange();
                     break;
             }
         }
