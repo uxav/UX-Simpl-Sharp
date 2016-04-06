@@ -364,11 +364,11 @@ namespace UXLib.UI
         /// <param name="newValue">The new value of the join</param>
         protected virtual void OnValueChange(ushort newValue)
         {
-            if (this.ValueChangeEvent != null && this.PressDigitalJoin != null)
-                this.ValueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue,
+            if (this._valueChangeEvent != null && this.PressDigitalJoin != null)
+                this._valueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue,
                     this.PressDigitalJoin.BoolValue));
-            else if (this.ValueChangeEvent != null)
-                this.ValueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue));
+            else if (this._valueChangeEvent != null)
+                this._valueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue));
         }
 
         /// <summary>
@@ -467,10 +467,28 @@ namespace UXLib.UI
             }
         }
 
+        public event UIObjectAnalogTouchEventHandler _valueChangeEvent;
+
         /// <summary>
         /// Called once a value is changed from an analog touch join
         /// </summary>
-        public event UIObjectAnalogTouchEventHandler ValueChangeEvent;
+        public event UIObjectAnalogTouchEventHandler ValueChangeEvent
+        {
+            add
+            {
+                subscribeCount++;
+                if (!subscribed)
+                    SubscribeToSigChanges();
+                _valueChangeEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+                if (subscribeCount == 0)
+                    UnSubscribeToSigChanges();
+                _valueChangeEvent -= value;
+            }
+        }
 
         /// <summary>
         /// Set the visible state as true
