@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Models;
 
 namespace UXLib.Devices.Audio.Polycom
 {
-    public class VirtualChannelGroup : ISoundstructureItem, IEnumerable<ISoundstructureItem>
+    public class VirtualChannelGroup : ISoundstructureItem, IVolumeDevice, IEnumerable<ISoundstructureItem>
     {
         public VirtualChannelGroup(Soundstructure device, string name, List<ISoundstructureItem> fromChannels)
         {
@@ -80,47 +81,18 @@ namespace UXLib.Devices.Audio.Polycom
         public double FaderMin { get; protected set; }
         public double FaderMax { get; protected set; }
 
-        public ushort FaderScaled
-        {
-            get
-            {
-                return (ushort)Soundstructure.ScaleRange(this.Fader, this.FaderMin, this.FaderMax, ushort.MinValue, ushort.MaxValue);
-            }
-            set
-            {
-                this.Fader = Soundstructure.ScaleRange(value, ushort.MinValue, ushort.MaxValue, this.FaderMin, this.FaderMax);
-            }
-        }
-
         public event SoundstructureItemFaderChangeEventHandler FaderChanged;
 
         protected virtual void OnFaderChange()
         {
             if (FaderChanged != null)
-                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.FaderScaled));
-        }
+                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.Level));
 
-        public bool SupportsMute
-        {
-            get
-            {
-                return true;
-            }
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
         }
 
         bool _mute;
-        public bool Mute
-        {
-            get
-            {
-                return _mute;
-            }
-            set
-            {
-                if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
-                    _mute = value;
-            }
-        }
 
         public event SoundstructureItemMuteChangeEventHandler MuteChanged;
 
@@ -128,6 +100,9 @@ namespace UXLib.Devices.Audio.Polycom
         {
             if (MuteChanged != null)
                 MuteChanged(this, this.Mute);
+
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
         }
 
         void Device_ValueChange(ISoundstructureItem item, SoundstructureValueChangeEventArgs args)
@@ -138,6 +113,7 @@ namespace UXLib.Devices.Audio.Polycom
                 {
                     case SoundstructureCommandType.MUTE:
                         _mute = Convert.ToBoolean(args.Value);
+                        OnMuteChange();
                         break;
                     case SoundstructureCommandType.FADER:
                         if (args.CommandModifier == "min")
@@ -146,6 +122,7 @@ namespace UXLib.Devices.Audio.Polycom
                             FaderMax = args.Value;
                         else
                             _Fader = args.Value;
+                        OnFaderChange();
                         break;
                 }
             }
@@ -166,6 +143,53 @@ namespace UXLib.Devices.Audio.Polycom
         {
             return this.GetEnumerator();
         }
+
+        #endregion
+
+        #region IVolumeDevice Members
+
+        public ushort Level
+        {
+            get
+            {
+                return (ushort)Soundstructure.ScaleRange(this.Fader, this.FaderMin, this.FaderMax, ushort.MinValue, ushort.MaxValue);
+            }
+            set
+            {
+                this.Fader = Soundstructure.ScaleRange(value, ushort.MinValue, ushort.MaxValue, this.FaderMin, this.FaderMax);
+            }
+        }
+
+        public bool Mute
+        {
+            get
+            {
+                return _mute;
+            }
+            set
+            {
+                if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
+                    _mute = value;
+            }
+        }
+
+        public bool SupportsMute
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public bool SupportsLevel
+        {
+            get
+            {
+                return this.SupportsFader;
+            }
+        }
+
+        public event VolumeDeviceChangeEventHandler VolumeChanged;
 
         #endregion
     }

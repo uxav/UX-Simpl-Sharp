@@ -30,6 +30,7 @@ namespace UXLib.UI
             : this(analogFeedbackJoin)
         {
             this.AnalogTouchJoin = analogTouchJoin;
+            this.PressDigitalJoin = this.Device.BooleanOutput[analogTouchJoin.Number];
         }
 
         /// <summary>

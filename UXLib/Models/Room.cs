@@ -118,64 +118,7 @@ namespace UXLib.Models
             }
         }
 
-        ushort _VolumeSource;
-        public virtual ushort VolumeSource
-        {
-            get
-            {
-                return _VolumeSource;
-            }
-            set
-            {
-                if (_VolumeSource != value)
-                {
-                    _VolumeSource = value;
-                    OnVolumeChange(RoomVolumeType.Source, _VolumeSource);
-                }
-            }
-        }
-
-        ushort _VolumeVC;
-        public virtual ushort VolumeVC
-        {
-            get
-            {
-                return _VolumeVC;
-            }
-            set
-            {
-                if (_VolumeVC != value)
-                {
-                    _VolumeVC = value;
-                    OnVolumeChange(RoomVolumeType.VideoConference, _VolumeVC);
-                }
-            }
-        }
-
-        ushort _VolumeAC;
-        public virtual ushort VolumeAC
-        {
-            get
-            {
-                return _VolumeAC;
-            }
-            set
-            {
-                if (_VolumeAC != value)
-                {
-                    _VolumeAC = value;
-                    OnVolumeChange(RoomVolumeType.AudioConference, _VolumeAC);
-                }
-            }
-        }
-
-        public event RoomVolumeChangeEventHandler VolumeChanged;
-
-        protected virtual void OnVolumeChange(RoomVolumeType type, ushort levelValue)
-        {
-            if (VolumeChanged != null)
-                VolumeChanged(this, new RoomVolumeChangeEventArgs(type, levelValue));
-        }
+        public VolumeLevelCollection VolumeLevels { get; protected set; }
 
         public bool IsParent
         {
@@ -311,26 +254,5 @@ namespace UXLib.Models
             this.PreviousSource = previousSource;
             this.NewSource = newSource;
         }
-    }
-
-    public enum RoomVolumeType
-    {
-        Source,
-        VideoConference,
-        AudioConference
-    }
-
-    public delegate void RoomVolumeChangeEventHandler(Room room, RoomVolumeChangeEventArgs args);
-
-    public class RoomVolumeChangeEventArgs : EventArgs
-    {
-        public RoomVolumeChangeEventArgs(RoomVolumeType type, ushort levelValue)
-        {
-            VolumeType = type;
-            LevelValue = levelValue;
-        }
-
-        public RoomVolumeType VolumeType;
-        public ushort LevelValue;
     }
 }

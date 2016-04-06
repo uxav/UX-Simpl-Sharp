@@ -53,7 +53,8 @@ namespace UXLib.UI
                         // Unsubscribe from existing room events
                         this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
                         this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
-                        this.Room.VolumeChanged -= new RoomVolumeChangeEventHandler(Room_VolumeChanged);
+
+                        RoomWillChange();
                     }
 
                     _room = value;
@@ -63,23 +64,14 @@ namespace UXLib.UI
                         // Subscribe to new rooms events
                         this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
                         this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
-                        this.Room.VolumeChanged += new RoomVolumeChangeEventHandler(Room_VolumeChanged);
                     }
 
-                    this.OnRoomChange();
+                    OnRoomChange();
                 }
             }
             get
             {
                 return _room;
-            }
-        }
-
-        void Room_VolumeChanged(Room room, RoomVolumeChangeEventArgs args)
-        {
-            if (this.Room == room)
-            {
-                OnVolumeChange(args.VolumeType, args.LevelValue);
             }
         }
 
@@ -113,6 +105,11 @@ namespace UXLib.UI
             
         }
 
+        protected virtual void RoomWillChange()
+        {
+
+        }
+
         protected virtual void OnRoomChange()
         {
 
@@ -128,7 +125,7 @@ namespace UXLib.UI
 
         }
 
-        protected virtual void OnVolumeChange(RoomVolumeType volumeType, ushort volumeLevel)
+        protected virtual void OnVolumeChange(VolumeLevelType volumeType, ushort volumeLevel)
         {
 
         }

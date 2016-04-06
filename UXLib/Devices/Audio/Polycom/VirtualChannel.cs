@@ -4,10 +4,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Models;
 
 namespace UXLib.Devices.Audio.Polycom
 {
-    public class VirtualChannel : ISoundstructureItem
+    public class VirtualChannel : ISoundstructureItem, IVolumeDevice
     {
         public VirtualChannel(Soundstructure device, string name, SoundstructureVirtualChannelType vcType, SoundstructurePhysicalChannelType pcType, uint[] values)
         {
@@ -98,63 +99,18 @@ namespace UXLib.Devices.Audio.Polycom
         public double FaderMin { get; protected set; }
         public double FaderMax { get; protected set; }
 
-        public ushort FaderScaled
-        {
-            get
-            {
-                return (ushort)Soundstructure.ScaleRange(this.Fader, this.FaderMin, this.FaderMax, ushort.MinValue, ushort.MaxValue);
-            }
-            set
-            {
-                this.Fader = Soundstructure.ScaleRange(value, ushort.MinValue, ushort.MaxValue, this.FaderMin, this.FaderMax);
-            }
-        }
-
         public event SoundstructureItemFaderChangeEventHandler FaderChanged;
 
         protected virtual void OnFaderChange()
         {
             if (FaderChanged != null)
-                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.FaderScaled));
-        }
+                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.Level));
 
-        public bool SupportsMute
-        {
-            get
-            {
-                switch (this.PhysicalChannelType)
-                {
-                    case SoundstructurePhysicalChannelType.SR_MIC_IN:
-                    case SoundstructurePhysicalChannelType.CR_MIC_IN:
-                    case SoundstructurePhysicalChannelType.CR_LINE_OUT:
-                    case SoundstructurePhysicalChannelType.SR_LINE_OUT:
-                    case SoundstructurePhysicalChannelType.PSTN_IN:
-                    case SoundstructurePhysicalChannelType.PSTN_OUT:
-                    case SoundstructurePhysicalChannelType.VOIP_IN:
-                    case SoundstructurePhysicalChannelType.VOIP_OUT:
-                    case SoundstructurePhysicalChannelType.CLINK_OUT:
-                    case SoundstructurePhysicalChannelType.CLINK_IN:
-                    case SoundstructurePhysicalChannelType.SUBMIX:
-                    case SoundstructurePhysicalChannelType.SIG_GEN:
-                        return true;
-                }
-                return false;
-            }
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
         }
 
         bool _mute;
-        public bool Mute
-        {
-            get
-            {
-                return _mute;
-            }
-            set
-            {
-                if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
-                    _mute = value;
-            }
-        }
 
         public event SoundstructureItemMuteChangeEventHandler MuteChanged;
 
@@ -162,6 +118,9 @@ namespace UXLib.Devices.Audio.Polycom
         {
             if (MuteChanged != null)
                 MuteChanged(this, this.Mute);
+
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
         }
 
         public bool IsMic
@@ -239,5 +198,65 @@ namespace UXLib.Devices.Audio.Polycom
                 ErrorLog.Error("{0} Error in Device_ValueChange(): {1}", this.GetType().ToString().Split('.').Last(), e.Message);
             }
         }
+
+        #region IVolumeDevice Members
+
+        public ushort Level
+        {
+            get
+            {
+                return (ushort)Soundstructure.ScaleRange(this.Fader, this.FaderMin, this.FaderMax, ushort.MinValue, ushort.MaxValue);
+            }
+            set
+            {
+                this.Fader = Soundstructure.ScaleRange(value, ushort.MinValue, ushort.MaxValue, this.FaderMin, this.FaderMax);
+            }
+        }
+
+        public event VolumeDeviceChangeEventHandler VolumeChanged;
+
+        public bool Mute
+        {
+            get
+            {
+                return _mute;
+            }
+            set
+            {
+                if (this.Device.Socket.Set(this, SoundstructureCommandType.MUTE, value))
+                    _mute = value;
+            }
+        }
+
+        public bool SupportsMute
+        {
+            get
+            {
+                switch (this.PhysicalChannelType)
+                {
+                    case SoundstructurePhysicalChannelType.SR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_MIC_IN:
+                    case SoundstructurePhysicalChannelType.CR_LINE_OUT:
+                    case SoundstructurePhysicalChannelType.SR_LINE_OUT:
+                    case SoundstructurePhysicalChannelType.PSTN_IN:
+                    case SoundstructurePhysicalChannelType.PSTN_OUT:
+                    case SoundstructurePhysicalChannelType.VOIP_IN:
+                    case SoundstructurePhysicalChannelType.VOIP_OUT:
+                    case SoundstructurePhysicalChannelType.CLINK_OUT:
+                    case SoundstructurePhysicalChannelType.CLINK_IN:
+                    case SoundstructurePhysicalChannelType.SUBMIX:
+                    case SoundstructurePhysicalChannelType.SIG_GEN:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool SupportsLevel
+        {
+            get { return this.SupportsFader; }
+        }
+
+        #endregion
     }
 }

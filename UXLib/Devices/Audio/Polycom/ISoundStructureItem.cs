@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Models;
 
 namespace UXLib.Devices.Audio.Polycom
 {
-    public interface ISoundstructureItem
+    public interface ISoundstructureItem : IVolumeDevice
     {
         Soundstructure Device { get; }
         string Name { get; }
@@ -14,9 +15,6 @@ namespace UXLib.Devices.Audio.Polycom
         double Fader { get; set; }
         double FaderMin { get; }
         double FaderMax { get; }
-        ushort FaderScaled { get; set; }
-        bool SupportsMute { get; }
-        bool Mute { get; set; }
         void Init();
         event SoundstructureItemFaderChangeEventHandler FaderChanged;
         event SoundstructureItemMuteChangeEventHandler MuteChanged;
