@@ -47,6 +47,20 @@ namespace UXLib.UI
         }
 
         /// <summary>
+        /// Create a level that is touch settable
+        /// </summary>
+        /// <param name="analogFeedbackJoin">The analog input signal join</param>
+        /// <param name="analogTouchJoin">The analog 'touch' output signal join</param>
+        /// <param name="enableDigitalJoin">The digital enable join</param>
+        /// <param name="visibleDigitalJoin">The digital visible join</param>
+        public UILevel(UShortInputSig analogFeedbackJoin, UShortOutputSig analogTouchJoin, BoolInputSig enableDigitalJoin, BoolInputSig visibleDigitalJoin)
+            : this(analogFeedbackJoin, analogTouchJoin)
+        {
+            this.EnableDigitalJoin = enableDigitalJoin;
+            this.VisibleDigitalJoin = visibleDigitalJoin;
+        }
+
+        /// <summary>
         /// Set the feedback value
         /// </summary>
         /// <param name="level"></param>
