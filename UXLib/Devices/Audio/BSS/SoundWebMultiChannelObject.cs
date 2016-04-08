@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Devices.Audio.BSS
 {
-    public class SoundWebMultiChannelObject : SoundWebObject
+    public class SoundWebMultiChannelObject : SoundWebObject, IEnumerable<SoundWebChannel>
     {
         public SoundWebMultiChannelObject(SoundWeb device, string address)
         {
@@ -24,5 +24,24 @@ namespace UXLib.Devices.Audio.BSS
         }
 
         protected List<SoundWebChannel> channels { get; set; }
+
+
+        #region IEnumerable<SoundWebChannel> Members
+
+        public IEnumerator<SoundWebChannel> GetEnumerator()
+        {
+            return this.channels.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        #endregion
     }
 }
