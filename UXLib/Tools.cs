@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.Diagnostics;
 
 namespace UXLib
 {

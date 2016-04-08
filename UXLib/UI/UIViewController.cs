@@ -44,7 +44,16 @@ namespace UXLib.UI
             else if (args.EventType == eViewEventType.DidHide)
                 this.OnHide();
             else if (args.EventType == eViewEventType.WillShow)
-                this.WillShow();
+            {
+                try
+                {
+                    this.WillShow();
+                }
+                catch(Exception e)
+                {
+                    ErrorLog.Error("Error in UIViewController.WillShow(), {0}", e.Message);
+                }
+            }
             else if (args.EventType == eViewEventType.WillHide)
                 this.WillHide();
         }
