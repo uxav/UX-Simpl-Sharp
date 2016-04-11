@@ -12,9 +12,7 @@ namespace UXLib.Models
         {
             this.Room = room;
             this.Device = volumeDevice;
-            this.Level = volumeDevice.Level;
             this.LevelType = levelType;
-            this.Mute = volumeDevice.Mute;
             volumeDevice.VolumeChanged += new VolumeDeviceChangeEventHandler(volumeDevice_VolumeChanged);
         }
 
