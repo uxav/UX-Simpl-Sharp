@@ -15,24 +15,10 @@ namespace UXLib.Models
             this.SourceType = sourceType;
         }
 
-        public Source(uint id, string name, SourceType sourceType, uint inputIndex)
-        {
-            this.ID = id;
-            this.Name = name;
-            this.SourceType = sourceType;
-            this.InputIndex = inputIndex;
-        }
-
-        public Source(uint id, string name, SourceType sourceType, uint inputIndex, string groupName)
-            : this(id, name, sourceType, inputIndex)
+        public Source(uint id, string name, string groupName, SourceType sourceType)
+            : this(id, name, sourceType)
         {
             this.GroupName = groupName;
-        }
-
-        public Source(uint id, string name, SourceType sourceType, uint inputIndex, string groupName, object sourceControllerObject)
-            : this(id, name, sourceType, inputIndex, groupName)
-        {
-            this.SourceController = sourceControllerObject;
         }
 
         public uint ID { get; protected set; }
@@ -54,8 +40,6 @@ namespace UXLib.Models
             }
         }
         public SourceType SourceType { get; protected set; }
-        public uint InputIndex { get; protected set; }
-        public object SourceController { get; protected set; }
         public Room Room { get; protected set; }
 
         public void AssignToRoom(Room room)
