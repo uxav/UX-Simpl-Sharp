@@ -15,11 +15,17 @@ namespace UXLib.UI
         {
             uint item = 1;
             this.Data = listData;
-            this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
+            if (this.Data != null)
+                this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
+            Buttons = new UISmartObjectButtonCollection();
             try
             {
                 while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Selected", item)))
                 {
+                    Buttons.Add(new UISmartObjectButton(this, item, this.DeviceSmartObject,
+                        string.Format("Item {0} Selected", item),
+                        null,
+                        string.Format("Set Item {0} Text", item)));
                     item++;
                 }
 
@@ -100,8 +106,10 @@ namespace UXLib.UI
                 if (args.Event == eSigEvent.UShortChange
                     && args.Sig == this.DeviceSmartObject.UShortOutput["Item Selected"] && this.SelectedItem > 0)
                 {
-                    if (_SelectionChanged != null)
+                    if (_SelectionChanged != null && this.Data != null)
                         _SelectionChanged(this, new SpinnerListSelectionChangedEventArgs(this.SelectedItem - 1, this.Data[this.SelectedItem - 1].DataObject));
+                    else if (_SelectionChanged != null)
+                        _SelectionChanged(this, new SpinnerListSelectionChangedEventArgs(this.SelectedItem - 1, null));
                 }
             }
             catch (Exception e)
@@ -111,6 +119,14 @@ namespace UXLib.UI
         }
 
         private new UISmartObjectButtonCollection Buttons { set; get; }
+
+        public UISmartObjectButton this[uint itemIndex]
+        {
+            get
+            {
+                return Buttons[itemIndex];
+            }
+        }
 
         protected virtual void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
         {

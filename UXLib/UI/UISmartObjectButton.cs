@@ -21,7 +21,8 @@ namespace UXLib.UI
             string feedbackDigitalJoinName)
             : this(owner, itemIndex, smartObject, pressDigitalJoinName)
         {
-            this.FeedbackDigitalJoin = this.SmartObject.BooleanInput[feedbackDigitalJoinName];
+            if (feedbackDigitalJoinName != null)
+                this.FeedbackDigitalJoin = this.SmartObject.BooleanInput[feedbackDigitalJoinName];
         }
 
         public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
