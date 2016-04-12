@@ -36,6 +36,13 @@ namespace UXLib.UI
             }
         }
 
+        public virtual void Show(bool withTimeout)
+        {
+            this.Show();
+            if (!withTimeout)
+                this.SubPage.TimeOut.Cancel();
+        }
+
         public virtual void Hide()
         {
             this.SubPage.Hide();
