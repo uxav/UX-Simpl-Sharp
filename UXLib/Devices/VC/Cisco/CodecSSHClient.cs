@@ -33,20 +33,23 @@ namespace UXLib.Devices.VC.Cisco
 
         protected override void OnConnected()
         {
-            base.OnConnected();
-            this.IsConnected = true;
-
-            Stream = this.CreateShellStream("", 80, 24, 200, 300, 1024);
-            if (RxHandler == null || RxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
-                RxHandler = new Thread(ProcessRxData, null, Thread.eThreadStartOptions.Running);
-            Stream.DataReceived += new EventHandler<Crestron.SimplSharp.Ssh.Common.ShellDataEventArgs>(Stream_DataReceived);
-            Stream.WriteLine("xPreferences outputmode xml");
-            KeepAliveTimer = new CTimer(SendKeepAlive, null, 60000, 60000);
-            ErrorLog.Notice("Cisco codec {0} connected by SSH on {1}", Host, this.EthernetAdapter.ToString());
-
-            if (this.OnConnect != null)
+            if (base.IsConnected)
             {
-                OnConnect(this);
+                base.OnConnected();
+                this.IsConnected = true;
+
+                Stream = this.CreateShellStream("", 80, 24, 200, 300, 1024);
+                if (RxHandler == null || RxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
+                    RxHandler = new Thread(ProcessRxData, null, Thread.eThreadStartOptions.Running);
+                Stream.DataReceived += new EventHandler<Crestron.SimplSharp.Ssh.Common.ShellDataEventArgs>(Stream_DataReceived);
+                Stream.WriteLine("xPreferences outputmode xml");
+                KeepAliveTimer = new CTimer(SendKeepAlive, null, 60000, 60000);
+                ErrorLog.Notice("Cisco codec {0} connected by SSH on {1}", Host, this.EthernetAdapter.ToString());
+
+                if (this.OnConnect != null)
+                {
+                    OnConnect(this);
+                }
             }
         }
 

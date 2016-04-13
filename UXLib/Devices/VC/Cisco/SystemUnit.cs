@@ -53,7 +53,7 @@ namespace UXLib.Devices.VC.Cisco
                     case "ProductId": ProductId = element.Value; break;
                     case "ProductPlatform": ProductPlatform = element.Value; break;
                     case "ProductType": ProductType = element.Value; break;
-                    case "Uptime": Uptime = TimeSpan.Parse(element.Value); break;
+                    case "Uptime": Uptime = TimeSpan.FromSeconds(double.Parse(element.Value)); break;
                 }
             }
         }
