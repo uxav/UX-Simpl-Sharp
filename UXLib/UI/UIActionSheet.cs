@@ -38,7 +38,7 @@ namespace UXLib.UI
 
         public virtual void Show(bool withTimeout)
         {
-            this.Show();
+            Show();
             if (!withTimeout)
                 this.SubPage.TimeOut.Cancel();
         }
