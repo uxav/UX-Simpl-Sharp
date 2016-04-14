@@ -27,13 +27,9 @@ namespace UXLib.Extensions
         {
             double delta = Math.Abs(ts.TotalSeconds);
 
-            if (delta < 60)
-            {
-                return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
-            }
             if (delta < 120)
             {
-                return "a minute ago";
+                return "just now";
             }
             if (delta < 2700) // 45 * 60
             {

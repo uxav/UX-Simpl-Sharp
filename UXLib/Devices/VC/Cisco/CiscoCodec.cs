@@ -141,6 +141,11 @@ namespace UXLib.Devices.VC.Cisco
             return SSHClient.RequestPath(path);
         }
 
+        public CallHistory GetCallHistory(int count)
+        {
+            return new CallHistory(this, count);
+        }
+
         public void SoundPlayBump()
         {
             SoundPlay("Bump", false);

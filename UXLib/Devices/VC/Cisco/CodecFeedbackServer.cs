@@ -84,7 +84,9 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                //CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
+#if DEBUG
+                CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
+#endif
                 XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
                 if (xml.Root.HasAttributes)
                 {
@@ -93,7 +95,9 @@ namespace UXLib.Devices.VC.Cisco
                     string productID = identification.Element(ns + "ProductID").Value;
                     identification.Remove();
                     XElement element = xml.Root;
-                    //CrestronConsole.PrintLine(element.ToString());
+#if DEBUG
+                    CrestronConsole.PrintLine(element.ToString());
+#endif           
                     string path = element.XName.LocalName;
                     while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
                     {

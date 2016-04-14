@@ -35,7 +35,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             get
             {
-                return new TimeSpan(DateTime.UtcNow.Ticks - this.StartTime.Ticks).ToPrettyTimeAgo();
+                return new TimeSpan(DateTime.Now.Ticks - this.StartTime.Ticks).ToPrettyTimeAgo();
             }
         }
         public CallDirection Direction { get; set; }
