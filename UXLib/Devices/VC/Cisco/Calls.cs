@@ -20,6 +20,7 @@ namespace UXLib.Devices.VC.Cisco
         CiscoCodec Codec;
 
         Dictionary<int, Call> calls = new Dictionary<int, Call>();
+        Dictionary<int, Call> persistantCalls = new Dictionary<int, Call>();
 
         public Call this[int callID]
         {
@@ -28,6 +29,8 @@ namespace UXLib.Devices.VC.Cisco
                 return calls[callID];
             }
         }
+
+        public ReadOnlyDictionary<int, Call> CallLog { get { return new ReadOnlyDictionary<int, Call>(persistantCalls); } }
 
         public int Count { get { return calls.Count; } }
 
@@ -142,6 +145,8 @@ namespace UXLib.Devices.VC.Cisco
                         if (!calls.ContainsKey(callID))
                             calls.Add(callID, new Call(Codec, callID));
                         Call call = calls[callID];
+                        if (!persistantCalls.ContainsKey(callID))
+                            persistantCalls.Add(callID, call);
                         foreach (XElement e in args.Data.Elements())
                         {
                             switch (e.XName.LocalName)
