@@ -12,6 +12,13 @@ namespace UXLib.UI
         public UISubPage(BoolInputSig visibleDigitalJoin)
             : base(visibleDigitalJoin) { }
 
+        public UISubPage(BoolInputSig visibleDigitalJoin, UITimeOut timeOut)
+            : base(visibleDigitalJoin)
+        {
+            this.TimeOut = timeOut;
+            this.TimeOut.TimedOut += new UITimeOutEventHandler(TimeOut_TimedOut);
+        }
+
         public UISubPage(BoolInputSig visibleDigitalJoin, UILabel titleLabel)
             : base(visibleDigitalJoin, titleLabel) { }
 
@@ -80,7 +87,7 @@ namespace UXLib.UI
 
         protected override void Dispose(bool disposing)
         {
-            if (this.TimeOut != null)
+            if (this.TimeOut != null && disposing)
             {
                 this.TimeOut.TimedOut -= new UITimeOutEventHandler(TimeOut_TimedOut);
                 this.TimeOut.Dispose();
