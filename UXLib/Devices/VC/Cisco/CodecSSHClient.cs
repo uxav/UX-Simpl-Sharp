@@ -86,10 +86,16 @@ namespace UXLib.Devices.VC.Cisco
                 KeepAliveTimer.Reset();
             RxQueue.Clear();
             DataQueue.Clear();
+#if DEBUG
+            CrestronConsole.PrintLine("Codec SSHClient Send: \r\n{0}", s);
+#endif
             Stream.WriteLine(s);
             XDocument result = DataQueue.Dequeue(5000);
             if (result == null)
                 ErrorLog.Error("Error in CodecSSHClient.RequestData, result == null");
+#if DEBUG
+            CrestronConsole.PrintLine("Codec SSHClient Response: \r\n {0}", result.Root.ToString());
+#endif
             return result;
         }
 
