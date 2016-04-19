@@ -102,5 +102,7 @@ namespace UXLib.UI
             element.Value = temp + element.Value;
             return this;
         }
+
+        public static string NewLine { get { return "<BR>"; } }
     }
 }
