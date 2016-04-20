@@ -39,6 +39,7 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
         public CallDirection Direction { get; set; }
+        public CallType Type { get; set; }
         public string Protocol { get; set; }
         public string RemoteNumber { get; set; }
         public string CallbackNumber { get; set; }

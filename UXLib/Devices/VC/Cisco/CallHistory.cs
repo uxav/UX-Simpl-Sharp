@@ -45,6 +45,9 @@ namespace UXLib.Devices.VC.Cisco
                 if (item.Element("Direction") != null)
                     call.Direction = (CallDirection)Enum.Parse(
                         typeof(CallDirection), item.Element("Direction").Value, false);
+                if (item.Element("CallType") != null)
+                    call.Type = (CallType)Enum.Parse(
+                        typeof(CallType), item.Element("CallType").Value, false);
                 if (item.Element("OccurrenceType") != null)
                     call.OccurrenceType = (CallOccurrenceType)Enum.Parse(
                         typeof(CallOccurrenceType), item.Element("OccurrenceType").Value, false);
