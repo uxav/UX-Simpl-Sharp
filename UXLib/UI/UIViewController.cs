@@ -51,7 +51,7 @@ namespace UXLib.UI
                 }
                 catch(Exception e)
                 {
-                    ErrorLog.Error("Error in UIViewController.WillShow(), {0}", e.Message);
+                    ErrorLog.Exception(string.Format("Exception in UIViewController.WillShow(), {0}", e.Message), e);
                 }
             }
             else if (args.EventType == eViewEventType.WillHide)

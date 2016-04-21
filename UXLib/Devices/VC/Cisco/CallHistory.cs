@@ -21,7 +21,7 @@ namespace UXLib.Devices.VC.Cisco
             args.Add("Limit", limit);
 
             bool useHttp = false;
-            if (limit > 1) useHttp = true;
+            if (limit > 0) useHttp = true;
 
             XDocument xml = Codec.SendCommand("Command/CallHistory/Get", args, useHttp);
 #if DEBUG

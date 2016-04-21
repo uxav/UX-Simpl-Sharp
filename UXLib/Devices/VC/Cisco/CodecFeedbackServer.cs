@@ -80,6 +80,8 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
+        public event CodecIncomingCallEventHandler IncomingCallEvent;
+
         void OnReceivedData(object sender, OnHttpRequestArgs args)
         {
             try
@@ -98,26 +100,59 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                     CrestronConsole.PrintLine(element.ToString());
 #endif           
-                    string path = element.XName.LocalName;
-                    while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
+                    if (element.XName.LocalName == "Event" && element.HasElements)
                     {
-                        element = element.Elements().FirstOrDefault();
-                        path = string.Format("{0}/{1}", path, element.XName.LocalName);
-                    }
+                        switch (element.Elements().First().XName.LocalName)
+                        {
+                            case "IncomingCallIndication":
+                                CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
+                                foreach (XElement e in element.Elements().First().Elements())
+                                {
+                                    switch (e.XName.LocalName)
+                                    {
+                                        case "RemoteURI":
+                                            incomingCallArgs.RemoteURI = e.Value;
+                                            break;
+                                        case "DisplayNameValue":
+                                            incomingCallArgs.DisplayNameValue = e.Value;
+                                            break;
+                                        case "CallId":
+                                            incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
+                                            break;
+                                    }
+                                }
 
-                    if (element == xml.Root && element.Elements().FirstOrDefault() != null)
+                                if (IncomingCallEvent != null)
+                                    IncomingCallEvent(Codec, incomingCallArgs);
+
+                                break;
+                        }
+                    }
+                    else
                     {
-                        element = element.Elements().FirstOrDefault();
-                        path = string.Format("{0}/{1}", path, element.XName.LocalName);
+                        string path = element.XName.LocalName;
+                        while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
+                        {
+                            element = element.Elements().FirstOrDefault();
+                            path = string.Format("{0}/{1}", path, element.XName.LocalName);
+
+                            if (path == @"Status/Conference/Site")
+                                break;
+                        }
+
+                        if (element == xml.Root && element.Elements().FirstOrDefault() != null)
+                        {
+                            element = element.Elements().FirstOrDefault();
+                            path = string.Format("{0}/{1}", path, element.XName.LocalName);
+                        }
+
+                        //CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+
+                        if (ReceivedData != null)
+                        {
+                            ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                        }
                     }
-
-                    //CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-
-                    if (ReceivedData != null)
-                    {
-                        ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
-                    }
-
                     return;
                 }
                 else
@@ -128,7 +163,7 @@ namespace UXLib.Devices.VC.Cisco
             }
             catch (Exception e)
             {
-                ErrorLog.Error("Error on codec http feedback server: {0}", e.Message);
+                ErrorLog.Exception("Exception on codec http feedback server", e);
                 
                 args.Response.Code = 200;
                 return;
@@ -150,5 +185,19 @@ namespace UXLib.Devices.VC.Cisco
 
         public string Path;
         public XElement Data;
+    }
+
+    public delegate void CodecIncomingCallEventHandler(CiscoCodec codec, CodecIncomingCallEventArgs args);
+
+    public class CodecIncomingCallEventArgs : EventArgs
+    {
+        public CodecIncomingCallEventArgs()
+        {
+
+        }
+
+        public string RemoteURI;
+        public string DisplayNameValue;
+        public Call Call;
     }
 }

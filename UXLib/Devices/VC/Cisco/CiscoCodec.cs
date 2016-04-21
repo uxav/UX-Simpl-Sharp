@@ -29,6 +29,7 @@ namespace UXLib.Devices.VC.Cisco
             SystemUnit.State.SystemStateChange += new SystemUnitStateSystemChangeEventHandler(State_SystemStateChange);
             Audio = new Audio(this);
             Calls = new Calls(this);
+            Conference = new Conference(this);
             Network = new Network(this);
             Phonebook = new Phonebook(this);
         }
@@ -39,6 +40,7 @@ namespace UXLib.Devices.VC.Cisco
         public SystemUnit SystemUnit { get; private set; }
         public Audio Audio { get; private set; }
         public Calls Calls { get; private set; }
+        public Conference Conference { get; private set; }
         public Network Network { get; private set; }
         public Phonebook Phonebook { get; private set; }
 
@@ -164,6 +166,29 @@ namespace UXLib.Devices.VC.Cisco
             SendCommand("Audio/Sound/Stop");
         }
 
+        public void PresentationStart()
+        {
+            SendCommand("Presentation/Start");
+        }
+
+        public void PresentationStart(int presentationSource)
+        {
+            PresentationStart(presentationSource, PresentationSendingMode.LocalRemote);
+        }
+
+        public void PresentationStart(int presentationSource, PresentationSendingMode sendingMode)
+        {
+            CommandArgs args = new CommandArgs("PresentationSource", presentationSource);
+            args.Add("SendingMode", sendingMode.ToString());
+
+            SendCommand("Presentation/Start", args);
+        }
+
+        public void PresentationStop()
+        {
+            SendCommand("Presentation/Stop");
+        }
+
         public bool _StandbyActive;
         public bool StandbyActive
         {
@@ -217,4 +242,11 @@ namespace UXLib.Devices.VC.Cisco
     public delegate void CodecStandbyChangeEventHandler(CiscoCodec codec, bool StandbyActive);
 
     public delegate void CodecConnectedEventHandler(CiscoCodec codec);
+
+    public enum PresentationSendingMode
+    {
+        Off,
+        LocalRemote,
+        LocalOnly
+    }
 }

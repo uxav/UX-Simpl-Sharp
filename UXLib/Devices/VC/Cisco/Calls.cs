@@ -118,9 +118,27 @@ namespace UXLib.Devices.VC.Cisco
         {
             if (CallStatusChange != null)
             {
-                CallHistoryItem callHistory = new CallHistory(Codec, 1).FirstOrDefault();
-                CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(
-                    call, callHistory.DisconnectCause, callHistory.DisconnectCauseType));
+                if (hasDisconnected)
+                {
+                    /*try
+                    {
+                        CallHistoryItem callHistory = new CallHistory(Codec, 1).FirstOrDefault();
+                        CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(
+                            call, callHistory.DisconnectCause, callHistory.DisconnectCauseType));
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Exception("Error getting last callhistory item", e);
+                    }
+                    finally
+                    {*/
+                        CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, true));
+                    //}
+                }
+                else
+                {
+                    OnCallStatusChange(call);
+                }
             }
         }
 
@@ -289,18 +307,24 @@ namespace UXLib.Devices.VC.Cisco
             this.Call = call;
         }
 
+        public CodecCallInfoChangeEventArgs(Call call, bool disconnected)
+        {
+            this.Call = call;
+            this.HasDisconnected = true;
+        }
+        /*
         public CodecCallInfoChangeEventArgs(Call call, string disconnectCause, CallDisconnectCauseType disconnectCauseType)
         {
             this.Call = call;
             this.HasDisconnected = true;
             this.DisconnectCause = disconnectCause;
             this.DisconnectCauseType = disconnectCauseType;
-        }
+        }*/
 
         public Call Call;
         public bool HasDisconnected = false;
-        public string DisconnectCause;
-        public CallDisconnectCauseType DisconnectCauseType;
+        //public string DisconnectCause;
+        //public CallDisconnectCauseType DisconnectCauseType;
     }
 
     public delegate void CodecCallInfoChangeEventHandler(CiscoCodec codec, CodecCallInfoChangeEventArgs args);

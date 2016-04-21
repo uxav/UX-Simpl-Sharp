@@ -134,12 +134,17 @@
     <Compile Include="Devices\VC\Cisco\CodecFeedbackServer.cs" />
     <Compile Include="Devices\VC\Cisco\CodecHTTPClient.cs" />
     <Compile Include="Devices\VC\Cisco\CodecSSHClient.cs" />
+    <Compile Include="Devices\VC\Cisco\Conference.cs" />
     <Compile Include="Devices\VC\Cisco\Microphones.cs" />
     <Compile Include="Devices\VC\Cisco\Network.cs" />
     <Compile Include="Devices\VC\Cisco\Phonebook.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookContact.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookContactMethod.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookSearchResults.cs" />
+    <Compile Include="Devices\VC\Cisco\PresentationInstance.cs" />
+    <Compile Include="Devices\VC\Cisco\Site.cs" />
+    <Compile Include="Devices\VC\Cisco\SiteCapabilities.cs" />
+    <Compile Include="Devices\VC\Cisco\Sites.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
@@ -147,6 +152,7 @@
     <Compile Include="Extensions\TimeExtensions.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
+    <Compile Include="Models\Extensions\LinqExtensions.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
     <Compile Include="Models\VolumeLevel.cs" />
     <Compile Include="Models\VolumeLevelCollection.cs" />
@@ -204,7 +210,7 @@
         <Programmer>Mike Jobson</Programmer>
         <ArchiveFilename>C:\Users\mike\Developer\twobirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>20/04/2016 11:51:14</CompiledOn>
+        <CompiledOn>21/04/2016 17:48:46</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

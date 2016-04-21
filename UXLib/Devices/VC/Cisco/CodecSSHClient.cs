@@ -90,7 +90,7 @@ namespace UXLib.Devices.VC.Cisco
             CrestronConsole.PrintLine("Codec SSHClient Send: \r\n{0}", s);
 #endif
             Stream.WriteLine(s);
-            XDocument result = DataQueue.Dequeue(5000);
+            XDocument result = DataQueue.Dequeue(3000);
             if (result == null)
                 ErrorLog.Error("Error in CodecSSHClient.RequestData, result == null");
 #if DEBUG
@@ -151,6 +151,11 @@ namespace UXLib.Devices.VC.Cisco
 
         void Stream_DataReceived(object sender, Crestron.SimplSharp.Ssh.Common.ShellDataEventArgs e)
         {
+#if DEBUG
+            CrestronConsole.PrintLine("Codec SSHClient Receive:\r\n{0}",
+                Encoding.UTF8.GetString(e.Data, 0, e.Data.Length));
+#endif
+
             RxQueue.Enqueue(Encoding.UTF8.GetString(e.Data, 0, e.Data.Length));
         }
 

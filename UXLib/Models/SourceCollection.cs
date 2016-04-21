@@ -14,7 +14,7 @@ namespace UXLib.Models
             this.Sources = new List<Source>();
         }
 
-        public SourceCollection(List<Source> listOfSources)
+        public SourceCollection(IEnumerable<Source> listOfSources)
         {
             this.Sources = new List<Source>(listOfSources);
         }

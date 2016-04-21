@@ -89,7 +89,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Resume()
         {
-            SendCommand("Hold");
+            SendCommand("Resume");
         }
 
         public void Join()
