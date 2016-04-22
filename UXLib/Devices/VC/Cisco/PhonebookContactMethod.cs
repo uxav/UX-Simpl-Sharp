@@ -20,6 +20,7 @@ namespace UXLib.Devices.VC.Cisco
         public string Number { get; protected set; }
         public string Protocol { get; set; }
         public string Device { get; set; }
+        public CallType CallType { get; set; }
 
         public int Dial()
         {

@@ -7,19 +7,29 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class PhonebookContact
+    public class PhonebookContact : IPhonebookItem
     {
         public PhonebookContact(CiscoCodec codec, string contactID, string name)
         {
+            ItemType = PhonebookItemType.Contact;
             Codec = codec;
-            ContactID = contactID;
+            ID = contactID;
             Name = name;
+            ParentID = string.Empty;
+        }
+
+        public PhonebookContact(CiscoCodec codec, string contactID, string name, string folderID)
+            : this(codec, contactID, name)
+        {
+            ParentID = folderID;
         }
 
         CiscoCodec Codec;
-        public string ContactID { get; protected set; }
+        public string ID { get; protected set; }
         public string Name { get; protected set; }
+        public string ParentID { get; protected set; }
         public string Title { get; set; }
+        public PhonebookItemType ItemType { get; protected set; }
 
         List<PhonebookContactMethod> _Methods;
         public ReadOnlyCollection<PhonebookContactMethod> Methods

@@ -6,49 +6,51 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class PhonebookSearchResults : IEnumerable<PhonebookContact>
+    public class PhonebookSearchResults : IEnumerable<IPhonebookItem>
     {
         public PhonebookSearchResults(bool error)
         {
             StatusOk = false;
-            this.Contacts = new List<PhonebookContact>();
+            this.Results = new List<IPhonebookItem>();
         }
 
-        public PhonebookSearchResults(IEnumerable<PhonebookContact> contacts, int offset, int limit)
+        public PhonebookSearchResults(IEnumerable<IPhonebookItem> items, int offset, int limit)
         {
-            this.Contacts = new List<PhonebookContact>(contacts);
+            this.Results = new List<IPhonebookItem>(items
+                .OrderBy(i => i.Name)
+                .OrderBy(i => i.ItemType == PhonebookItemType.Contact));
             Offset = offset;
             Limit = limit;
         }
 
-        List<PhonebookContact> Contacts;
+        List<IPhonebookItem> Results;
         public bool StatusOk = true;
         public int Offset { get; protected set; }
         public int Limit { get; protected set; }
 
-        public PhonebookContact this[int index]
+        public IPhonebookItem this[int index]
         {
             get
             {
-                return Contacts[index];
+                return Results[index];
             }
         }
 
-        public PhonebookContact this[string contactID]
+        public IPhonebookItem this[string id]
         {
             get
             {
-                return Contacts.Where(e => e.ContactID == contactID).FirstOrDefault();
+                return Results.Where(e => e.ID == id).FirstOrDefault();
             }
         }
 
-        public int Count { get { return Contacts.Count; } }
+        public int Count { get { return Results.Count; } }
 
         #region IEnumerable<PhonebookContact> Members
 
-        public IEnumerator<PhonebookContact> GetEnumerator()
+        public IEnumerator<IPhonebookItem> GetEnumerator()
         {
-            return this.Contacts.GetEnumerator();
+            return this.Results.GetEnumerator();
         }
 
         #endregion

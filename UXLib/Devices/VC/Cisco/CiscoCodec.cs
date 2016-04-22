@@ -32,6 +32,8 @@ namespace UXLib.Devices.VC.Cisco
             Conference = new Conference(this);
             Network = new Network(this);
             Phonebook = new Phonebook(this);
+            Cameras = new Cameras(this);
+            Video = new Video(this);
         }
 
         CodecHTTPClient HttpClient { get; set; }
@@ -43,6 +45,8 @@ namespace UXLib.Devices.VC.Cisco
         public Conference Conference { get; private set; }
         public Network Network { get; private set; }
         public Phonebook Phonebook { get; private set; }
+        public Cameras Cameras { get; private set; }
+        public Video Video { get; private set; }
         Thread CheckStatus { get; set; }
 
         public void Initialize()
@@ -129,7 +133,8 @@ namespace UXLib.Devices.VC.Cisco
                 }
                 catch (Exception e)
                 {
-                    ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
+                    if (e.Message != "ThreadAbortException")
+                        ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
                 }
             }
         }
