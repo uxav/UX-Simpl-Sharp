@@ -10,5 +10,8 @@ namespace UXLib.Devices.Audio.Polycom
     {
         bool OffHook { get; set; }
         void Dial(string number);
+        void Reject();
+        void Answer();
+        void Ignore();
     }
 }

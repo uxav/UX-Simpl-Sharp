@@ -131,7 +131,7 @@ namespace UXLib.Devices.Audio.Polycom
         public void OnReceive(string receivedString)
         {
 #if DEBUG
-            //CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
+            CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
 #endif
             if (receivedString.Contains(' '))
             {
@@ -279,7 +279,8 @@ namespace UXLib.Devices.Audio.Polycom
                                             }
                                             break;
                                         default:
-                                            OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
+                                            if (elements.Count > 3)
+                                                OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
                                             break;
                                     }
                                 }

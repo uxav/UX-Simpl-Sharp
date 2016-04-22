@@ -77,6 +77,11 @@ namespace UXLib.Devices.Audio.Polycom
 
         bool _OffHook = false;
 
+        public void VoipSend()
+        {
+            this.Device.Socket.Set(this, SoundstructureCommandType.VOIP_SEND);
+        }
+
         #region ISoundstructurePhoneOutChannel Members
 
         public bool OffHook
@@ -94,10 +99,23 @@ namespace UXLib.Devices.Audio.Polycom
         public void Dial(string number)
         {
             if (!OffHook)
-            {
                 OffHook = true;
-            }
             this.Device.Socket.Set(this, SoundstructureCommandType.PHONE_DIAL, number);
+        }
+
+        public void Reject()
+        {
+            this.Device.Socket.Set(this, SoundstructureCommandType.PHONE_REJECT);
+        }
+
+        public void Ignore()
+        {
+            this.Device.Socket.Set(this, SoundstructureCommandType.PHONE_IGNORE);
+        }
+
+        public void Answer()
+        {
+            this.OffHook = true;
         }
 
         #endregion

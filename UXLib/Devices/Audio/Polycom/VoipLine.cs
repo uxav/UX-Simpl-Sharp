@@ -18,7 +18,7 @@ namespace UXLib.Devices.Audio.Polycom
             VoipOutChannel.Device.VoipInfoReceived += new SoundstructureVoipInfoReceivedHandler(VoipInfoReceived);
         }
 
-        VoipOutChannel VoipOutChannel { get; set; }
+        public VoipOutChannel VoipOutChannel { get; protected set; }
 
         void VoipInfoReceived(ISoundstructureItem item, SoundstructureVoipInfoReceivedEventArgs args)
         {

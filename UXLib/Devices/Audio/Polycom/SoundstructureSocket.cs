@@ -22,7 +22,7 @@ namespace UXLib.Devices.Audio.Polycom
             str = str + "\x0d";
 
 #if DEBUG
-            //CrestronConsole.PrintLine("Soundstructure Tx: {0}", str);
+            CrestronConsole.PrintLine("Soundstructure Tx: {0}", str);
 #endif
             return base.Send(str);
         }
@@ -88,6 +88,15 @@ namespace UXLib.Devices.Audio.Polycom
         {
             string str = string.Format("set {0} \"{1}\" \"{2}\"", type.ToString().ToLower(),
                 channel.Name, value);
+            if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
+                return true;
+            return false;
+        }
+
+        public bool Set(ISoundstructureItem channel, SoundstructureCommandType type)
+        {
+            string str = string.Format("set {0} \"{1}\"", type.ToString().ToLower(),
+                channel.Name);
             if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
                 return true;
             return false;
