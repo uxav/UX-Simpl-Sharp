@@ -49,7 +49,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             get
             {
-                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback");
+                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback", true);
                 foreach (XElement element in statusInfo)
                     if (element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value == this.ServerURL)
                         return true;

@@ -43,8 +43,16 @@ namespace UXLib.Devices.VC.Cisco
         public Conference Conference { get; private set; }
         public Network Network { get; private set; }
         public Phonebook Phonebook { get; private set; }
+        Thread CheckStatus { get; set; }
 
         public void Initialize()
+        {
+            
+
+            SSHClient.Connect();
+        }
+
+        public void Registerfeedback()
         {
             this.FeedbackServer.Register(1, new string[] {
                 "/Configuration",
@@ -58,15 +66,14 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Call",
                 "/Status/Conference"
             });
-
-            SSHClient.Connect();
         }
 
         public event CodecConnectedEventHandler HasConnected;
 
         void SSHClient_OnConnect(CodecSSHClient client)
         {
-            Thread t = new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
         }
 
         object GetStatusThread(object threadObject)
@@ -78,13 +85,53 @@ namespace UXLib.Devices.VC.Cisco
             string standbyStatus = RequestPath("Status/Standby", true).FirstOrDefault().Elements().FirstOrDefault().Value;
             if (standbyStatus == "On") _StandbyActive = true;
             else _StandbyActive = false;
+
+            bool registered = this.FeedbackServer.Registered;
+
 #if DEBUG
             CrestronConsole.PrintLine("Standby = {0}", StandbyActive);
+            CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
 #endif
+            if (!registered)
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("Registering Feedback");
+#endif
+                this.Registerfeedback();
+            }
+
             if (HasConnected != null)
                 HasConnected(this);
 
             return null;
+        }
+
+        object CheckStatusThread(object threadObject)
+        {
+            while (true)
+            {
+                try
+                {
+                    Thread.Sleep(60000);
+
+                    bool registered = this.FeedbackServer.Registered;
+
+#if DEBUG
+                    CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
+#endif
+                    if (!registered)
+                    {
+#if DEBUG
+                        CrestronConsole.PrintLine("Registering Feedback");
+#endif
+                        this.Registerfeedback();
+                    }
+                }
+                catch (Exception e)
+                {
+                    ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
+                }
+            }
         }
 
         string password;
@@ -101,6 +148,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
+            CheckStatus.Abort();
             if (FeedbackServer.Active)
                 FeedbackServer.Active = false;
             if (SSHClient.IsConnected)
