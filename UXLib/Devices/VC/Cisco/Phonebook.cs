@@ -17,21 +17,19 @@ namespace UXLib.Devices.VC.Cisco
 
         CiscoCodec Codec;
 
-        public static CommandArgs BuildCommandArgs(PhonebookType phonebookType, string searchString)
+        public static CommandArgs BuildCommandArgs(PhonebookType phonebookType, string searchString, bool recursive)
         {
             CommandArgs args = new CommandArgs("PhonebookType", phonebookType.ToString());
-            if (phonebookType == PhonebookType.Local)
-                args.Add("Recursive", "False");
+            args.Add("Recursive", recursive.ToString());
             args.Add("SearchString", searchString);
             return args;
         }
 
-        public static CommandArgs BuildCommandArgs(PhonebookType phonebookType, string searchString, string folderId)
+        public static CommandArgs BuildCommandArgs(PhonebookType phonebookType, string folderId)
         {
             CommandArgs args = new CommandArgs("PhonebookType", phonebookType.ToString());
             if (phonebookType == PhonebookType.Local)
                 args.Add("Recursive", "False");
-            args.Add("SearchString", searchString);
             args.Add("FolderId", folderId);
             return args;
         }

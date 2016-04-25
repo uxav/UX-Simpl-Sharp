@@ -27,12 +27,17 @@ namespace UXLib.Devices.VC.Cisco
 
         string Request(HttpClientRequest request)
         {
-            //CrestronConsole.PrintLine("\r\nHttp ({0}) Request to: {1} Path: {2}", request.RequestType.ToString(), request.Url.Hostname, request.Url.PathAndParams);
-
+#if DEBUG
+            CrestronConsole.PrintLine("\r\nHttp ({0}) Request to: {1} Path: {2}", request.RequestType.ToString(), request.Url.Hostname, request.Url.PathAndParams);
+            if (request.RequestType == RequestType.Post)
+                CrestronConsole.PrintLine("Request Body:\r\n{0}", request.ContentString);
+#endif
             try
             {
                 HttpClientResponse response = this.HttpClient.Dispatch(request);
-                //CrestronConsole.PrintLine("Response status {0}", response.Code);
+#if DEBUG
+                CrestronConsole.PrintLine("Response status {0}", response.Code);
+#endif
                 if (response.Code == 200)
                     return response.ContentString;
 

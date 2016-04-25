@@ -46,7 +46,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public int Count { get { return Results.Count; } }
 
-        #region IEnumerable<PhonebookContact> Members
+        #region IEnumerable<IPhonebookItem> Members
 
         public IEnumerator<IPhonebookItem> GetEnumerator()
         {

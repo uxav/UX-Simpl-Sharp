@@ -16,7 +16,8 @@ namespace UXLib.Devices.VC.Cisco
 
     public enum PhonebookItemType
     {
+        Folder,
         Contact,
-        Folder
+        ContactMethod
     }
 }
