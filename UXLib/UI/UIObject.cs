@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.UI
 {
@@ -366,9 +367,11 @@ namespace UXLib.UI
         {
             if (this._valueChangeEvent != null && this.PressDigitalJoin != null)
                 this._valueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue,
+                    this.AnalogTouchJoin.IsRamping,
                     this.PressDigitalJoin.BoolValue));
             else if (this._valueChangeEvent != null)
-                this._valueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue));
+                this._valueChangeEvent(this, new UIObjectAnalogTouchEventArgs(newValue,
+                    this.AnalogTouchJoin.IsRamping));
         }
 
         /// <summary>
@@ -439,7 +442,20 @@ namespace UXLib.UI
             else if (args.Event == eSigEvent.UShortChange && this.AnalogTouchJoin != null && args.Sig == this.AnalogTouchJoin)
             {
                 OnValueChange(args.Sig.UShortValue);
+
+                new Thread(ValueRampThread, args.Sig);
             }
+        }
+
+        object ValueRampThread(object sigObject)
+        {
+            UShortOutputSig sig = sigObject as UShortOutputSig;
+            while (sig.IsRamping)
+            {
+                OnValueChange(sig.UShortValue);
+                Thread.Sleep(10);
+            }
+            return null;
         }
 
         private event UIObjectButtonEventHandler _buttonEvent;
@@ -611,18 +627,20 @@ namespace UXLib.UI
 
     public class UIObjectAnalogTouchEventArgs : EventArgs
     {
-        public UIObjectAnalogTouchEventArgs(ushort newValue)
+        public UIObjectAnalogTouchEventArgs(ushort newValue, bool isRamping)
         {
             this.NewValue = newValue;
+            this.IsRamping = isRamping;
         }
 
-        public UIObjectAnalogTouchEventArgs(ushort newValue, bool isBeingPressed)
-            : this(newValue)
+        public UIObjectAnalogTouchEventArgs(ushort newValue, bool isRamping, bool isBeingPressed)
+            : this(newValue, isRamping)
         {
             this.IsBeingPressed = isBeingPressed;
         }
 
         public ushort NewValue { get; protected set; }
         public bool IsBeingPressed { get; protected set; }
+        public bool IsRamping { get; protected set; }
     }
 }
