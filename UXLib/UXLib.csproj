@@ -112,6 +112,8 @@
     <Compile Include="Devices\Audio\Polycom\VoipLine.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipLineCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipOutChannel.cs" />
+    <Compile Include="Devices\Displays\NEC\NecDisplaySocket.cs" />
+    <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
@@ -214,7 +216,7 @@
         <Programmer>Mike Jobson</Programmer>
         <ArchiveFilename>C:\Users\mike\Developer\twobirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>25/04/2016 08:45:03</CompiledOn>
+        <CompiledOn>25/04/2016 19:07:48</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

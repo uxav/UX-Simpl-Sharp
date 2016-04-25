@@ -39,14 +39,14 @@ namespace UXLib.Devices.Displays.Samsung
                     for (int b = 6; b < (dataLength + 4); b++)
                         values[b - 6] = packet[b];
 #if DEBUG
-                    //CrestronConsole.Print("Samsung Rx: ");
-                    //Tools.PrintBytes(packet, packet.Length, true);
+                    CrestronConsole.Print("Samsung Rx: ");
+                    Tools.PrintBytes(packet, packet.Length, true);
 #endif
                     if (Enum.IsDefined(typeof(CommandType), cmd))
                     {
                         CommandType cmdType = (CommandType)cmd;
 #if DEBUG
-                        //CrestronConsole.PrintLine("  Command Type = {0}, dataLength = {1}", cmdType.ToString(), dataLength);
+                        CrestronConsole.PrintLine("  Command Type = {0}, dataLength = {1}", cmdType.ToString(), dataLength);
 #endif
                         switch (cmdType)
                         {
