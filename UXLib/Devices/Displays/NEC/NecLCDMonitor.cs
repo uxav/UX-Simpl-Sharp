@@ -27,15 +27,18 @@ namespace UXLib.Devices.Displays.NEC
 
         void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
-#if DEBUG
-            CrestronConsole.PrintLine("NEC Display Connected");
-#endif
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
+#if DEBUG
+                CrestronConsole.PrintLine("NEC Display Connected");
+#endif
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
             else
             {
+#if DEBUG
+                CrestronConsole.PrintLine("NEC Display Disconnected");
+#endif
                 this.pollTimer.Stop();
                 this.pollTimer.Dispose();
                 this.DeviceCommunicating = false;
@@ -75,20 +78,21 @@ namespace UXLib.Devices.Displays.NEC
                 byte[] message = new byte[messageLen];
                 Array.Copy(args.ReceivedPacket, 7, message, 0, messageLen);
                 MessageType type = (MessageType)args.ReceivedPacket[4];
-#if DEBUG
-                CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
-                Tools.PrintBytes(message, message.Length);
-#endif
                 string messageStr = Encoding.Default.GetString(message, 1, message.Length - 2);
-
+#if DEBUG
+                //CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
+                //Tools.PrintBytes(message, message.Length);
+                //CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
+#endif
                 switch (type)
                 {
                     case MessageType.CommandReply:
-                        CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
+                        
                         switch (messageStr)
                         {
                             case @"0200D60000040001":
-                                PowerStatus = DevicePowerStatus.PowerOn;
+                                if (PowerStatus != DevicePowerStatus.PowerCooling)
+                                    PowerStatus = DevicePowerStatus.PowerOn;
                                 if (!RequestedPower && commsEstablished)
                                     // Send power as should be off
                                     SendPowerCommand(false);
@@ -101,7 +105,8 @@ namespace UXLib.Devices.Displays.NEC
                                 }
                                 break;
                             case @"0200D60000040004":
-                                PowerStatus = DevicePowerStatus.PowerOff;
+                                if (PowerStatus != DevicePowerStatus.PowerWarming)
+                                    PowerStatus = DevicePowerStatus.PowerOff;
                                 commsEstablished = true;
                                 if (RequestedPower)
                                     SendPowerCommand(true);
