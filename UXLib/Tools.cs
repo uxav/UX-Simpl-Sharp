@@ -59,5 +59,21 @@ namespace UXLib
             }
             CrestronConsole.PrintLine("");
         }
+
+        public static double ScaleRange(double Value,
+          double FromMinValue, double FromMaxValue,
+          double ToMinValue, double ToMaxValue)
+        {
+            try
+            {
+                return (Value - FromMinValue) *
+                    (ToMaxValue - ToMinValue) /
+                    (FromMaxValue - FromMinValue) + ToMinValue;
+            }
+            catch
+            {
+                return double.NaN;
+            }
+        }
     }
 }

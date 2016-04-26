@@ -15,7 +15,7 @@ namespace UXLib.Devices.Displays.NEC
 
         }
 
-        byte[] ValueToBytes(int value)
+        public static byte[] ValueToBytes(int value)
         {
             string str = value.ToString("X2");
             byte[] result = new byte[2];
@@ -43,6 +43,18 @@ namespace UXLib.Devices.Displays.NEC
             return this.Send(address, MessageType.Command, str);
         }
 
+        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes SetParameter(int address, string message)
+        {
+            string str = "\x02" + message + "\x03";
+            return this.Send(address, MessageType.SetParameter, str);
+        }
+
+        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes GetParameter(int address, string message)
+        {
+            string str = "\x02" + message + "\x03";
+            return this.Send(address, MessageType.GetParameter, str);
+        }
+
         public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(int address, MessageType messageType, string message)
         {
             byte[] messageBytes = new byte[message.Length];
@@ -56,8 +68,8 @@ namespace UXLib.Devices.Displays.NEC
         public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(int address, MessageType messageType, byte[] message)
         {
 #if DEBUG
-            CrestronConsole.Print("NEC Send display {0}, MessageType.{1}, ", address, messageType.ToString());
-            Tools.PrintBytes(message, message.Length);
+            //CrestronConsole.Print("NEC Send display {0}, MessageType.{1}, ", address, messageType.ToString());
+            //Tools.PrintBytes(message, message.Length);
 #endif
             byte[] header = CreateHeader(address, messageType, message.Length);
             byte[] packet = new byte[7 + message.Length];

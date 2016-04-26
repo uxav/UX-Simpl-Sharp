@@ -6,10 +6,11 @@ using Crestron.SimplSharp;
 using UXLib;
 using UXLib.Devices;
 using UXLib.Sockets;
+using UXLib.Models;
 
 namespace UXLib.Devices.Displays.NEC
 {
-    public class NecLCDMonitor : DisplayDevice, ISocketDevice
+    public class NecLCDMonitor : DisplayDevice, ISocketDevice, IVolumeDevice
     {
         public NecLCDMonitor(string name, int displayID, NecDisplaySocket socket)
         {
@@ -53,13 +54,18 @@ namespace UXLib.Devices.Displays.NEC
             switch (pollCount)
             {
                 case 1:
-                    this.Socket.SendCommand(this.DisplayID, "01D6");
+                    this.Socket.SendCommand(this.DisplayID, @"01D6");
                     break;
                 case 2:
-                    
+                    if (this.PowerStatus == DevicePowerStatus.PowerCooling || this.PowerStatus == DevicePowerStatus.PowerWarming)
+                    {
+                        this.Socket.SendCommand(this.DisplayID, @"01D6");
+                        pollCount = 0;
+                    }
                     break;
-                case 3:
-                    
+                case 4:
+                    if (this.PowerStatus == DevicePowerStatus.PowerOn)
+                        this.Socket.GetParameter(this.DisplayID, @"0062");
                     pollCount = 0;
                     break;
             }
@@ -80,9 +86,9 @@ namespace UXLib.Devices.Displays.NEC
                 MessageType type = (MessageType)args.ReceivedPacket[4];
                 string messageStr = Encoding.Default.GetString(message, 1, message.Length - 2);
 #if DEBUG
-                //CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
-                //Tools.PrintBytes(message, message.Length);
-                //CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
+                CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
+                Tools.PrintBytes(message, message.Length);
+                CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
 #endif
                 switch (type)
                 {
@@ -121,8 +127,35 @@ namespace UXLib.Devices.Displays.NEC
                                 break;
                         }
                         break;
+                    case MessageType.SetParameterReply:
+                        if (messageStr.StartsWith(@"00006200006400"))
+                        {
+                            ushort level = ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber);
+                            _Level = level;
+                            if (VolumeChanged != null)
+                            {
+                                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                            }
+                        }
+                        break;
+                    case MessageType.GetParameterReply:
+                        if (messageStr.StartsWith(@"00006200006400"))
+                        {
+                            ushort level = ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber);
+                            if (VolumeChanged != null && _Level != level)
+                            {
+                                _Level = level;
+                                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                            }
+                        }
+                        break;
                 }
             }
+        }
+
+        public override void Send(string stringToSend)
+        {
+            Socket.Send(this.DisplayID, MessageType.Command, stringToSend);
         }
 
         void SendPowerCommand(bool power)
@@ -147,6 +180,26 @@ namespace UXLib.Devices.Displays.NEC
             }
         }
 
+        ushort _Level;
+
+        void SendVolumeCommand(ushort volume)
+        {
+            ushort level = (ushort)Tools.ScaleRange(volume, ushort.MinValue, ushort.MaxValue, 0, 100);
+
+            byte[] bytes = BitConverter.GetBytes(level);
+
+            string message = string.Format("006200{0}{1}", bytes[0].ToString("X2"), bytes[1].ToString("X2"));
+
+            this.Socket.SetParameter(this.DisplayID, message);
+        }
+
+        bool _Mute;
+
+        void SendMuteCommand(bool mute)
+        {
+            this.Socket.SetParameter(this.DisplayID, string.Format("008D000{0}", Convert.ToInt16(mute)));
+        }
+
         #region ISocketDevice Members
 
         public string HostAddress
@@ -168,6 +221,48 @@ namespace UXLib.Devices.Displays.NEC
         {
             get { return this.Socket.Connected; }
         }
+
+        #endregion
+
+        #region IVolumeDevice Members
+
+        public ushort Level
+        {
+            get
+            {
+                return _Level;
+            }
+            set
+            {
+                _Level = value;
+                SendVolumeCommand(_Level);
+            }
+        }
+
+        public bool Mute
+        {
+            get
+            {
+                return _Mute;
+            }
+            set
+            {
+                _Mute = value;
+                SendMuteCommand(_Mute);
+            }
+        }
+
+        public bool SupportsMute
+        {
+            get { return true; }
+        }
+
+        public bool SupportsLevel
+        {
+            get { return true; }
+        }
+
+        public event VolumeDeviceChangeEventHandler VolumeChanged;
 
         #endregion
     }
