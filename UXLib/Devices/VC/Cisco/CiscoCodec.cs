@@ -51,8 +51,6 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Initialize()
         {
-            
-
             SSHClient.Connect();
         }
 
@@ -268,6 +266,10 @@ namespace UXLib.Devices.VC.Cisco
 
         void State_SystemStateChange(CiscoCodec Codec, SystemState State)
         {
+#if DEBUG
+            CrestronConsole.PrintLine("Codec State.{0}", State.ToString());
+            CrestronConsole.PrintLine("Codec SSHClient.IsConnected = {0}", SSHClient.IsConnected);
+#endif
             if (State == SystemState.Initialized && !SSHClient.IsConnected)
                 SSHClient.Connect();
         }

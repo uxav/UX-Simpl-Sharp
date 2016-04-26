@@ -33,15 +33,21 @@ namespace UXLib.Devices.VC.Cisco
 
         protected override void OnConnected()
         {
-            if (base.IsConnected)
+            try
             {
+#if DEBUG
+                CrestronConsole.PrintLine("CodecSSHClient.OnConnected()");
+#endif
                 base.OnConnected();
                 this.IsConnected = true;
-
+#if DEBUG
+                CrestronConsole.PrintLine("base.IsConnected = {0}", base.IsConnected);
+#endif
                 Stream = this.CreateShellStream("", 80, 24, 200, 300, 1024);
                 if (RxHandler == null || RxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
                     RxHandler = new Thread(ProcessRxData, null, Thread.eThreadStartOptions.Running);
                 Stream.DataReceived += new EventHandler<Crestron.SimplSharp.Ssh.Common.ShellDataEventArgs>(Stream_DataReceived);
+                Stream.ErrorOccurred += new EventHandler<ExceptionEventArgs>(Stream_ErrorOccurred);
                 Stream.WriteLine("xPreferences outputmode xml");
                 KeepAliveTimer = new CTimer(SendKeepAlive, null, 60000, 60000);
                 ErrorLog.Notice("Cisco codec {0} connected by SSH on {1}", Host, this.EthernetAdapter.ToString());
@@ -51,10 +57,18 @@ namespace UXLib.Devices.VC.Cisco
                     OnConnect(this);
                 }
             }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error in CodecSSHClient OnConnected()", e);
+            }
         }
 
         protected override void OnDisconnected()
         {
+#if DEBUG
+            CrestronConsole.PrintLine("CodecSSHClient.OnDisconnected()");
+            CrestronConsole.PrintLine("base.IsConnected = {0}", base.IsConnected);
+#endif
             base.OnDisconnected();
             this.IsConnected = false;
             KeepAliveTimer.Stop();
@@ -65,6 +79,10 @@ namespace UXLib.Devices.VC.Cisco
 
         void CodecSSHClient_ErrorOccurred(object sender, ExceptionEventArgs e)
         {
+#if DEBUG
+            CrestronConsole.PrintLine("Exception on CodecSSHClient {0}", e.Exception.Message);
+#endif
+            ErrorLog.Exception("Error on CodecSSHClient", e.Exception);
             if (e.Exception.GetType() == typeof(SshConnectionException))
             {
                 this.IsConnected = false;
@@ -84,6 +102,8 @@ namespace UXLib.Devices.VC.Cisco
         {
             if (KeepAliveTimer != null)
                 KeepAliveTimer.Reset();
+            else
+                KeepAliveTimer = new CTimer(SendKeepAlive, null, 60000, 60000);
             RxQueue.Clear();
             DataQueue.Clear();
 #if DEBUG
@@ -157,6 +177,14 @@ namespace UXLib.Devices.VC.Cisco
 #endif
 
             RxQueue.Enqueue(Encoding.UTF8.GetString(e.Data, 0, e.Data.Length));
+        }
+
+        void Stream_ErrorOccurred(object sender, ExceptionEventArgs e)
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("Exception on CodecSSHClient Stream ", e.Exception.Message);
+#endif
+            ErrorLog.Exception("Error on CodecSSHClient Stream", e.Exception);
         }
 
         void OnReceive(string str)
