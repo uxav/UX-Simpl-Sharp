@@ -19,6 +19,16 @@ namespace UXLib.UI
 
             if (this.Device != null)
             {
+                CrestronConsole.PrintLine("Registering UI Device \'{0}\'", device.GetType().ToString());
+
+                if (device is TswFt5ButtonSystem)
+                {
+                    CrestronConsole.PrintLine("UI Device is TswFt5ButtonSystem device");
+                    TswFt5ButtonSystem panelDevice = device as TswFt5ButtonSystem;
+                    SystemReservedSigs = panelDevice.ExtenderSystemReservedSigs;
+                    SystemReservedSigs.Use();
+                }
+
                 this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
 
                 if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
@@ -41,6 +51,7 @@ namespace UXLib.UI
         public uint ID { get; protected set; }
         public string Name { get; set; }
         public BasicTriList Device { get; protected set; }
+        public TswFtSystemReservedSigs SystemReservedSigs { get; protected set; }
         Room _room;
         public Room Room
         {
@@ -146,6 +157,18 @@ namespace UXLib.UI
         public void WriteLog(string message)
         {
             ErrorLog.Notice("UI 0x{00:X} : {1}", this.Device.ID, message);
+        }
+
+        public void Wake()
+        {
+            if (this.SystemReservedSigs != null)
+                this.SystemReservedSigs.BacklightOn();
+        }
+
+        public void Sleep()
+        {
+            if (this.SystemReservedSigs != null)
+                this.SystemReservedSigs.BacklightOff();
         }
     }
 }
