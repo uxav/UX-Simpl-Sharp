@@ -61,12 +61,9 @@ namespace UXLib.UI
             }
         }
 
-        public ushort ScrollToItem
+        public void ScrollToItem(ushort item)
         {
-            set
-            {
-                this.DeviceSmartObject.UShortInput["Scroll To Item"].UShortValue = value;
-            }
+            this.DeviceSmartObject.UShortInput["Scroll To Item"].UShortValue = item;
         }
 
         public bool IsMoving
