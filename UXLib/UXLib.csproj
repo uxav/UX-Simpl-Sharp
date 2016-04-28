@@ -46,6 +46,10 @@
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Crestron.SimplSharpPro.CrestronConnected, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.CrestronConnected.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
@@ -112,6 +116,7 @@
     <Compile Include="Devices\Audio\Polycom\VoipLine.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipLineCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipOutChannel.cs" />
+    <Compile Include="Devices\Displays\CrestronConnectedDisplay.cs" />
     <Compile Include="Devices\Displays\NEC\NecDisplaySocket.cs" />
     <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />

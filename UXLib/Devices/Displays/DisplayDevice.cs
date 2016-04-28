@@ -9,7 +9,7 @@ namespace UXLib.Devices.Displays
 {
     public class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
     {
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         /// <summary>
         /// Set or get the Power for the display. Get will always return the actual power state.
