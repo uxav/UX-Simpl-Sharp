@@ -87,6 +87,9 @@ namespace UXLib.Sockets
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 tryCount = 0;
+#if DEBUG
+                CrestronConsole.PrintLine("Socket connected to device at {0}", socket.AddressClientConnectedTo);
+#endif
                 ErrorLog.Notice("Socket connected to device at {0}", socket.AddressClientConnectedTo);
                 rxQueue.Clear();
                 if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
@@ -117,8 +120,8 @@ namespace UXLib.Sockets
         void OnReceive(TCPClient socket, int byteCount)
         {
 #if DEBUG
-            //CrestronConsole.PrintLine("{0} Socket OnReceive() Rx: ", this.GetType().ToString());
-            //Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
+            CrestronConsole.PrintLine("{0} Socket OnReceive() Rx: ", this.GetType().ToString());
+            Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
 #endif
             for (int b = 0; b < byteCount; b++)
             {
