@@ -48,7 +48,9 @@ namespace UXLib.Devices.Audio.Polycom
             {
                 case SoundstructureCommandType.PHONE_CONNECT:
                     _OffHook = Convert.ToBoolean(value);
+#if DEBUG
                     CrestronConsole.PrintLine("{0} OffHook = {1}", this.Name, OffHook);
+#endif
                     break;
             }
             

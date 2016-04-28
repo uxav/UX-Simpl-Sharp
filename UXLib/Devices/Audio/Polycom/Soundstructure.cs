@@ -272,7 +272,9 @@ namespace UXLib.Devices.Audio.Polycom
                                     switch (commandType)
                                     {
                                         case SoundstructureCommandType.MATRIX_MUTE:
+#if DEBUG
                                             CrestronConsole.PrintLine("Matrix Mute Input: \x22{0}\x22 Output: \x22{1}\x22 Value: {2}", elements[2], elements[3], elements[4]);
+#endif
                                             break;
                                         case SoundstructureCommandType.FADER:
                                             if (elements[2] == "min" || elements[2] == "max")
