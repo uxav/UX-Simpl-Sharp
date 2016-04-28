@@ -139,6 +139,12 @@ namespace UXLib.Devices.Audio.Polycom
 
                 switch (elements[0])
                 {
+                    case "ran":
+                        if (PresetRan != null)
+                        {
+                            PresetRan(this, elements[1]);
+                        }
+                        break;
                     case "vcitem":
                         // this should be a response from the vclist command which sends back all virtual channels defined
                         try
@@ -339,6 +345,13 @@ namespace UXLib.Devices.Audio.Polycom
             return false;
         }
 
+        public event SoundstructurePresetRanEventHandler PresetRan;
+
+        public void RunPreset(string presetName)
+        {
+            this.Socket.Send(string.Format("run \"{0}\"", presetName));
+        }
+
         public static double ScaleRange(double Value,
            double FromMinValue, double FromMaxValue,
            double ToMinValue, double ToMaxValue)
@@ -463,4 +476,6 @@ namespace UXLib.Devices.Audio.Polycom
     }
 
     public delegate void SoundstructureInitialisedCompleteEventHandler(Soundstructure SoundStructureDevice);
+
+    public delegate void SoundstructurePresetRanEventHandler(Soundstructure soundStructureDevice, string presetName);
 }
