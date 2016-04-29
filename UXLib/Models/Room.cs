@@ -118,7 +118,20 @@ namespace UXLib.Models
             }
         }
 
-        public VolumeLevelCollection VolumeLevels { get; protected set; }
+        VolumeLevelCollection _VolumeLevels;
+        public VolumeLevelCollection VolumeLevels
+        {
+            get
+            {
+                if (_VolumeLevels == null)
+                    _VolumeLevels = new VolumeLevelCollection();
+                return _VolumeLevels;
+            }
+            protected set
+            {
+                _VolumeLevels = value;
+            }
+        }
 
         public bool IsParent
         {

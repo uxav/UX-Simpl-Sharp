@@ -8,6 +8,11 @@ namespace UXLib.Models
 {
     public class VolumeLevelCollection : IEnumerable<VolumeLevel>
     {
+        public VolumeLevelCollection()
+        {
+            Levels = new List<VolumeLevel>();
+        }
+
         public VolumeLevelCollection(List<VolumeLevel> fromLevels)
         {
             Levels = new List<VolumeLevel>(fromLevels);
@@ -34,6 +39,16 @@ namespace UXLib.Models
             {
                 return Levels.Count;
             }
+        }
+
+        public void Add(Room room, VolumeLevelType type, IVolumeDevice volumeDevice)
+        {
+            Levels.Add(new VolumeLevel(room, type, volumeDevice));
+        }
+
+        public void Add(VolumeLevel level)
+        {
+            Levels.Add(level);
         }
 
         #region IEnumerable<VolumeLevel> Members
