@@ -51,7 +51,7 @@ namespace UXLib.Devices.Audio.Polycom
         {
             if (this.SupportsFader)
                 this.Device.Socket.Get(this, SoundstructureCommandType.FADER);
-            if (this.SupportsMute)
+            if (this.SupportsVolumeMute)
                 this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
         }
 
@@ -104,7 +104,7 @@ namespace UXLib.Devices.Audio.Polycom
         protected virtual void OnFaderChange()
         {
             if (FaderChanged != null)
-                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.Level));
+                FaderChanged(this, new SoundstructureItemFaderChangeEventArgs(this.Fader, this.FaderMin, this.FaderMax, this.VolumeLevel));
 
             if (VolumeChanged != null)
                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
@@ -117,7 +117,7 @@ namespace UXLib.Devices.Audio.Polycom
         protected virtual void OnMuteChange()
         {
             if (MuteChanged != null)
-                MuteChanged(this, this.Mute);
+                MuteChanged(this, this.VolumeMute);
 
             if (VolumeChanged != null)
                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
@@ -201,7 +201,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         #region IVolumeDevice Members
 
-        public ushort Level
+        public ushort VolumeLevel
         {
             get
             {
@@ -215,7 +215,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         public event VolumeDeviceChangeEventHandler VolumeChanged;
 
-        public bool Mute
+        public bool VolumeMute
         {
             get
             {
@@ -228,7 +228,7 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
-        public bool SupportsMute
+        public bool SupportsVolumeMute
         {
             get
             {
@@ -252,7 +252,7 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
-        public bool SupportsLevel
+        public bool SupportsVolumeLevel
         {
             get { return this.SupportsFader; }
         }

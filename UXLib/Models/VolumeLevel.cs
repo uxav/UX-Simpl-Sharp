@@ -22,11 +22,11 @@ namespace UXLib.Models
         {
             get
             {
-                return this.Device.Level;
+                return this.Device.VolumeLevel;
             }
             set
             {
-                this.Device.Level = value;
+                this.Device.VolumeLevel = value;
             }
         }
 
@@ -34,11 +34,11 @@ namespace UXLib.Models
         {
             get
             {
-                return this.Device.Mute;
+                return this.Device.VolumeMute;
             }
             set
             {
-                this.Device.Mute = value;
+                this.Device.VolumeMute = value;
             }
         }
 

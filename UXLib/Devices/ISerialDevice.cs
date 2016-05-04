@@ -8,8 +8,6 @@ namespace UXLib.Devices
 {
     public interface ISerialDevice : ICommDevice
     {
-        void InitComms();
-        void StartProcessingThreads();
-        void StopProcessingThreads();
+        void Initialize();
     }
 }

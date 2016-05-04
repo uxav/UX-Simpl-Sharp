@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
 using UXLib;
 using UXLib.Sockets;
+using UXLib.Models;
 
 namespace UXLib.Devices.Displays.Samsung
 {
-    public class SamsungMDCDisplay : DisplayDevice, ISocketDevice
+    public class SamsungMDCDisplay : DisplayDevice, ISocketDevice, ISerialDevice, IVolumeDevice
     {
         public SamsungMDCDisplay(string name, int displayID, SamsungMDCSocket socket)
         {
@@ -19,10 +21,20 @@ namespace UXLib.Devices.Displays.Samsung
             this.Socket.SocketConnectionEvent += new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
         }
 
+        public SamsungMDCDisplay(string name, int displayID, SamsungMDCComPortHandler comPort)
+        {
+            this.Name = name;
+            this.DisplayID = displayID;
+            ComPort = comPort;
+            ComPort.ReceivedPacket += new SamsungMDCComPortReceivedPacketEventHandler(ComPort_ReceivedPacket);
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        }
+
         public SamsungMDCDisplay(string name, int displayID, string socketAddress)
             : this(name, displayID, new SamsungMDCSocket(socketAddress)) { }
 
         SamsungMDCSocket Socket;
+        SamsungMDCComPortHandler ComPort;
         public int DisplayID { get; protected set; }
 
         public void OnReceive(byte[] packet)
@@ -39,18 +51,23 @@ namespace UXLib.Devices.Displays.Samsung
                     for (int b = 6; b < (dataLength + 4); b++)
                         values[b - 6] = packet[b];
 #if DEBUG
-                    CrestronConsole.Print("Samsung Rx: ");
-                    Tools.PrintBytes(packet, packet.Length, true);
+                    //CrestronConsole.PrintLine("");
+                    //CrestronConsole.Print("Samsung Rx: ");
+                    Tools.PrintBytes(packet, packet.Length);
 #endif
                     if (Enum.IsDefined(typeof(CommandType), cmd))
                     {
                         CommandType cmdType = (CommandType)cmd;
 #if DEBUG
-                        CrestronConsole.PrintLine("  Command Type = {0}, dataLength = {1}", cmdType.ToString(), dataLength);
+                        //CrestronConsole.Print("  Command Type = {0}, dataLength = {1}, data = ", cmdType.ToString(), dataLength);
+                        Tools.PrintBytes(values, values.Length);
 #endif
                         switch (cmdType)
                         {
                             case CommandType.Power:
+                                //CrestronConsole.PrintLine("  Power = {0} ({1})", values[0], Convert.ToBoolean(values[0]));
+                                break;
+                            case CommandType.PanelPower:
                                 //CrestronConsole.PrintLine("  Panel Power = {0} ({1})", values[0], !Convert.ToBoolean(values[0]));
                                 if (values[0] == 0 && this.PowerStatus == DevicePowerStatus.PowerOff)
                                 {
@@ -67,7 +84,7 @@ namespace UXLib.Devices.Displays.Samsung
                                 OnVolumeChange(values[1]);
                                 OnMuteChange(Convert.ToBoolean(values[2]));
                                 base.Input = GetInputForCommandValue(values[3]);
-                                //CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.Mute, this.Volume, this.Input.ToString(), values[4]);
+                                //CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
                                 break;
                             case CommandType.DisplayStatus:
                                 OnVideoSyncChange(!Convert.ToBoolean(values[3]));
@@ -77,6 +94,7 @@ namespace UXLib.Devices.Displays.Samsung
                                 if (values.Length >= 14)
                                 {
                                     _DeviceSerialNumber = Encoding.Default.GetString(values, 0, 14);
+                                    //CrestronConsole.PrintLine("  Serial number: {0}", _DeviceSerialNumber);
                                 }
                                 break;
                             case CommandType.Volume:
@@ -93,7 +111,7 @@ namespace UXLib.Devices.Displays.Samsung
                                 break;
                             default:
 #if DEBUG
-                                CrestronConsole.Print("Other Command \x22{0}\x22, Data: ", cmd.ToString("X2"));
+                                //CrestronConsole.Print("Other Command \x22{0}\x22, Data: ", cmd.ToString("X2"));
                                 Tools.PrintBytes(values, values.Length);
 # endif
                                 break;
@@ -116,6 +134,14 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
+        void ComPort_ReceivedPacket(SamsungMDCComPortHandler handler, byte[] receivedPacket)
+        {
+            if (receivedPacket[2] == this.DisplayID)
+            {
+                this.OnReceive(receivedPacket);
+            }
+        }
+
         CTimer pollTimer;
 
         void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
@@ -126,6 +152,26 @@ namespace UXLib.Devices.Displays.Samsung
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
             else
+            {
+                this.pollTimer.Stop();
+                this.pollTimer.Dispose();
+                this.DeviceCommunicating = false;
+            }
+        }
+
+        public void Initialize()
+        {
+            if (this.ComPort != null)
+            {
+                this.ComPort.Initialize();
+                PollCommand(CommandType.SerialNumber);
+                pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
+            }
+        }
+
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (this.pollTimer != null && !this.pollTimer.Disposed)
             {
                 this.pollTimer.Stop();
                 this.pollTimer.Dispose();
@@ -144,9 +190,14 @@ namespace UXLib.Devices.Displays.Samsung
                     PollCommand(CommandType.Power);
                     break;
                 case 2:
-                    PollCommand(CommandType.Status);
+                    PollCommand(CommandType.PanelPower);
+                    if (!this.Power)
+                        pollCount = 0;
                     break;
                 case 3:
+                    PollCommand(CommandType.Status);
+                    break;
+                case 4:
                     PollCommand(CommandType.DisplayStatus);
                     pollCount = 0;
                     break;
@@ -156,12 +207,19 @@ namespace UXLib.Devices.Displays.Samsung
         void SendCommand(CommandType command, byte[] data)
         {
             byte[] packet = SamsungMDCSocket.BuildCommand(command, this.DisplayID, data);
-            this.Socket.Send(packet);
+            if (this.Socket != null)
+                this.Socket.Send(packet);
+            else if (this.ComPort != null)
+                this.ComPort.Send(packet, packet.Length);
         }
 
         void PollCommand(CommandType commandType)
         {
-            this.Socket.Send(SamsungMDCSocket.BuildCommand(commandType, this.DisplayID));
+            byte[] packet = SamsungMDCSocket.BuildCommand(commandType, this.DisplayID);
+            if (this.Socket != null)
+                this.Socket.Send(packet);
+            else if (this.ComPort != null)
+                this.ComPort.Send(packet, packet.Length);
         }
 
         void SetPowerStatus(object powerStatus)
@@ -184,8 +242,11 @@ namespace UXLib.Devices.Displays.Samsung
             set
             {
                 byte[] data = new byte[1];
-                data[0] = Convert.ToByte(!value);
+                data[0] = Convert.ToByte(value);
                 SendCommand(CommandType.Power, data);
+                data = new byte[1];
+                data[0] = Convert.ToByte(!value);
+                SendCommand(CommandType.PanelPower, data);
                 base.Power = value;
             }
         }
@@ -213,15 +274,13 @@ namespace UXLib.Devices.Displays.Samsung
             if (value != _Volume)
             {
                 _Volume = value;
-                if (VolumeChange != null)
-                    VolumeChange(this, _Volume);
+                if (VolumeChanged != null)
+                    VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
             }
         }
 
-        public event SamsungMDCDisplayVolumeEventHandler VolumeChange;
-
         bool _Mute;
-        public bool Mute
+        public bool VolumeMute
         {
             get
             {
@@ -240,12 +299,10 @@ namespace UXLib.Devices.Displays.Samsung
             if (value != _Mute)
             {
                 _Mute = value;
-                if (MuteChange != null)
-                    MuteChange(this, _Mute);
+                if (VolumeChanged != null)
+                    VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
             }
         }
-
-        public event SamsungMDCDisplayMuteEventHandler MuteChange;
 
         bool _VideoSync;
         public bool VideoSync
@@ -380,15 +437,42 @@ namespace UXLib.Devices.Displays.Samsung
         }
 
         #endregion
+
+        #region IVolumeDevice Members
+
+        public ushort VolumeLevel
+        {
+            get
+            {
+                return (ushort)Tools.ScaleRange(this.Volume, 0, 100, ushort.MinValue, ushort.MaxValue);
+            }
+            set
+            {
+                this.Volume = (ushort)(Tools.ScaleRange(value, ushort.MinValue, ushort.MaxValue, 0, 100));
+            }
+        }
+
+        public bool SupportsVolumeMute
+        {
+            get { return true; }
+        }
+
+        public bool SupportsVolumeLevel
+        {
+            get { return true; }
+        }
+
+        public event VolumeDeviceChangeEventHandler VolumeChanged;
+
+        #endregion
     }
 
-    public delegate void SamsungMDCDisplayVolumeEventHandler(SamsungMDCDisplay display, ushort value);
-    public delegate void SamsungMDCDisplayMuteEventHandler(SamsungMDCDisplay display, bool value);
     public delegate void SamsungMDCDisplayVideoSyncEventHandler(SamsungMDCDisplay display, bool value);
 
     public enum CommandType : byte
     {
         Status = 0x00,
+        Power = 0x11,
         SerialNumber = 0x0b,
         DisplayStatus = 0x0d,
         Volume = 0x12,
@@ -398,6 +482,6 @@ namespace UXLib.Devices.Displays.Samsung
         EnergySaving = 0x92,
         OSD = 0x70,
         OSDType = 0xa3,
-        Power = 0xf9
+        PanelPower = 0xf9
     }
 }

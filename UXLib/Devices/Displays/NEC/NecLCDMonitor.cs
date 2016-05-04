@@ -226,7 +226,7 @@ namespace UXLib.Devices.Displays.NEC
 
         #region IVolumeDevice Members
 
-        public ushort Level
+        public ushort VolumeLevel
         {
             get
             {
@@ -239,7 +239,7 @@ namespace UXLib.Devices.Displays.NEC
             }
         }
 
-        public bool Mute
+        public bool VolumeMute
         {
             get
             {
@@ -252,12 +252,12 @@ namespace UXLib.Devices.Displays.NEC
             }
         }
 
-        public bool SupportsMute
+        public bool SupportsVolumeMute
         {
             get { return true; }
         }
 
-        public bool SupportsLevel
+        public bool SupportsVolumeLevel
         {
             get { return true; }
         }
