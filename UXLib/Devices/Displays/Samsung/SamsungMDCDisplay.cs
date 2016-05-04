@@ -37,6 +37,8 @@ namespace UXLib.Devices.Displays.Samsung
         SamsungMDCComPortHandler ComPort;
         public int DisplayID { get; protected set; }
 
+        bool standbyState;
+
         public void OnReceive(byte[] packet)
         {
             this.DeviceCommunicating = true;
@@ -53,20 +55,17 @@ namespace UXLib.Devices.Displays.Samsung
 #if DEBUG
                     //CrestronConsole.PrintLine("");
                     //CrestronConsole.Print("Samsung Rx: ");
-                    Tools.PrintBytes(packet, packet.Length);
+                    //Tools.PrintBytes(packet, packet.Length);
 #endif
                     if (Enum.IsDefined(typeof(CommandType), cmd))
                     {
                         CommandType cmdType = (CommandType)cmd;
 #if DEBUG
                         //CrestronConsole.Print("  Command Type = {0}, dataLength = {1}, data = ", cmdType.ToString(), dataLength);
-                        Tools.PrintBytes(values, values.Length);
+                        //Tools.PrintBytes(values, values.Length);
 #endif
                         switch (cmdType)
                         {
-                            case CommandType.Power:
-                                //CrestronConsole.PrintLine("  Power = {0} ({1})", values[0], Convert.ToBoolean(values[0]));
-                                break;
                             case CommandType.PanelPower:
                                 //CrestronConsole.PrintLine("  Panel Power = {0} ({1})", values[0], !Convert.ToBoolean(values[0]));
                                 if (values[0] == 0 && this.PowerStatus == DevicePowerStatus.PowerOff)
@@ -81,6 +80,7 @@ namespace UXLib.Devices.Displays.Samsung
                                 }
                                 break;
                             case CommandType.Status:
+                                standbyState = !Convert.ToBoolean(values[0]);
                                 OnVolumeChange(values[1]);
                                 OnMuteChange(Convert.ToBoolean(values[2]));
                                 base.Input = GetInputForCommandValue(values[3]);
@@ -187,17 +187,14 @@ namespace UXLib.Devices.Displays.Samsung
             switch (pollCount)
             {
                 case 1:
-                    PollCommand(CommandType.Power);
-                    break;
-                case 2:
                     PollCommand(CommandType.PanelPower);
                     if (!this.Power)
                         pollCount = 0;
                     break;
-                case 3:
+                case 2:
                     PollCommand(CommandType.Status);
                     break;
-                case 4:
+                case 3:
                     PollCommand(CommandType.DisplayStatus);
                     pollCount = 0;
                     break;
@@ -242,9 +239,12 @@ namespace UXLib.Devices.Displays.Samsung
             set
             {
                 byte[] data = new byte[1];
-                data[0] = Convert.ToByte(value);
-                SendCommand(CommandType.Power, data);
-                data = new byte[1];
+                if (standbyState && value)
+                {
+                    data[0] = Convert.ToByte(value);
+                    SendCommand(CommandType.Power, data);
+                    data = new byte[1];
+                }
                 data[0] = Convert.ToByte(!value);
                 SendCommand(CommandType.PanelPower, data);
                 base.Power = value;
