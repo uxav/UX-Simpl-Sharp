@@ -8,6 +8,7 @@ namespace UXLib.Models
 {
     public interface IVolumeDevice
     {
+        string Name { get; }
         ushort VolumeLevel { get; set; }
         bool VolumeMute { get; set; }
         bool SupportsVolumeMute { get; }

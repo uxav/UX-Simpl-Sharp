@@ -16,6 +16,14 @@ namespace UXLib.Models
         public VolumeLevelCollection(List<VolumeLevel> fromLevels)
         {
             Levels = new List<VolumeLevel>(fromLevels);
+
+#if DEBUG
+            CrestronConsole.PrintLine("Created new VolumeLevelCollection with {0} items.. ", Levels.Count);
+            foreach (VolumeLevel level in Levels)
+            {
+                CrestronConsole.PrintLine("  {0}: {1} ({2})", Levels.IndexOf(level), level.Device.Name, level.LevelType, ToString());
+            }
+#endif
         }
 
         List<VolumeLevel> Levels { get; set; }

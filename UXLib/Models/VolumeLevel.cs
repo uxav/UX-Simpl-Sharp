@@ -14,6 +14,10 @@ namespace UXLib.Models
             this.Device = volumeDevice;
             this.LevelType = levelType;
             volumeDevice.VolumeChanged += new VolumeDeviceChangeEventHandler(volumeDevice_VolumeChanged);
+
+#if DEBUG
+            CrestronConsole.PrintLine("Created new VolumeLevel for Room {0}, {1}, {2}", room.Name, levelType.ToString(), volumeDevice.Name);
+#endif
         }
 
         public VolumeLevelType LevelType { get; protected set; }

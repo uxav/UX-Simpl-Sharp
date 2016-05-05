@@ -221,9 +221,9 @@
         <ProgramIdTag>UXLib</ProgramIdTag>
         <SystemName>UXLib</SystemName>
         <Programmer>Mike Jobson</Programmer>
-        <ArchiveFilename>C:\Users\mike\Developer\twobirds\TwoBirds\lib\uxsimplsharp\UXLib\bin\UXLib.cplz</ArchiveFilename>
+        <ArchiveFilename>C:\Users\mike\Developer\collercap\lib\uxlib\UXLib\bin\UXLib.cplz</ArchiveFilename>
         <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>29/04/2016 07:42:04</CompiledOn>
+        <CompiledOn>05/05/2016 15:39:32</CompiledOn>
         <AdditionalInfo />
         <EmbedSourceArchive>False</EmbedSourceArchive>
         <CopyTo />

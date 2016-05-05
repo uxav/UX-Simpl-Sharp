@@ -70,6 +70,11 @@ namespace UXLib.Models
             return new SourceCollection(this.Sources.Where(s => s.SourceType == sourceType).ToList());
         }
 
+        public int IndexOf(Source source)
+        {
+            return this.Sources.IndexOf(source);
+        }
+
         public ReadOnlyCollection<string> GetGroupedSourcesGroupNames()
         {
             List<string> results = new List<string>();

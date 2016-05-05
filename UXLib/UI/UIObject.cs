@@ -483,7 +483,7 @@ namespace UXLib.UI
             }
         }
 
-        public event UIObjectAnalogTouchEventHandler _valueChangeEvent;
+        private event UIObjectAnalogTouchEventHandler _valueChangeEvent;
 
         /// <summary>
         /// Called once a value is changed from an analog touch join

@@ -120,8 +120,8 @@ namespace UXLib.Sockets
         void OnReceive(TCPClient socket, int byteCount)
         {
 #if DEBUG
-            CrestronConsole.PrintLine("{0} Socket OnReceive() Rx: ", this.GetType().ToString());
-            Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
+            //CrestronConsole.PrintLine("{0} Socket OnReceive() Rx: ", this.GetType().ToString());
+            //Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
 #endif
             for (int b = 0; b < byteCount; b++)
             {
