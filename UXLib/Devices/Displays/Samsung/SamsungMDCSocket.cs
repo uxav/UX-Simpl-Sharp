@@ -119,7 +119,7 @@ namespace UXLib.Devices.Displays.Samsung
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
-                        ErrorLog.Error("{0} - Error in thread: {1}", GetType().ToString(), e.Message);
+                        ErrorLog.Exception(string.Format("{0} - Exception in thread", GetType().ToString()), e);
                 }
             }
         }

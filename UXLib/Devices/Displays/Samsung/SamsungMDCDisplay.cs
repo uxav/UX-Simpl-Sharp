@@ -84,11 +84,16 @@ namespace UXLib.Devices.Displays.Samsung
                                 OnVolumeChange(values[1]);
                                 OnMuteChange(Convert.ToBoolean(values[2]));
                                 base.Input = GetInputForCommandValue(values[3]);
-                                //CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
+                                CheckInputValue(values[3]);
+#if DEBUG
+                                CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
+#endif
                                 break;
                             case CommandType.DisplayStatus:
                                 OnVideoSyncChange(!Convert.ToBoolean(values[3]));
-                                //CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
+#if DEBUG
+                                CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
+#endif
                                 break;
                             case CommandType.SerialNumber:
                                 if (values.Length >= 14)
@@ -101,10 +106,11 @@ namespace UXLib.Devices.Displays.Samsung
                                 OnVolumeChange(values[0]);
                                 break;
                             case CommandType.Mute:
-                                OnMuteChange(Convert.ToBoolean(values[2]));
+                                OnMuteChange(Convert.ToBoolean(values[0]));
                                 break;
                             case CommandType.InputSource:
                                 base.Input = GetInputForCommandValue(values[0]);
+                                CheckInputValue(values[0]);
                                 break;
                             case CommandType.OSD:
                                 _OSD = Convert.ToBoolean(values[0]);
@@ -340,6 +346,22 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
+        void CheckInputValue(byte value)
+        {
+            if (requestedInput > 0 && value != requestedInput)
+            {
+                byte[] data = new byte[1];
+                data[0] = requestedInput;
+                SendCommand(CommandType.InputSource, data);
+            }
+            else if (requestedInput > 0)
+            {
+                requestedInput = 0;
+            }
+        }
+
+        byte requestedInput = 0x00;
+
         public override DisplayDeviceInput Input
         {
             get
@@ -349,7 +371,11 @@ namespace UXLib.Devices.Displays.Samsung
             set
             {
                 byte[] data = new byte[1];
-                data[0] = GetInputCommandForInput(value);
+#if DEBUG
+                CrestronConsole.PrintLine("Samsung Display set to {0}", value.ToString());
+#endif
+                requestedInput = GetInputCommandForInput(value);
+                data[0] = requestedInput;
                 SendCommand(CommandType.InputSource, data);
             }
         }
