@@ -36,7 +36,8 @@ namespace UXLib.UI
             string feedbackDigitalJoinName, string textSerialJoinName, string iconSerialJoinName)
             : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName, textSerialJoinName)
         {
-            this.IconSerialJoin = this.SmartObject.StringInput[iconSerialJoinName];
+            if (iconSerialJoinName != null && iconSerialJoinName.Length > 0)
+                this.IconSerialJoin = this.SmartObject.StringInput[iconSerialJoinName];
         }
 
         public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
@@ -45,8 +46,10 @@ namespace UXLib.UI
             : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName,
             textSerialJoinName, iconSerialJoinName)
         {
-            this.EnableDigitalJoin = this.SmartObject.BooleanInput[enableDigitalJoinName];
-            this.VisibleDigitalJoin = this.SmartObject.BooleanInput[visibleDigitalJoinName];
+            if (enableDigitalJoinName != null && enableDigitalJoinName.Length > 0)
+                this.EnableDigitalJoin = this.SmartObject.BooleanInput[enableDigitalJoinName];
+            if (visibleDigitalJoinName != null && visibleDigitalJoinName.Length > 0)
+                this.VisibleDigitalJoin = this.SmartObject.BooleanInput[visibleDigitalJoinName];
         }
 
         public object LinkedObject { get; set; }
@@ -72,6 +75,11 @@ namespace UXLib.UI
             {
                 this.Text = value;
             }
+        }
+
+        public void SetAnalogModeJoin(string analogModeJoinName)
+        {
+            this.AnalogModeJoin = this.SmartObject.UShortInput[analogModeJoinName];
         }
     }
 }
