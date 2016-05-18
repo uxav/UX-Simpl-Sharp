@@ -63,6 +63,10 @@ namespace UXLib.Devices.Displays.NEC
                         pollCount = 0;
                     }
                     break;
+                case 3:
+                    if (this.PowerStatus == DevicePowerStatus.PowerOn)
+                        this.Socket.GetParameter(this.DisplayID, @"0060");
+                    break;
                 case 4:
                     if (this.PowerStatus == DevicePowerStatus.PowerOn)
                         this.Socket.GetParameter(this.DisplayID, @"0062");
@@ -130,22 +134,32 @@ namespace UXLib.Devices.Displays.NEC
                     case MessageType.SetParameterReply:
                         if (messageStr.StartsWith(@"00006200006400"))
                         {
-                            ushort level = ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber);
-                            _Level = level;
+                            _Level = (ushort)Tools.ScaleRange(
+                                ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber)
+                                , 0, 100, ushort.MinValue, ushort.MaxValue);
                             if (VolumeChanged != null)
-                            {
                                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
-                            }
                         }
                         break;
                     case MessageType.GetParameterReply:
                         if (messageStr.StartsWith(@"00006200006400"))
                         {
-                            ushort level = ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber);
-                            if (VolumeChanged != null && _Level != level)
-                            {
-                                _Level = level;
+                            _Level = (ushort)Tools.ScaleRange(
+                                ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber)
+                                , 0, 100, ushort.MinValue, ushort.MaxValue);
+                            if (VolumeChanged != null)
                                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                        }
+                        else if (messageStr.StartsWith(@"000060"))
+                        {
+                            byte value = byte.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber);
+                            if (value != requestedInput && requestedInput > 0)
+                            {
+                                SendInputCommand(requestedInput);
+                            }
+                            else if (value == requestedInput && requestedInput > 0)
+                            {
+                                requestedInput = 0x00;
                             }
                         }
                         break;
@@ -167,6 +181,16 @@ namespace UXLib.Devices.Displays.NEC
             this.Socket.SendCommand(this.DisplayID, "01D6");
         }
 
+        byte requestedInput = 0x00;
+
+        void SendInputCommand(byte command)
+        {
+            requestedInput = command;
+            string value = "00" + command.ToString("X2");
+            CrestronConsole.PrintLine("Send display input command {0}", value);
+            this.Socket.SetParameter(this.DisplayID, "0060" + value);
+        }
+
         public override bool Power
         {
             get
@@ -178,6 +202,53 @@ namespace UXLib.Devices.Displays.NEC
                 SendPowerCommand(value);
                 base.Power = value;
             }
+        }
+
+        public override UXLib.Devices.Displays.DisplayDeviceInput Input
+        {
+            get
+            {
+                return base.Input;
+            }
+            set
+            {
+                base.Input = value;
+                SendInputCommand(GetInputCommandForInput(value));
+            }
+        }
+
+        DisplayDeviceInput GetInputForCommandValue(byte value)
+        {
+            switch (value)
+            {
+                case 0x01: return DisplayDeviceInput.VGA;
+                case 0x03: return DisplayDeviceInput.DVI;
+                case 0x04: return DisplayDeviceInput.DVI2;
+                case 0x0f: return DisplayDeviceInput.DisplayPort;
+                case 0x10: return DisplayDeviceInput.DisplayPort2;
+                case 0x11: return DisplayDeviceInput.HDMI1;
+                case 0x12: return DisplayDeviceInput.HDMI2;
+                case 0x82: return DisplayDeviceInput.HDMI3;
+                case 0x83: return DisplayDeviceInput.HDMI4;
+            }
+            throw new IndexOutOfRangeException("Input value out of range");
+        }
+
+        byte GetInputCommandForInput(DisplayDeviceInput input)
+        {
+            switch (input)
+            {
+                case DisplayDeviceInput.DisplayPort: return 0x0f;
+                case DisplayDeviceInput.DisplayPort2: return 0x10;
+                case DisplayDeviceInput.HDMI1: return 0x11;
+                case DisplayDeviceInput.HDMI2: return 0x12;
+                case DisplayDeviceInput.HDMI3: return 0x82;
+                case DisplayDeviceInput.HDMI4: return 0x83;
+                case DisplayDeviceInput.DVI: return 0x03;
+                case DisplayDeviceInput.DVI2: return 0x04;
+                case DisplayDeviceInput.VGA: return 0x01;
+            }
+            throw new IndexOutOfRangeException("Input not supported on this device");
         }
 
         ushort _Level;
