@@ -86,13 +86,13 @@ namespace UXLib.Devices.Displays.Samsung
                                 base.Input = GetInputForCommandValue(values[3]);
                                 CheckInputValue(values[3]);
 #if DEBUG
-                                CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
+                                //CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
 #endif
                                 break;
                             case CommandType.DisplayStatus:
                                 OnVideoSyncChange(!Convert.ToBoolean(values[3]));
 #if DEBUG
-                                CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
+                                //CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
 #endif
                                 break;
                             case CommandType.SerialNumber:
@@ -394,6 +394,8 @@ namespace UXLib.Devices.Displays.Samsung
                 case 0x22: return DisplayDeviceInput.HDMI1;
                 case 0x23: return DisplayDeviceInput.HDMI2;
                 case 0x24: return DisplayDeviceInput.HDMI2;
+                case 0x31: return DisplayDeviceInput.HDMI3;
+                case 0x32: return DisplayDeviceInput.HDMI3;
                 case 0x25: return DisplayDeviceInput.DisplayPort;
                 case 0x60: return DisplayDeviceInput.MagicInfo;
                 case 0x40: return DisplayDeviceInput.TV;
@@ -408,6 +410,7 @@ namespace UXLib.Devices.Displays.Samsung
             {
                 case DisplayDeviceInput.HDMI1: return 0x21;
                 case DisplayDeviceInput.HDMI2: return 0x23;
+                case DisplayDeviceInput.HDMI3: return 0x31;
                 case DisplayDeviceInput.VGA: return 0x14;
                 case DisplayDeviceInput.DVI: return 0x18;
                 case DisplayDeviceInput.Composite: return 0x0c;
