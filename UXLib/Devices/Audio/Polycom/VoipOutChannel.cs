@@ -53,6 +53,8 @@ namespace UXLib.Devices.Audio.Polycom
 #endif
                     break;
             }
+
+            this.Initialised = true;
             
             base.OnFeedbackReceived(commandType, commandModifier, value);
         }

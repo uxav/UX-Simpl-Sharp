@@ -40,6 +40,17 @@ namespace UXLib.Devices.Audio.Polycom
             this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
         }
 
+        public bool Initialised
+        {
+            get
+            {
+                if (faderValueInit && muteValueInit)
+                    return true;
+
+                return false;
+            }
+        }
+
         public int Count()
         {
             return this.VirtualChannels.Count();
@@ -60,10 +71,10 @@ namespace UXLib.Devices.Audio.Polycom
             get
             {
                 return true;
-
             }
         }
 
+        bool faderValueInit;
         double _Fader;
         public double Fader
         {
@@ -92,6 +103,7 @@ namespace UXLib.Devices.Audio.Polycom
                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
         }
 
+        bool muteValueInit;
         bool _mute;
 
         public event SoundstructureItemMuteChangeEventHandler MuteChanged;
@@ -113,6 +125,7 @@ namespace UXLib.Devices.Audio.Polycom
                 {
                     case SoundstructureCommandType.MUTE:
                         _mute = Convert.ToBoolean(args.Value);
+                        muteValueInit = true;
                         OnMuteChange();
                         break;
                     case SoundstructureCommandType.FADER:
@@ -121,7 +134,10 @@ namespace UXLib.Devices.Audio.Polycom
                         else if (args.CommandModifier == "max")
                             FaderMax = args.Value;
                         else
+                        {
                             _Fader = args.Value;
+                            faderValueInit = true;
+                        }
                         OnFaderChange();
                         break;
                 }

@@ -291,6 +291,16 @@ namespace UXLib.Devices.Audio.Polycom
                                                 OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
                                             break;
                                     }
+
+                                    if (!Initialised && CheckAllItemsHaveInitialised())
+                                    {
+                                        Initialised = true;
+#if DEBUG
+                                        CrestronConsole.PrintLine("Soundstructure Initialised!");
+#endif
+                                        if (HasInitialised != null)
+                                            HasInitialised(this);
+                                    }
                                 }
                             }
                             catch  (Exception e)
@@ -327,12 +337,18 @@ namespace UXLib.Devices.Audio.Polycom
                             item.Init();
                         }
                     }
-
-                    Initialised = true;
-                    if (HasInitialised != null)
-                        HasInitialised(this);
                 }
             }
+        }
+
+        private bool CheckAllItemsHaveInitialised()
+        {
+            foreach (ISoundstructureItem item in VirtualChannelGroups)
+                if (!item.Initialised) return false;
+            foreach (ISoundstructureItem item in VirtualChannels)
+                if (!item.Initialised) return false;
+
+            return true;
         }
 
         public event SoundstructureInitialisedCompleteEventHandler HasInitialised;

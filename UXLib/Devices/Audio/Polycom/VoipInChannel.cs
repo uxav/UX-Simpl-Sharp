@@ -29,6 +29,8 @@ namespace UXLib.Devices.Audio.Polycom
                     break;
             }
 
+            this.Initialised = true;
+
             base.OnVoipInfoReceived(command, info);
         }
 

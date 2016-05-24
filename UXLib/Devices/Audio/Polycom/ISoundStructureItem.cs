@@ -10,12 +10,12 @@ namespace UXLib.Devices.Audio.Polycom
     public interface ISoundstructureItem : IVolumeDevice
     {
         Soundstructure Device { get; }
-        string Name { get; }
         bool SupportsFader { get; }
         double Fader { get; set; }
         double FaderMin { get; }
         double FaderMax { get; }
         void Init();
+        bool Initialised { get; }
         event SoundstructureItemFaderChangeEventHandler FaderChanged;
         event SoundstructureItemMuteChangeEventHandler MuteChanged;
     }

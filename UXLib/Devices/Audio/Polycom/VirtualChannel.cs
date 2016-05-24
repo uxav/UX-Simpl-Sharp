@@ -55,6 +55,26 @@ namespace UXLib.Devices.Audio.Polycom
                 this.Device.Socket.Get(this, SoundstructureCommandType.MUTE);
         }
 
+        public bool Initialised
+        {
+            get
+            {
+                if (this.SupportsFader && this.SupportsVolumeMute)
+                {
+                    if (faderValueInit && muteValueInit)
+                        return true;
+                }
+                else if (this.SupportsVolumeMute && muteValueInit)
+                    return true;
+                else if (this.SupportsFader && faderValueInit)
+                    return true;
+                else if (!this.SupportsFader && !this.SupportsVolumeMute)
+                    return true;
+
+                return false;
+            }
+        }
+
         public bool SupportsFader
         {
             get
@@ -78,6 +98,7 @@ namespace UXLib.Devices.Audio.Polycom
             }
         }
 
+        bool faderValueInit;
         double _Fader;
         public double Fader
         {
@@ -110,6 +131,7 @@ namespace UXLib.Devices.Audio.Polycom
                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
         }
 
+        bool muteValueInit;
         bool _mute;
 
         public event SoundstructureItemMuteChangeEventHandler MuteChanged;
@@ -169,7 +191,9 @@ namespace UXLib.Devices.Audio.Polycom
         {
             switch (commandType)
             {
-                case SoundstructureCommandType.MUTE: _mute = Convert.ToBoolean(value);
+                case SoundstructureCommandType.MUTE:
+                    _mute = Convert.ToBoolean(value);
+                    muteValueInit = true;
                     OnMuteChange();
                     break;
                 case SoundstructureCommandType.FADER:
@@ -178,7 +202,10 @@ namespace UXLib.Devices.Audio.Polycom
                     else if (commandModifier == "max")
                         FaderMax = value;
                     else
+                    {
                         _Fader = value;
+                        faderValueInit = true;
+                    }
                     OnFaderChange();
                     break;
             }

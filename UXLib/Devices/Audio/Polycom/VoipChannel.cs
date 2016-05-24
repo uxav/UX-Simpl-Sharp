@@ -14,9 +14,19 @@ namespace UXLib.Devices.Audio.Polycom
             this.Device.VoipInfoReceived += new SoundstructureVoipInfoReceivedHandler(Device_VoipInfoReceived);
         }
 
-        public override void Init()
+        private bool _Initialised;
+        public new bool Initialised
         {
-            base.Init();
+            get
+            {
+                if (base.Initialised && _Initialised)
+                    return true;
+                return false;
+            }
+            protected set
+            {
+                _Initialised = true;
+            }
         }
 
         protected virtual void OnVoipInfoReceived(string command, string info)
