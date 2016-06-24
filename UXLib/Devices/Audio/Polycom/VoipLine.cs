@@ -61,6 +61,7 @@ namespace UXLib.Devices.Audio.Polycom
                         catch (Exception e)
                         {
                             ErrorLog.Error("Error parsing Voip feedback info in VoipLine[{0}], {1}", this.Number, e.Message);
+                            ErrorLog.Error("VoipInfoReceived() \"{0}\"", args.Info);
                         }
                     }
                 }

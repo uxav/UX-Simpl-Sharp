@@ -87,7 +87,7 @@ namespace UXLib.Devices.VC.Cisco
             try
             {
 #if DEBUG
-                CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
+                //CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
                 XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
                 if (xml.Root.HasAttributes)
@@ -98,7 +98,7 @@ namespace UXLib.Devices.VC.Cisco
                     identification.Remove();
                     XElement element = xml.Root;
 #if DEBUG
-                    CrestronConsole.PrintLine(element.ToString());
+                    //CrestronConsole.PrintLine(element.ToString());
 #endif           
                     if (element.XName.LocalName == "Event" && element.HasElements)
                     {
@@ -146,8 +146,10 @@ namespace UXLib.Devices.VC.Cisco
                             path = string.Format("{0}/{1}", path, element.XName.LocalName);
                         }
 
-                        //CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-
+#if DEBUG
+                        CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+                        //CrestronConsole.PrintLine("{0}\r\n", element.ToString());
+#endif
                         if (ReceivedData != null)
                         {
                             ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));

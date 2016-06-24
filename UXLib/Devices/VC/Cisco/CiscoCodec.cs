@@ -151,10 +151,11 @@ namespace UXLib.Devices.VC.Cisco
 
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
-            CheckStatus.Abort();
-            if (FeedbackServer.Active)
+            if (CheckStatus != null)
+                CheckStatus.Abort();
+            if (FeedbackServer != null && FeedbackServer.Active)
                 FeedbackServer.Active = false;
-            if (SSHClient.IsConnected)
+            if (SSHClient != null && SSHClient.IsConnected)
                 SSHClient.Disconnect();
         }
 

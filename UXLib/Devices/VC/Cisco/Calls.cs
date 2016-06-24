@@ -144,67 +144,85 @@ namespace UXLib.Devices.VC.Cisco
 
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
         {
-            switch (args.Path)
+            try
             {
-                case @"Status/Call":
-                    int callID = int.Parse(args.Data.Attribute("item").Value);
-                    bool ghost = args.Data.Attribute("ghost") != null ? bool.Parse(args.Data.Attribute("ghost").Value) : false;
+                switch (args.Path)
+                {
+                    case @"Status/Call":
+                        int callID = int.Parse(args.Data.Attribute("item").Value);
+                        bool ghost = args.Data.Attribute("ghost") != null ? bool.Parse(args.Data.Attribute("ghost").Value) : false;
 
-                    if (ghost && calls.ContainsKey(callID))
-                    {
-                        if (calls[callID].Status != CallStatus.Idle)
-                            calls[callID].Status = CallStatus.Idle;
-                        Call disconnectedCall = calls[callID];
-                        calls.Remove(callID);
-                        OnCallStatusChange(disconnectedCall, true);
-                    }
-                    else if (!ghost)
-                    {
-                        if (!calls.ContainsKey(callID))
-                            calls.Add(callID, new Call(Codec, callID));
-                        Call call = calls[callID];
-                        if (!persistantCalls.ContainsKey(callID))
-                            persistantCalls.Add(callID, call);
-                        foreach (XElement e in args.Data.Elements())
+                        if (ghost && calls.ContainsKey(callID))
                         {
-                            switch (e.XName.LocalName)
-                            {
-                                case "AnswerState":
-                                    call.AnswerState = (CallAnswerState)Enum.Parse(typeof(CallAnswerState), e.Value, false);
-                                    break;
-                                case "CallType":
-                                    call.Type = (CallType)Enum.Parse(typeof(CallType), e.Value, false);
-                                    break;
-                                case "CallbackNumber":
-                                    call.CallbackNumber = e.Value;
-                                    break;
-                                case "DeviceType":
-                                    call.DeviceType = (CallDeviceType)Enum.Parse(typeof(CallDeviceType), e.Value, false);
-                                    break;
-                                case "Direction":
-                                    call.Direction = (CallDirection)Enum.Parse(typeof(CallDirection), e.Value, false);
-                                    break;
-                                case "Duration":
-                                    TimeSpan duration = TimeSpan.Parse(e.Value);
-                                    call.StartTime = DateTime.Now - duration;
-                                    break;
-                                case "DisplayName":
-                                    call.DisplayName = e.Value;
-                                    break;
-                                case "Protocol":
-                                    call.Protocol = e.Value;
-                                    break;
-                                case "RemoteNumber":
-                                    call.RemoteNumber = e.Value;
-                                    break;
-                                case "Status":
-                                    call.Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
-                                    break;
-                            }
+                            if (calls[callID].Status != CallStatus.Idle)
+                                calls[callID].Status = CallStatus.Idle;
+                            Call disconnectedCall = calls[callID];
+                            calls.Remove(callID);
+                            OnCallStatusChange(disconnectedCall, true);
                         }
-                        OnCallStatusChange(call);
-                    }
-                    break;
+                        else if (!ghost)
+                        {
+                            if (!calls.ContainsKey(callID))
+                                calls.Add(callID, new Call(Codec, callID));
+                            Call call = calls[callID];
+                            if (!persistantCalls.ContainsKey(callID))
+                                persistantCalls.Add(callID, call);
+#if DEBUG
+                            CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Data = \r\n{0}", args.Data.ToString());
+                            CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Call ID = {0}", callID);
+                            CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Elements().count = {0}", args.Data.Elements().Count());
+#endif
+                            foreach (XElement e in args.Data.Elements())
+                            {
+#if DEBUG
+                                CrestronConsole.PrintLine("  e.XName.LocalName = {0}", e.XName.LocalName);
+#endif
+                                switch (e.XName.LocalName)
+                                {
+                                    case "AnswerState":
+                                        call.AnswerState = (CallAnswerState)Enum.Parse(typeof(CallAnswerState), e.Value, false);
+                                        break;
+                                    case "CallType":
+                                        call.Type = (CallType)Enum.Parse(typeof(CallType), e.Value, false);
+                                        break;
+                                    case "CallbackNumber":
+                                        call.CallbackNumber = e.Value;
+                                        break;
+                                    case "DeviceType":
+                                        call.DeviceType = (CallDeviceType)Enum.Parse(typeof(CallDeviceType), e.Value, false);
+                                        break;
+                                    case "Direction":
+                                        call.Direction = (CallDirection)Enum.Parse(typeof(CallDirection), e.Value, false);
+                                        break;
+                                    case "Duration":
+                                        TimeSpan duration = TimeSpan.Parse(e.Value);
+                                        call.StartTime = DateTime.Now - duration;
+                                        break;
+                                    case "DisplayName":
+                                        call.DisplayName = e.Value;
+                                        break;
+                                    case "Protocol":
+                                        call.Protocol = e.Value;
+                                        break;
+                                    case "RemoteNumber":
+                                        call.RemoteNumber = e.Value;
+                                        break;
+                                    case "Status":
+                                        call.Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
+                                        break;
+                                }
+                            }
+#if DEBUG
+                            CrestronConsole.PrintLine("OnCallStatusChange(call)");
+#endif
+                            OnCallStatusChange(call);
+                        }
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error parsing xml in Calls.FeedbackServer_ReceivedData()", e);
             }
         }
 

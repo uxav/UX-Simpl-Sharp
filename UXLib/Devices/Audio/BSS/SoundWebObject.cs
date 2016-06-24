@@ -31,7 +31,7 @@ namespace UXLib.Devices.Audio.BSS
 
             if (address == HiQAddress)
             {
-#if DEBUG
+#if false
                 var bytes = new byte[receivedString.Length];
 
                 for (int i = 0; i < receivedString.Length; i++)
@@ -83,7 +83,7 @@ namespace UXLib.Devices.Audio.BSS
         public void Send(string messageType, string paramID, string value)
         {
             string str = messageType + this.HiQAddress + paramID + value;
-#if DEBUG
+#if false
             var bytes = new byte[str.Length];
 
             for (int i = 0; i < str.Length; i++)

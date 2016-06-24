@@ -217,18 +217,6 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <FlavorProperties GUID="{0B4745B0-194B-4BB6-8E21-E9057CA92300}">
-        <ProgramIdTag>UXLib</ProgramIdTag>
-        <SystemName>UXLib</SystemName>
-        <Programmer>Mike Jobson</Programmer>
-        <ArchiveFilename>C:\Users\mike\Developer\collercap\lib\uxlib\UXLib\bin\UXLib.cplz</ArchiveFilename>
-        <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>05/05/2016 15:39:32</CompiledOn>
-        <AdditionalInfo />
-        <EmbedSourceArchive>False</EmbedSourceArchive>
-        <CopyTo />
-        <OriginalReferenceSources />
-      </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
