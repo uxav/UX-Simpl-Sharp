@@ -64,6 +64,7 @@ namespace UXLib.Devices.VC.Cisco
             HttpClientRequest request = new HttpClientRequest();
             request.Url = new UrlParser(string.Format("http://{0}:80{1}", this.Host, path.StartsWith("/") ? path : "/" + path));
             request.RequestType = RequestType.Post;
+            request.Encoding = Encoding.UTF8;
             request.Header.AddHeader(new HttpHeader("content-type", "text/xml"));
             request.ContentString = content;
             return this.Request(request);
@@ -167,7 +168,7 @@ namespace UXLib.Devices.VC.Cisco
                 xw.WriteEndDocument();
             }
 
-            return xml.ToString();
+            return xml.ToString().Replace("encoding=\"utf-16\"", "encoding=\"utf-8\"");
         }
     }
 
