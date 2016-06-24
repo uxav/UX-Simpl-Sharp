@@ -198,6 +198,7 @@
     <Compile Include="UI\UISmartObjectButton.cs" />
     <Compile Include="UI\UISmartObjectButtonCollection.cs" />
     <Compile Include="UI\UISmartObjectCheckboxList.cs" />
+    <Compile Include="UI\UISmartObjectLevel.cs" />
     <Compile Include="UI\UISmartObjectList.cs" />
     <Compile Include="UI\UISmartObjectSpinnerList.cs" />
     <Compile Include="UI\UISmartObjectTabBar.cs" />
