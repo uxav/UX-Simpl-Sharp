@@ -47,13 +47,13 @@ namespace UXLib
         {
             for (int i = 0; i < length; i++)
             {
-                CrestronConsole.Print(@"\x");
-                if (showReadable && bytes[i] >= 32 && bytes[i] < 127)
+                if (showReadable && bytes[i] > 32 && bytes[i] < 127)
                 {
                     CrestronConsole.Print("{0}", (char)bytes[i]);
                 }
                 else
                 {
+                    CrestronConsole.Print(@"\x");
                     CrestronConsole.Print(bytes[i].ToString("X2"));
                 }
             }
