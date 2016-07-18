@@ -24,7 +24,7 @@ namespace UXLib.Devices.Displays.NEC
             return result;
         }
 
-        public byte[] CreateHeader(int address, MessageType messageType, int messageLength)
+        public static byte[] CreateHeader(int address, MessageType messageType, int messageLength)
         {
             byte[] result = new byte[7];
 
