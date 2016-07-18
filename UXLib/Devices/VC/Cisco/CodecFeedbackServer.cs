@@ -87,7 +87,7 @@ namespace UXLib.Devices.VC.Cisco
             try
             {
 #if DEBUG
-                //CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
+                CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
                 XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
                 if (xml.Root.HasAttributes)

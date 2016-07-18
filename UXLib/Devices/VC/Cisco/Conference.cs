@@ -69,6 +69,9 @@ namespace UXLib.Devices.VC.Cisco
                             if (!_Presentations.ContainsKey(presentationID))
                                 _Presentations.Add(presentationID, new PresentationInstance(Codec, presentationID));
                             PresentationInstance presentation = _Presentations[presentationID];
+#if DEBUG
+                            CrestronConsole.PrintLine("Codec Conference Presentation Feedback:\r\n{0}", args.Data.ToString());
+#endif
 
                             foreach (XElement e in args.Data.Elements())
                             {
