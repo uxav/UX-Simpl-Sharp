@@ -204,10 +204,31 @@ namespace UXLib.Sockets
 
                         OnReceivedPacket(copiedBytes);
                     }
-                    else
+                    else if(b > 0 && b <= 127)
                     {
-                        bytes[byteIndex] = b;
-                        byteIndex++;
+                        if (byteIndex < this.BufferSize)
+                        {
+                            bytes[byteIndex] = b;
+                            byteIndex++;
+                        }
+                        else
+                        {
+                            ErrorLog.Error("{0} - Buffer overflow error", GetType().ToString());
+
+                            string lastBytes = string.Empty;
+                            for (int bt = this.BufferSize - 51; bt < this.BufferSize - 1; bt++)
+                            {
+                                byte btVal = bytes[bt];
+                                if (btVal > 32 && btVal <= 127)
+                                    lastBytes = lastBytes + (char)btVal;
+                                else
+                                    lastBytes = lastBytes + @"\x" + btVal.ToString("X2");
+                            }
+
+                            ErrorLog.Notice("Last 50 bytes of buffer: \"{0}\"", lastBytes);
+                            ErrorLog.Warn("The buffer was cleared as a result");
+                            byteIndex = 0;
+                        }
                     }
                 }
                 catch (Exception e)
