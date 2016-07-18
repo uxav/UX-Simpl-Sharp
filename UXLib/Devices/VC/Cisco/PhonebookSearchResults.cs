@@ -46,6 +46,27 @@ namespace UXLib.Devices.VC.Cisco
 
         public int Count { get { return Results.Count; } }
 
+        public PhonebookSearchResults OnlyItemsWithContactMethods()
+        {
+            List<IPhonebookItem> list = new List<IPhonebookItem>();
+
+            foreach (IPhonebookItem item in this)
+            {
+                if (item.ItemType == PhonebookItemType.Contact)
+                {
+                    PhonebookContact contact = item as PhonebookContact;
+                    if (contact.Methods.Count > 0)
+                    {
+                        list.Add(contact);
+                    }
+                }
+                else
+                    list.Add(item);
+            }
+
+            return new PhonebookSearchResults(list, this.Offset, this.Limit);
+        }
+
         #region IEnumerable<IPhonebookItem> Members
 
         public IEnumerator<IPhonebookItem> GetEnumerator()
