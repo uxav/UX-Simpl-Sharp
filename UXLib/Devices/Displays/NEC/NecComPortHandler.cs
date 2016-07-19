@@ -165,7 +165,7 @@ namespace UXLib.Devices.Displays.NEC
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
-                        ErrorLog.Error("{0} - Error in thread: {1}", GetType().ToString(), e.Message);
+                        ErrorLog.Exception("Error in NEC Rx Thread Handler", e);
                 }
             }
         }
