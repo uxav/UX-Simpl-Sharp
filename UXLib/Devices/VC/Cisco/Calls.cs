@@ -38,7 +38,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                if (Codec.SystemUnit.State.NumberOfActiveCalls < Codec.SystemUnit.State.MaxNumberOfActiveCalls)
+                if (Codec.SystemUnit.State.NumberOfActiveCalls < Codec.Capabilities.Conference.MaxActiveCalls)
                 {
                     XDocument xml = Codec.SendCommand("Dial", args);
                     XElement dialResult = xml.Root.Element("DialResult");
@@ -57,6 +57,11 @@ namespace UXLib.Devices.VC.Cisco
                         }
                         return callID;
                     }
+                }
+                else
+                {
+                    ErrorLog.Warn("Codec: Could not dial, NumberOfActiveCalls = {0}, MaxActiveCalls = {1}",
+                        Codec.SystemUnit.State.NumberOfActiveCalls, Codec.Capabilities.Conference.MaxActiveCalls);
                 }
             }
             catch (Exception e)

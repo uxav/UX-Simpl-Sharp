@@ -34,6 +34,7 @@ namespace UXLib.Devices.VC.Cisco
             Phonebook = new Phonebook(this);
             Cameras = new Cameras(this);
             Video = new Video(this);
+            Capabilities = new Capabilities(this);
         }
 
         CodecHTTPClient HttpClient { get; set; }
@@ -47,8 +48,12 @@ namespace UXLib.Devices.VC.Cisco
         public Phonebook Phonebook { get; private set; }
         public Cameras Cameras { get; private set; }
         public Video Video { get; private set; }
+        public Capabilities Capabilities { get; private set; }
         Thread CheckStatus { get; set; }
 
+        /// <summary>
+        /// Connect the codec SSH client and initialize the comms to the system
+        /// </summary>
         public void Initialize()
         {
             SSHClient.Connect();
@@ -56,7 +61,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Registerfeedback()
         {
-            this.FeedbackServer.Register(1, new string[] {
+            this.FeedbackServer.Register(4, new string[] {
                 "/Configuration",
                 "/Status/SystemUnit",
                 "/Status/Audio",
@@ -198,24 +203,6 @@ namespace UXLib.Devices.VC.Cisco
         public CallHistory GetCallHistory(int count)
         {
             return new CallHistory(this, count);
-        }
-
-        public void SoundPlayBump()
-        {
-            SoundPlay("Bump", false);
-        }
-
-        public void SoundPlay(string sound, bool loop)
-        {
-            CommandArgs args = new CommandArgs("Sound", sound);
-            if (loop) args.Add("Loop", "On");
-            else args.Add("Loop", "Off");
-            SendCommand("Audio/Sound/Play", args);
-        }
-
-        public void SoundStop()
-        {
-            SendCommand("Audio/Sound/Stop");
         }
 
         public void PresentationStart()

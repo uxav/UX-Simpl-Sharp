@@ -42,17 +42,37 @@ namespace UXLib.Devices.VC.Cisco
                 count++;
             }
 
-            Codec.SendCommand("HttpFeedback/Register", args, true);
+#if DEBUG
+            CrestronConsole.PrintLine("Resgistering feedback mechanism with CiscoCodec");
+#endif
+
+            XDocument response = Codec.SendCommand("HttpFeedback/Register", args, true);
+
+#if DEBUG
+            CrestronConsole.PrintLine("Register repsonse:\r\n{0}", response.ToString());
+#endif
         }
 
         public bool Registered
         {
             get
             {
+#if DEBUG
+                CrestronConsole.PrintLine("Checking codec feedback registration....");
+#endif
                 IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback", true);
+#if DEBUG
+                CrestronConsole.PrintLine("");
+#endif
                 foreach (XElement element in statusInfo)
-                    if (element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value == this.ServerURL)
+                {
+                    string url = element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value;
+#if DEBUG
+                    CrestronConsole.PrintLine("URL = {0}", url);
+#endif
+                    if (url == this.ServerURL)
                         return true;
+                }
                 return false;
             }
         }
@@ -90,78 +110,88 @@ namespace UXLib.Devices.VC.Cisco
                 CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
                 XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
+
+#if DEBUG
+                CrestronConsole.PrintLine(xml.ToString());
+#endif
+                XElement identification;
+                string productID;
+
                 if (xml.Root.HasAttributes)
                 {
                     XNamespace ns = xml.Root.Attribute("xmlns").Value;
-                    XElement identification = xml.Root.Element(ns + "Identification");
-                    string productID = identification.Element(ns + "ProductID").Value;
-                    identification.Remove();
-                    XElement element = xml.Root;
-#if DEBUG
-                    //CrestronConsole.PrintLine(element.ToString());
-#endif           
-                    if (element.XName.LocalName == "Event" && element.HasElements)
-                    {
-                        switch (element.Elements().First().XName.LocalName)
-                        {
-                            case "IncomingCallIndication":
-                                CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
-                                foreach (XElement e in element.Elements().First().Elements())
-                                {
-                                    switch (e.XName.LocalName)
-                                    {
-                                        case "RemoteURI":
-                                            incomingCallArgs.RemoteURI = e.Value;
-                                            break;
-                                        case "DisplayNameValue":
-                                            incomingCallArgs.DisplayNameValue = e.Value;
-                                            break;
-                                        case "CallId":
-                                            incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
-                                            break;
-                                    }
-                                }
-
-                                if (IncomingCallEvent != null)
-                                    IncomingCallEvent(Codec, incomingCallArgs);
-
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        string path = element.XName.LocalName;
-                        while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
-                        {
-                            element = element.Elements().FirstOrDefault();
-                            path = string.Format("{0}/{1}", path, element.XName.LocalName);
-
-                            if (path == @"Status/Conference/Site")
-                                break;
-                        }
-
-                        if (element == xml.Root && element.Elements().FirstOrDefault() != null)
-                        {
-                            element = element.Elements().FirstOrDefault();
-                            path = string.Format("{0}/{1}", path, element.XName.LocalName);
-                        }
-
-#if DEBUG
-                        CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-                        //CrestronConsole.PrintLine("{0}\r\n", element.ToString());
-#endif
-                        if (ReceivedData != null)
-                        {
-                            ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
-                        }
-                    }
-                    return;
+                    identification = xml.Root.Element(ns + "Identification");
+                    productID = identification.Element(ns + "ProductID").Value;
                 }
                 else
                 {
-                    ErrorLog.Error("XML not as expected from Codec Feedback Event");
-                    return;
+                    identification = xml.Root.Element("Identification");
+                    productID = identification.Element("ProductID").Value;
                 }
+                    
+                identification.Remove();
+                XElement element = xml.Root;
+
+#if DEBUG
+                //CrestronConsole.PrintLine(element.ToString());
+#endif           
+
+                if (element.XName.LocalName == "Event" && element.HasElements)
+                {
+                    switch (element.Elements().First().XName.LocalName)
+                    {
+                        case "IncomingCallIndication":
+                            CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
+                            foreach (XElement e in element.Elements().First().Elements())
+                            {
+                                switch (e.XName.LocalName)
+                                {
+                                    case "RemoteURI":
+                                        incomingCallArgs.RemoteURI = e.Value;
+                                        break;
+                                    case "DisplayNameValue":
+                                        incomingCallArgs.DisplayNameValue = e.Value;
+                                        break;
+                                    case "CallId":
+                                        incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
+                                        break;
+                                }
+                            }
+
+                            if (IncomingCallEvent != null)
+                                IncomingCallEvent(Codec, incomingCallArgs);
+
+                            break;
+                    }
+                }
+                else
+                {
+                    string path = element.XName.LocalName;
+                    while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
+                    {
+                        element = element.Elements().FirstOrDefault();
+                        path = string.Format("{0}/{1}", path, element.XName.LocalName);
+
+                        if (path == @"Status/Conference/Site")
+                            break;
+                    }
+
+                    if (element == xml.Root && element.Elements().FirstOrDefault() != null)
+                    {
+                        element = element.Elements().FirstOrDefault();
+                        path = string.Format("{0}/{1}", path, element.XName.LocalName);
+                    }
+
+#if DEBUG
+                    CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+                    CrestronConsole.PrintLine("{0}\r\n", element.ToString());
+#endif
+                    if (ReceivedData != null)
+                    {
+                        ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                    }
+                }
+                return;
             }
             catch (Exception e)
             {

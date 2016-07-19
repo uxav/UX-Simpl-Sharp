@@ -37,6 +37,7 @@ namespace UXLib.Devices.VC.Cisco
                 HttpClientResponse response = this.HttpClient.Dispatch(request);
 #if DEBUG
                 CrestronConsole.PrintLine("Response status {0}", response.Code);
+                //CrestronConsole.PrintLine("Response body:\r\n{0}", response.ContentString);
 #endif
                 if (response.Code == 200)
                     return response.ContentString;
