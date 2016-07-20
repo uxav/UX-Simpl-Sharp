@@ -32,7 +32,7 @@ namespace UXLib.Devices.VC.Cisco
             Conference = new Conference(this);
             Network = new Network(this);
             Phonebook = new Phonebook(this);
-            Camera = new Camera(this);
+            Cameras = new Cameras(this);
             Video = new Video(this);
             Capabilities = new Capabilities(this);
         }
@@ -46,7 +46,7 @@ namespace UXLib.Devices.VC.Cisco
         public Conference Conference { get; private set; }
         public Network Network { get; private set; }
         public Phonebook Phonebook { get; private set; }
-        public Camera Camera { get; private set; }
+        public Cameras Cameras { get; private set; }
         public Video Video { get; private set; }
         public Capabilities Capabilities { get; private set; }
         Thread CheckStatus { get; set; }
@@ -71,7 +71,8 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Cameras/SpeakerTrack",
                 "/Event/IncomingCallIndication",
                 "/Status/Call",
-                "/Status/Conference"
+                "/Status/Conference",
+                "/Status/Cameras/SpeakerTrack"
             });
         }
 

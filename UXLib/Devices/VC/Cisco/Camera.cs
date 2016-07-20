@@ -8,68 +8,83 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Camera
     {
-        public Camera(CiscoCodec codec)
+        public Camera(CiscoCodec codec, int id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
         {
             this.Codec = codec;
+            this.ID = id;
+            this.Connected = connected;
+            this.MacAddress = macAddress;
+            this.Manufacturer = manufacturer;
+            this.Model = model;
+            this.SerialNumber = serialNumber;
+            this.SoftwareID = softwareID;
         }
 
         CiscoCodec Codec { get; set; }
 
-        public void Ramp(int camera, CameraPanCommand panCommand)
+        public int ID { get; protected set; }
+        public bool Connected { get; protected set; }
+        public string MacAddress { get; protected set; }
+        public string Manufacturer { get; protected set; }
+        public string Model { get; protected set; }
+        public string SerialNumber { get; protected set; }
+        public string SoftwareID { get; protected set; }
+
+        public void Ramp(CameraPanCommand panCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Pan", panCommand.ToString());
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraPanCommand panCommand, int speed)
+        public void Ramp(CameraPanCommand panCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Pan", panCommand.ToString());
             args.Add("PanSpeed", speed);
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraTiltCommand tiltCommand)
+        public void Ramp(CameraTiltCommand tiltCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Tilt", tiltCommand.ToString());
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraTiltCommand tiltCommand, int speed)
+        public void Ramp(CameraTiltCommand tiltCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Tilt", tiltCommand.ToString());
             args.Add("TiltSpeed", speed);
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraZoomCommand zoomCommand)
+        public void Ramp(CameraZoomCommand zoomCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Zoom", zoomCommand.ToString());
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraZoomCommand zoomCommand, int speed)
+        public void Ramp(CameraZoomCommand zoomCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Zoom", zoomCommand.ToString());
             args.Add("ZoomSpeed", speed);
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraFocusCommand focusCommand)
+        public void Ramp(CameraFocusCommand focusCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Focus", focusCommand.ToString());
             this.Ramp(args);
         }
 
-        public void Ramp(int camera, CameraFocusCommand focusCommand, int speed)
+        public void Ramp(CameraFocusCommand focusCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
+            CommandArgs args = new CommandArgs("CameraId", this.ID);
             args.Add("Focus", focusCommand.ToString());
             args.Add("FocusSpeed", speed);
             this.Ramp(args);
@@ -80,9 +95,9 @@ namespace UXLib.Devices.VC.Cisco
             this.Codec.SendCommand("Camera/Ramp", args);
         }
 
-        public void PanTiltReset(int camera)
+        public void PanTiltReset()
         {
-            this.Codec.SendCommand("Camera/PanTiltReset", new CommandArgs("CameraId", camera));
+            this.Codec.SendCommand("Camera/PanTiltReset", new CommandArgs("CameraId", this.ID));
         }
 
         public void PresetActivate(int presetId)

@@ -142,6 +142,7 @@
     <Compile Include="Devices\VC\Cisco\CallHistoryItem.cs" />
     <Compile Include="Devices\VC\Cisco\Calls.cs" />
     <Compile Include="Devices\VC\Cisco\Camera.cs" />
+    <Compile Include="Devices\VC\Cisco\Cameras.cs" />
     <Compile Include="Devices\VC\Cisco\Capabilities.cs" />
     <Compile Include="Devices\VC\Cisco\CiscoCodec.cs" />
     <Compile Include="Devices\VC\Cisco\CodecFeedbackServer.cs" />
@@ -161,6 +162,8 @@
     <Compile Include="Devices\VC\Cisco\Site.cs" />
     <Compile Include="Devices\VC\Cisco\SiteCapabilities.cs" />
     <Compile Include="Devices\VC\Cisco\Sites.cs" />
+    <Compile Include="Devices\VC\Cisco\SpeakerTrack.cs" />
+    <Compile Include="Devices\VC\Cisco\SpeakerTrackCamera.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
