@@ -22,10 +22,10 @@ namespace UXLib.Devices.VC.Cisco
         public string Address { get; protected set; }
         public string SubnetMask { get; protected set; }
         public string Gateway { get; protected set; }
-        public string CDPPlatform { get; protected set; }
-        public string CDPDeviceId { get; protected set; }
-        public string CDPPortID { get; protected set; }
-        public int CDPVoIPApplianceVlanID { get; protected set; }
+        public string Platform { get; protected set; }
+        public string DeviceId { get; protected set; }
+        public string PortID { get; protected set; }
+        public int VoIPApplianceVlanID { get; protected set; }
 
         void Codec_HasConnected(CiscoCodec codec)
         {
@@ -68,10 +68,10 @@ namespace UXLib.Devices.VC.Cisco
 #endif
                             switch (e.XName.LocalName)
                             {
-                                case "CDPPlatform": CDPPlatform = e.Value; break;
-                                case "CDPDeviceId": CDPDeviceId = e.Value; break;
-                                case "CDPPortID": CDPPortID = e.Value; break;
-                                case "CDPVoIPApplianceVlanID": CDPVoIPApplianceVlanID = int.Parse(e.Value); break;
+                                case "Platform": Platform = e.Value; break;
+                                case "DeviceId": DeviceId = e.Value; break;
+                                case "PortID": PortID = e.Value; break;
+                                case "VoIPApplianceVlanID": VoIPApplianceVlanID = int.Parse(e.Value); break;
                             }
                         }
                         break;
