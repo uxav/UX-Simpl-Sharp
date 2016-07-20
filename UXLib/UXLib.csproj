@@ -141,7 +141,7 @@
     <Compile Include="Devices\VC\Cisco\CallHistory.cs" />
     <Compile Include="Devices\VC\Cisco\CallHistoryItem.cs" />
     <Compile Include="Devices\VC\Cisco\Calls.cs" />
-    <Compile Include="Devices\VC\Cisco\Cameras.cs" />
+    <Compile Include="Devices\VC\Cisco\Camera.cs" />
     <Compile Include="Devices\VC\Cisco\Capabilities.cs" />
     <Compile Include="Devices\VC\Cisco\CiscoCodec.cs" />
     <Compile Include="Devices\VC\Cisco\CodecFeedbackServer.cs" />

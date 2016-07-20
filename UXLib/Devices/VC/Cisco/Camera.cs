@@ -6,9 +6,9 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class Cameras
+    public class Camera
     {
-        public Cameras(CiscoCodec codec)
+        public Camera(CiscoCodec codec)
         {
             this.Codec = codec;
         }
