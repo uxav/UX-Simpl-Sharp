@@ -56,6 +56,7 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public void Initialize()
         {
+            HttpClient.StartSession();
             SSHClient.Connect();
         }
 
@@ -167,7 +168,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public XDocument SendCommand(string path)
         {
-            return this.SSHClient.SendCommand(path);
+            return this.HttpClient.SendCommand(path);
         }
 
         public XDocument SendCommand(string path, bool useHttp)
@@ -179,7 +180,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public XDocument SendCommand(string path, CommandArgs args)
         {
-            return SSHClient.SendCommand(path, args);
+            return HttpClient.SendCommand(path, args);
         }
 
         public XDocument SendCommand(string path, CommandArgs args, bool useHttp)
@@ -229,16 +230,16 @@ namespace UXLib.Devices.VC.Cisco
             SendCommand("Presentation/Stop");
         }
 
-        public bool _StandbyActive;
+        private bool _StandbyActive;
         public bool StandbyActive
         {
             get { return _StandbyActive; }
             set
             {
                 if (value)
-                    SendCommand("Standby/Activate");
+                    SendCommand("Standby/Activate", true);
                 else
-                    SendCommand("Standby/Deactivate");
+                    SendCommand("Standby/Deactivate", true);
             }
         }
 
