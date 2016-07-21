@@ -158,7 +158,6 @@
     <Compile Include="Devices\VC\Cisco\PhonebookContactMethod.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookFolder.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookSearchResults.cs" />
-    <Compile Include="Devices\VC\Cisco\PresentationInstance.cs" />
     <Compile Include="Devices\VC\Cisco\Site.cs" />
     <Compile Include="Devices\VC\Cisco\SiteCapabilities.cs" />
     <Compile Include="Devices\VC\Cisco\Sites.cs" />

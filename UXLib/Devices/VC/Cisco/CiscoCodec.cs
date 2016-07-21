@@ -341,6 +341,9 @@ namespace UXLib.Devices.VC.Cisco
             SendCommand("Presentation/Stop");
         }
 
+        public PresentationSendingMode PresentationSendingMode { get; private set; }
+        public int PresentationSource { get; private set; }
+
         private bool _StandbyActive;
 
         /// <summary>
@@ -384,20 +387,36 @@ namespace UXLib.Devices.VC.Cisco
         
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
         {
-            switch (args.Path)
+            try
             {
-                case @"Status/Standby":
-                    switch (args.Data.Elements().Where(e => e.XName.LocalName == "Active").FirstOrDefault().Value)
-                    {
-                        case "Off": _StandbyActive = false; break;
-                        case "On": _StandbyActive = true; break;
-                    }
-                    OnStandbyChange(_StandbyActive);
-                    break;
-                default:
-                    //CrestronConsole.PrintLine("Feedback for path: {0}", args.Path);
-                    //CrestronConsole.PrintLine(args.Data.ToString());
-                    break;
+                switch (args.Path)
+                {
+                    case @"Status/Standby":
+                        switch (args.Data.Elements().Where(e => e.XName.LocalName == "Active").FirstOrDefault().Value)
+                        {
+                            case "Off": _StandbyActive = false; break;
+                            case "On": _StandbyActive = true; break;
+                        }
+                        OnStandbyChange(_StandbyActive);
+                        break;
+                    case @"Status/Conference/Presentation":
+#if DEBUG
+                        CrestronConsole.PrintLine("Received feedback for {0}", args.Path);
+                        CrestronConsole.PrintLine(args.Data.ToString());
+#endif
+                        if (args.Data.XName.LocalName == "Presentation")
+                        {
+                            if (args.Data.Element("LocalSendingMode") != null)
+                                PresentationSendingMode = (PresentationSendingMode)Enum.Parse(typeof(PresentationSendingMode), args.Data.Element("LocalSendingMode").Value, true);
+                            if (args.Data.Element("LocalSource") != null)
+                                PresentationSource = int.Parse(args.Data.Element("LocalSource").Value);
+                        }
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(string.Format("Error in CiscoCodec.FeedbackServer_ReceivedData, path = {0}", args.Path), e);
             }
         }
     }
