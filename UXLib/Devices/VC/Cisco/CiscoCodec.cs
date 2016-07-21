@@ -12,8 +12,19 @@ using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.Devices.VC.Cisco
 {
+    /// <summary>
+    /// Class for controlling a Cisco VC Codec
+    /// </summary>
     public class CiscoCodec
     {
+        /// <summary>
+        /// Create an instance of a Cisco VC Codec
+        /// </summary>
+        /// <param name="hostNameOrIPAddress">The IP Address or hostname of the codec</param>
+        /// <param name="username">Username to login to the system</param>
+        /// <param name="password">Password to login to the system</param>
+        /// <param name="ethernetAdapter">Ther EthernetAdapterType of the control system used to connect and receive data</param>
+        /// <param name="feedbackListenerPort">The port to be used for the feedback server on the control system</param>
         public CiscoCodec(string hostNameOrIPAddress, string username, string password, EthernetAdapterType ethernetAdapter, int feedbackListenerPort)
         {
             HttpClient = new CodecHTTPClient(hostNameOrIPAddress, username, password);
@@ -40,15 +51,52 @@ namespace UXLib.Devices.VC.Cisco
         CodecHTTPClient HttpClient { get; set; }
         public CodecFeedbackServer FeedbackServer { get; protected set; }
         CodecSSHClient SSHClient { get; set; }
+
+        /// <summary>
+        /// This contains information on the main Codec system unit
+        /// </summary>
         public SystemUnit SystemUnit { get; private set; }
+
+        /// <summary>
+        /// Access all Audio functions of the codec including volume and mutes
+        /// </summary>
         public Audio Audio { get; private set; }
+
+        /// <summary>
+        /// For controlling calls on the codec
+        /// </summary>
         public Calls Calls { get; private set; }
+        
+        /// <summary>
+        /// Conference functions
+        /// </summary>
         public Conference Conference { get; private set; }
+
+        /// <summary>
+        /// Access information of the network status of the codec
+        /// </summary>
         public Network Network { get; private set; }
+
+        /// <summary>
+        /// Phonebook functions
+        /// </summary>
         public Phonebook Phonebook { get; private set; }
+
+        /// <summary>
+        /// Control cameras
+        /// </summary>
         public Cameras Cameras { get; private set; }
+
+        /// <summary>
+        /// Video functions and switching
+        /// </summary>
         public Video Video { get; private set; }
+
+        /// <summary>
+        /// Get codec capabilities
+        /// </summary>
         public Capabilities Capabilities { get; private set; }
+
         Thread CheckStatus { get; set; }
 
         /// <summary>
@@ -60,6 +108,9 @@ namespace UXLib.Devices.VC.Cisco
             SSHClient.Connect();
         }
 
+        /// <summary>
+        /// Register the feedback server and information required
+        /// </summary>
         public void Registerfeedback()
         {
             this.FeedbackServer.Register(4, new string[] {
@@ -77,6 +128,9 @@ namespace UXLib.Devices.VC.Cisco
             });
         }
 
+        /// <summary>
+        /// Event raised when the codec connects
+        /// </summary>
         public event CodecConnectedEventHandler HasConnected;
 
         void SSHClient_OnConnect(CodecSSHClient client)
@@ -166,11 +220,23 @@ namespace UXLib.Devices.VC.Cisco
                 SSHClient.Disconnect();
         }
 
+        /// <summary>
+        /// Post a command
+        /// </summary>
+        /// <param name="path">The XPath of the command</param>
+        /// <returns>XDocument containing the XML response</returns>
+        /// <remarks>This will by default use the SSHClient</remarks>
         public XDocument SendCommand(string path)
         {
             return this.HttpClient.SendCommand(path);
         }
 
+        /// <summary>
+        /// Post a command
+        /// </summary>
+        /// <param name="path">The XPath of the command</param>
+        /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
+        /// <returns>XDocument containing the XML response</returns>
         public XDocument SendCommand(string path, bool useHttp)
         {
             if (useHttp)
@@ -178,11 +244,25 @@ namespace UXLib.Devices.VC.Cisco
             return this.SSHClient.SendCommand(path);
         }
 
+        /// <summary>
+        /// Post a command with arguments
+        /// </summary>
+        /// <param name="path">The XPath of the command</param>
+        /// <param name="args">The arguments in the form of a built CommandArgs instance</param>
+        /// <returns>XDocument containing the XML response</returns>
+        /// <remarks>This will by default use the SSHClient</remarks>
         public XDocument SendCommand(string path, CommandArgs args)
         {
             return HttpClient.SendCommand(path, args);
         }
 
+        /// <summary>
+        /// Post a command with arguments
+        /// </summary>
+        /// <param name="path">The XPath of the command</param>
+        /// <param name="args">The arguments in the form of a built CommandArgs instance</param>
+        /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
+        /// <returns>XDocument containing the XML response</returns>
         public XDocument SendCommand(string path, CommandArgs args, bool useHttp)
         {
             if (useHttp)
@@ -190,33 +270,62 @@ namespace UXLib.Devices.VC.Cisco
             return SSHClient.SendCommand(path, args);
         }
 
+        /// <summary>
+        /// Get a path
+        /// </summary>
+        /// <param name="path">The XPath of the request</param>
+        /// <returns>An IEnumberable containing returned XElements of data</returns>
         public IEnumerable<XElement> RequestPath(string path)
         {
             return SSHClient.RequestPath(path);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path">The XPath of the request</param>
+        /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
+        /// <returns>An IEnumberable containing returned XElements of data</returns>
         public IEnumerable<XElement> RequestPath(string path, bool useHttp)
         {
             if (useHttp)
                 return HttpClient.RequestPath(path);
             return SSHClient.RequestPath(path);
         }
-
+        
+        /// <summary>
+        /// Get call history information
+        /// </summary>
+        /// <param name="count">Count of items to get</param>
+        /// <returns>CallHistory instance containing the information</returns>
         public CallHistory GetCallHistory(int count)
         {
             return new CallHistory(this, count);
         }
 
+        /// <summary>
+        /// Start a presentation
+        /// </summary>
+        /// <remarks>Will use the default presentation source</remarks>
         public void PresentationStart()
         {
             SendCommand("Presentation/Start");
         }
 
+        /// <summary>
+        /// Start a presentation
+        /// </summary>
+        /// <param name="presentationSource">The number of the codec source to use</param>
         public void PresentationStart(int presentationSource)
         {
             PresentationStart(presentationSource, PresentationSendingMode.LocalRemote);
         }
 
+        /// <summary>
+        /// Start a presentation
+        /// </summary>
+        /// <param name="presentationSource">The number of the codec source to use</param>
+        /// <param name="sendingMode">PresentationSendingMode option to use</param>
         public void PresentationStart(int presentationSource, PresentationSendingMode sendingMode)
         {
             CommandArgs args = new CommandArgs("PresentationSource", presentationSource);
@@ -225,12 +334,19 @@ namespace UXLib.Devices.VC.Cisco
             SendCommand("Presentation/Start", args);
         }
 
+        /// <summary>
+        /// Stop the current presentation
+        /// </summary>
         public void PresentationStop()
         {
             SendCommand("Presentation/Stop");
         }
 
         private bool _StandbyActive;
+
+        /// <summary>
+        /// Set or get the standby state of the codec
+        /// </summary>
         public bool StandbyActive
         {
             get { return _StandbyActive; }
@@ -246,6 +362,9 @@ namespace UXLib.Devices.VC.Cisco
         public void Sleep() { this.StandbyActive = true; }
         public void Wake() { this.StandbyActive = false; }
 
+        /// <summary>
+        /// Raised when the codec changes standby states
+        /// </summary>
         public event CodecStandbyChangeEventHandler StandbyChanged;
 
         void OnStandbyChange(bool value)
@@ -284,10 +403,22 @@ namespace UXLib.Devices.VC.Cisco
         }
     }
 
+    /// <summary>
+    /// Event handler for the codec standby change event
+    /// </summary>
+    /// <param name="codec">The instance of the Codec</param>
+    /// <param name="StandbyActive">Current standby state</param>
     public delegate void CodecStandbyChangeEventHandler(CiscoCodec codec, bool StandbyActive);
 
+    /// <summary>
+    /// Event handler for the codec connected event
+    /// </summary>
+    /// <param name="codec">The instance of the Codec</param>
     public delegate void CodecConnectedEventHandler(CiscoCodec codec);
 
+    /// <summary>
+    /// Mode to use in presentations
+    /// </summary>
     public enum PresentationSendingMode
     {
         Off,
