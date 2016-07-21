@@ -66,6 +66,10 @@ namespace UXLib.Devices.VC.Cisco
 #endif
                 foreach (XElement element in statusInfo)
                 {
+#if DEBUG
+                    CrestronConsole.PrintLine(element.ToString());
+#endif
+
                     string url = element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value;
 #if DEBUG
                     CrestronConsole.PrintLine("URL = {0}", url);

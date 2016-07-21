@@ -57,9 +57,30 @@ namespace UXLib.Devices.VC.Cisco
             try
             {
                 HttpClientResponse response = this.HttpClient.Dispatch(request);
+
 #if DEBUG
                 CrestronConsole.PrintLine("Response status {0}", response.Code);
-                //CrestronConsole.PrintLine("Response body:\r\n{0}", response.ContentString);
+                foreach (HttpHeader item in response.Header)
+                {
+                    CrestronConsole.PrintLine(item.Name + ": " + item.Value);
+                }
+#endif
+                if (response.Code == 200 && 
+                    response.Header.ContainsHeaderValue("Content-Type") && response.Header["Content-Type"].Value.Contains("text/html")
+                    && this.Cookies.ContainsKey("SessionId"))
+                {
+#if DEBUG
+                    CrestronConsole.PrintLine("Getting new session id as response was not as expeected");
+#endif
+                    this.Cookies.Clear();
+                    this.StartSession();
+                    return Request(request);
+                }
+#if DEBUG
+                if (response.Code != 204 && response.ContentLength > 256)
+                    CrestronConsole.PrintLine("Response body:\r\n{0} ...", response.ContentString.Replace("\n", "\r\n").Substring(0, 256));
+                else if (response.Code != 204)
+                    CrestronConsole.PrintLine("Response body:\r\n{0}", response.ContentString.Replace("\n", "\r\n"));
 #endif
                 return response;
             }

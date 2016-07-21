@@ -104,7 +104,6 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public void Initialize()
         {
-            HttpClient.StartSession();
             SSHClient.Connect();
         }
 
@@ -113,7 +112,7 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public void Registerfeedback()
         {
-            this.FeedbackServer.Register(4, new string[] {
+            this.FeedbackServer.Register(1, new string[] {
                 "/Configuration",
                 "/Status/SystemUnit",
                 "/Status/Audio",
@@ -123,8 +122,7 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Cameras/SpeakerTrack",
                 "/Event/IncomingCallIndication",
                 "/Status/Call",
-                "/Status/Conference",
-                "/Status/Cameras/SpeakerTrack"
+                "/Status/Conference"
             });
         }
 
@@ -145,6 +143,7 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
             CrestronConsole.PrintLine("\r\nCodec connected... getting status updates... \r\n");
 #endif
+            HttpClient.StartSession();
             string standbyStatus = RequestPath("Status/Standby", true).FirstOrDefault().Elements().FirstOrDefault().Value;
             if (standbyStatus == "On") _StandbyActive = true;
             else _StandbyActive = false;
