@@ -40,7 +40,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 if (Codec.SystemUnit.State.NumberOfActiveCalls < Codec.Capabilities.Conference.MaxActiveCalls)
                 {
-                    XDocument xml = Codec.SendCommand("Dial", args);
+                    XDocument xml = Codec.SendCommand("Dial", args, true);
                     XElement dialResult = xml.Root.Element("DialResult");
                     if (dialResult.Attribute("status").Value == "OK")
                     {
@@ -85,24 +85,9 @@ namespace UXLib.Devices.VC.Cisco
             return Dial(args);
         }
 
-        public void DisconnectAll()
+        public void Disconnect()
         {
-            Codec.SendCommand("Call/DisconnectAll", new CommandArgs());
-        }
-
-        public int Disconnect()
-        {
-            try
-            {
-                Call call = calls.Last().Value;
-                call.Disconnect();
-                return call.ID;
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Codec - Could not disconnect last call, {0}", e.Message);
-                return 0;
-            }
+            Codec.SendCommand("Call/Disconnect", new CommandArgs());
         }
 
         public void Disconnect(int callID)
@@ -125,20 +110,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 if (hasDisconnected)
                 {
-                    /*try
-                    {
-                        CallHistoryItem callHistory = new CallHistory(Codec, 1).FirstOrDefault();
-                        CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(
-                            call, callHistory.DisconnectCause, callHistory.DisconnectCauseType));
-                    }
-                    catch (Exception e)
-                    {
-                        ErrorLog.Exception("Error getting last callhistory item", e);
-                    }
-                    finally
-                    {*/
-                        CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, true));
-                    //}
+                    CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, true));
                 }
                 else
                 {
