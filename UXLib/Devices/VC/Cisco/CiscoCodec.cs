@@ -340,8 +340,14 @@ namespace UXLib.Devices.VC.Cisco
         {
             SendCommand("Presentation/Stop");
         }
-
+        /// <summary>
+        /// Get the current Sending Mode for Presentation
+        /// </summary>
         public PresentationSendingMode PresentationSendingMode { get; private set; }
+
+        /// <summary>
+        /// Get the current presentation source 
+        /// </summary>
         public int PresentationSource { get; private set; }
 
         private bool _StandbyActive;
