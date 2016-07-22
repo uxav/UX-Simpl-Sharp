@@ -113,95 +113,103 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
-                XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
+                if (args.Request.Header.RequestType == "POST")
+                {
+                    XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
 
 #if DEBUG
-                CrestronConsole.PrintLine(xml.ToString());
+                    CrestronConsole.PrintLine(xml.ToString());
 #endif
-                XElement identification;
-                string productID;
+                    XElement identification;
+                    string productID;
 
-                if (xml.Root.HasAttributes)
-                {
-                    XNamespace ns = xml.Root.Attribute("xmlns").Value;
-                    identification = xml.Root.Element(ns + "Identification");
-                    productID = identification.Element(ns + "ProductID").Value;
-                }
-                else
-                {
-                    identification = xml.Root.Element("Identification");
-                    productID = identification.Element("ProductID").Value;
-                }
-                    
-                identification.Remove();
-                XElement element = xml.Root;
+                    if (xml.Root.HasAttributes)
+                    {
+                        XNamespace ns = xml.Root.Attribute("xmlns").Value;
+                        identification = xml.Root.Element(ns + "Identification");
+                        productID = identification.Element(ns + "ProductID").Value;
+                    }
+                    else
+                    {
+                        identification = xml.Root.Element("Identification");
+                        productID = identification.Element("ProductID").Value;
+                    }
+
+                    identification.Remove();
+                    XElement element = xml.Root;
 
 #if DEBUG
-                //CrestronConsole.PrintLine(element.ToString());
-#endif           
+                    //CrestronConsole.PrintLine(element.ToString());
+#endif
 
-                if (element.XName.LocalName == "Event" && element.HasElements)
-                {
-                    switch (element.Elements().First().XName.LocalName)
+                    if (element.XName.LocalName == "Event" && element.HasElements)
                     {
-                        case "IncomingCallIndication":
-                            CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
-                            foreach (XElement e in element.Elements().First().Elements())
-                            {
-                                switch (e.XName.LocalName)
+                        switch (element.Elements().First().XName.LocalName)
+                        {
+                            case "IncomingCallIndication":
+                                CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
+                                foreach (XElement e in element.Elements().First().Elements())
                                 {
-                                    case "RemoteURI":
-                                        incomingCallArgs.RemoteURI = e.Value;
-                                        break;
-                                    case "DisplayNameValue":
-                                        incomingCallArgs.DisplayNameValue = e.Value;
-                                        break;
-                                    case "CallId":
-                                        incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
-                                        break;
+                                    switch (e.XName.LocalName)
+                                    {
+                                        case "RemoteURI":
+                                            incomingCallArgs.RemoteURI = e.Value;
+                                            break;
+                                        case "DisplayNameValue":
+                                            incomingCallArgs.DisplayNameValue = e.Value;
+                                            break;
+                                        case "CallId":
+                                            incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
+                                            break;
+                                    }
                                 }
-                            }
 
-                            if (IncomingCallEvent != null)
-                                IncomingCallEvent(Codec, incomingCallArgs);
+                                if (IncomingCallEvent != null)
+                                    IncomingCallEvent(Codec, incomingCallArgs);
 
-                            break;
+                                break;
+                        }
                     }
-                }
-                else
-                {
-                    string path = element.XName.LocalName;
-                    while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
+                    else
                     {
-                        element = element.Elements().FirstOrDefault();
-                        path = string.Format("{0}/{1}", path, element.XName.LocalName);
+                        string path = element.XName.LocalName;
+                        while (element.Elements().Count() == 1 && element.Elements().FirstOrDefault().HasElements)
+                        {
+                            element = element.Elements().FirstOrDefault();
+                            path = string.Format("{0}/{1}", path, element.XName.LocalName);
 
-                        if (path == @"Status/Conference/Site")
-                            break;
-                    }
+                            if (path == @"Status/Conference/Site")
+                                break;
+                        }
 
-                    if (element == xml.Root && element.Elements().FirstOrDefault() != null)
-                    {
-                        element = element.Elements().FirstOrDefault();
-                        path = string.Format("{0}/{1}", path, element.XName.LocalName);
-                    }
+                        if (element == xml.Root && element.Elements().FirstOrDefault() != null)
+                        {
+                            element = element.Elements().FirstOrDefault();
+                            path = string.Format("{0}/{1}", path, element.XName.LocalName);
+                        }
 
 #if DEBUG
-                    CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-                    CrestronConsole.PrintLine("{0}\r\n", element.ToString());
+                        CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+                        CrestronConsole.PrintLine("{0}\r\n", element.ToString());
 #endif
-                    if (ReceivedData != null)
-                    {
-                        ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                        if (ReceivedData != null)
+                        {
+                            ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                        }
                     }
+                }
+                else if (args.Request.Header.RequestType == "GET")
+                {
+                    args.Response.SendError(405, "Method not allowed");
+                    return;
                 }
                 return;
             }
             catch (Exception e)
             {
                 ErrorLog.Exception("Exception on codec http feedback server", e);
-                
-                args.Response.Code = 200;
+
+                args.Response.SendError(500, "Internal server error");
                 return;
             }
         }
