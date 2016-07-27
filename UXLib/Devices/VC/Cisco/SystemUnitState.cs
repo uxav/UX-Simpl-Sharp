@@ -19,8 +19,6 @@ namespace UXLib.Devices.VC.Cisco
 
         CiscoCodec Codec;
 
-        public int MaxNumberOfActiveCalls { get; protected set; }
-        public int MaxNumberOfCalls { get; protected set; }
         public int NumberOfActiveCalls { get; protected set; }
         public int NumberOfInProgressCalls { get; protected set; }
         public int NumberOfSuspendedCalls { get; protected set; }
@@ -51,8 +49,6 @@ namespace UXLib.Devices.VC.Cisco
                     {
                         switch (state.XName.LocalName)
                         {
-                            case "MaxNumberOfActiveCalls": MaxNumberOfActiveCalls = int.Parse(state.Value); break;
-                            case "MaxNumberOfCalls": MaxNumberOfCalls = int.Parse(state.Value); break;
                             case "NumberOfActiveCalls": NumberOfActiveCalls = int.Parse(state.Value); break;
                             case "NumberOfInProgressCalls": NumberOfInProgressCalls = int.Parse(state.Value); break;
                             case "NumberOfSuspendedCalls": NumberOfSuspendedCalls = int.Parse(state.Value); break;
@@ -65,16 +61,13 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            foreach (XElement element in Codec.RequestPath("Status/SystemUnit/State", true)
-                .Elements().Where(e => !e.HasElements))
+            foreach (XElement element in Codec.RequestPath("Status/SystemUnit/State", true).Elements().Where(e => !e.HasElements))
             {
 #if DEBUG
                 CrestronConsole.PrintLine("SystemUnit.State.{0} = {1}", element.XName.LocalName, element.Value);
 #endif
                 switch (element.XName.LocalName)
                 {
-                    case "MaxNumberOfActiveCalls": MaxNumberOfActiveCalls = int.Parse(element.Value); break;
-                    case "MaxNumberOfCalls": MaxNumberOfCalls = int.Parse(element.Value); break;
                     case "NumberOfActiveCalls": NumberOfActiveCalls = int.Parse(element.Value); break;
                     case "NumberOfInProgressCalls": NumberOfInProgressCalls = int.Parse(element.Value); break;
                     case "NumberOfSuspendedCalls": NumberOfSuspendedCalls = int.Parse(element.Value); break;

@@ -14,6 +14,7 @@ namespace UXLib.Sockets
         {
             socket = new TCPClient(address, port, bufferSize);
             this.BufferSize = bufferSize;
+            socket.SocketStatusChange += new TCPClientSocketStatusChangeEventHandler(socket_SocketStatusChange);
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
         }
 
@@ -101,8 +102,20 @@ namespace UXLib.Sockets
             }
             else
             {
+#if DEBUG
+                CrestronConsole.PrintLine("Socket connect status to device at {0}: {1}", socket.AddressClientConnectedTo, socket.ClientStatus.ToString());
+#endif
+                if (SocketConnectionEvent != null)
+                    SocketConnectionEvent(this, socket.ClientStatus);
                 new CTimer(TryAgainConnect, 2000);
             }
+        }
+
+        void socket_SocketStatusChange(TCPClient myTCPClient, SocketStatus clientSocketStatus)
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("SocketStatusChange to device at {0}, {1}", socket.AddressClientConnectedTo, clientSocketStatus.ToString());
+#endif
         }
 
         uint tryCount = 0;
@@ -138,7 +151,7 @@ namespace UXLib.Sockets
                     rxHandler.Abort();
                 if (shouldReconnect)
                 {
-                    ErrorLog.Notice("Socket dropped at {0}, {1}, waiting for 1 second..", socket.AddressClientConnectedTo, socket.ClientStatus.ToString());
+                    ErrorLog.Warn("Socket dropped at {0}, {1}", socket.AddressClientConnectedTo, socket.ClientStatus.ToString());
                     new CTimer(TryAgainConnect, 1000);
                 }
             }
@@ -191,10 +204,31 @@ namespace UXLib.Sockets
 
                         OnReceivedPacket(copiedBytes);
                     }
-                    else
+                    else if(b > 0 && b <= 127)
                     {
-                        bytes[byteIndex] = b;
-                        byteIndex++;
+                        if (byteIndex < this.BufferSize)
+                        {
+                            bytes[byteIndex] = b;
+                            byteIndex++;
+                        }
+                        else
+                        {
+                            ErrorLog.Error("{0} - Buffer overflow error", GetType().ToString());
+
+                            string lastBytes = string.Empty;
+                            for (int bt = this.BufferSize - 51; bt < this.BufferSize - 1; bt++)
+                            {
+                                byte btVal = bytes[bt];
+                                if (btVal > 32 && btVal <= 127)
+                                    lastBytes = lastBytes + (char)btVal;
+                                else
+                                    lastBytes = lastBytes + @"\x" + btVal.ToString("X2");
+                            }
+
+                            ErrorLog.Notice("Last 50 bytes of buffer: \"{0}\"", lastBytes);
+                            ErrorLog.Warn("The buffer was cleared as a result");
+                            byteIndex = 0;
+                        }
                     }
                 }
                 catch (Exception e)
@@ -219,12 +253,15 @@ namespace UXLib.Sockets
 
         public virtual SocketErrorCodes Send(byte[] bytes)
         {
-            SocketErrorCodes err = socket.SendData(bytes, bytes.Length);
+            if (this.socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
+            {
+                SocketErrorCodes err = socket.SendData(bytes, bytes.Length);
 
-            if (err != SocketErrorCodes.SOCKET_OK)
-                ErrorLog.Error("{0} Send to {1} Error: {2}", this.GetType().ToString(), socket.AddressClientConnectedTo, err.ToString());
-
-            return err;
+                if (err != SocketErrorCodes.SOCKET_OK)
+                    ErrorLog.Error("{0} Send to {1} Error: {2}", this.GetType().ToString(), socket.AddressClientConnectedTo, err.ToString());
+                return err;
+            }
+            return SocketErrorCodes.SOCKET_NOT_CONNECTED;
         }
 
         public string HostAddress

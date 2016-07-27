@@ -45,7 +45,14 @@ namespace UXLib.Devices.VC.Cisco
             if (element.Attribute("status").Value == "OK")
             {
                 List<IPhonebookItem> items = new List<IPhonebookItem>();
-                element = element.Element("ResultSet");
+
+                if (element.Element("ResultSet") != null)
+                {
+#if DEBUG
+                    CrestronConsole.PrintLine("Phonebook results contain element \"ResultSet\"");
+#endif
+                    element = element.Element("ResultSet");
+                }
                 int offset = int.Parse(element.Element("ResultInfo").Element("Offset").Value);
                 int limit = int.Parse(element.Element("ResultInfo").Element("Limit").Value);
                 int totalRows = int.Parse(element.Element("ResultInfo").Element("TotalRows").Value);

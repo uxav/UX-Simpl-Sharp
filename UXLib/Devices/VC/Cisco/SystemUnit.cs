@@ -62,5 +62,23 @@ namespace UXLib.Devices.VC.Cisco
         {
             Codec_HasConnected(this.Codec);
         }
+
+        /// <summary>
+        /// Reboot or shutdown the codec
+        /// </summary>
+        /// <param name="action">BootAction parameter to restart or shutdown</param>
+        public void Boot(BootAction action)
+        {
+            Codec.SendCommand("SystemUnit/Boot", new CommandArgs("Action", action.ToString()));
+        }
+
+        /// <summary>
+        /// Action parameter used for SystemUnit.Boot()
+        /// </summary>
+        public enum BootAction
+        {
+            Restart,
+            Shutdown
+        }
     }
 }

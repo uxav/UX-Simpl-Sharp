@@ -59,6 +59,12 @@ namespace UXLib.Relays
             }
         }
 
+        public void Stop()
+        {
+            UpRelay.Open();
+            DownRelay.Open();
+        }
+
         void RelaySet(object obj)
         {
             if (obj is UXLib.Relays.Relay)

@@ -57,22 +57,29 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            XElement element = Codec.RequestPath("Status/Video/SelfView", true).Elements().FirstOrDefault();
-            XElement s = element.Elements().Where(x => x.XName.LocalName == "Selfview").FirstOrDefault();
+            try
+            {
+                XElement element = Codec.RequestPath("Status/Video/SelfView", true).Elements().FirstOrDefault();
+                XElement s = element.Elements().Where(x => x.XName.LocalName == "Selfview").FirstOrDefault();
 
 #if DEBUG
-            CrestronConsole.PrintLine("Selfview Status:\r\n{0}", s.ToString());
+                CrestronConsole.PrintLine("Selfview Status:\r\n{0}", s.ToString());
 #endif
 
-            foreach (XElement e in s.Elements())
-            {
-                switch (e.XName.LocalName)
+                foreach (XElement e in s.Elements())
                 {
-                    case "Mode": _SelfViewMode = (SelfViewMode)Enum.Parse(typeof(SelfViewMode), e.Value, false);
-                        break;
-                    case "FullscreenMode": _SelfViewFullscreenMode = (SelfViewFullscreenMode)Enum.Parse(typeof(SelfViewFullscreenMode), e.Value, false);
-                        break;
+                    switch (e.XName.LocalName)
+                    {
+                        case "Mode": _SelfViewMode = (SelfViewMode)Enum.Parse(typeof(SelfViewMode), e.Value, false);
+                            break;
+                        case "FullscreenMode": _SelfViewFullscreenMode = (SelfViewFullscreenMode)Enum.Parse(typeof(SelfViewFullscreenMode), e.Value, false);
+                            break;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error in Video.Codec_HasConnected", e);
             }
         }
 

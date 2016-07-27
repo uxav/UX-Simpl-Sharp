@@ -42,17 +42,41 @@ namespace UXLib.Devices.VC.Cisco
                 count++;
             }
 
-            Codec.SendCommand("HttpFeedback/Register", args, true);
+#if DEBUG
+            CrestronConsole.PrintLine("Resgistering feedback mechanism with CiscoCodec");
+#endif
+
+            XDocument response = Codec.SendCommand("HttpFeedback/Register", args, true);
+
+#if DEBUG
+            CrestronConsole.PrintLine("Register repsonse:\r\n{0}", response.ToString());
+#endif
         }
 
         public bool Registered
         {
             get
             {
+#if DEBUG
+                CrestronConsole.PrintLine("Checking codec feedback registration....");
+#endif
                 IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback", true);
+#if DEBUG
+                CrestronConsole.PrintLine("");
+#endif
                 foreach (XElement element in statusInfo)
-                    if (element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value == this.ServerURL)
+                {
+#if DEBUG
+                    CrestronConsole.PrintLine(element.ToString());
+#endif
+
+                    string url = element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value;
+#if DEBUG
+                    CrestronConsole.PrintLine("URL = {0}", url);
+#endif
+                    if (url == this.ServerURL)
                         return true;
+                }
                 return false;
             }
         }
@@ -89,17 +113,35 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
-                XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
-                if (xml.Root.HasAttributes)
+                if (args.Request.Header.RequestType == "POST")
                 {
-                    XNamespace ns = xml.Root.Attribute("xmlns").Value;
-                    XElement identification = xml.Root.Element(ns + "Identification");
-                    string productID = identification.Element(ns + "ProductID").Value;
+                    XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
+
+#if DEBUG
+                    CrestronConsole.PrintLine(xml.ToString());
+#endif
+                    XElement identification;
+                    string productID;
+
+                    if (xml.Root.HasAttributes)
+                    {
+                        XNamespace ns = xml.Root.Attribute("xmlns").Value;
+                        identification = xml.Root.Element(ns + "Identification");
+                        productID = identification.Element(ns + "ProductID").Value;
+                    }
+                    else
+                    {
+                        identification = xml.Root.Element("Identification");
+                        productID = identification.Element("ProductID").Value;
+                    }
+
                     identification.Remove();
                     XElement element = xml.Root;
+
 #if DEBUG
-                    CrestronConsole.PrintLine(element.ToString());
-#endif           
+                    //CrestronConsole.PrintLine(element.ToString());
+#endif
+
                     if (element.XName.LocalName == "Event" && element.HasElements)
                     {
                         switch (element.Elements().First().XName.LocalName)
@@ -146,26 +188,28 @@ namespace UXLib.Devices.VC.Cisco
                             path = string.Format("{0}/{1}", path, element.XName.LocalName);
                         }
 
-                        //CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-
+#if DEBUG
+                        CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+                        CrestronConsole.PrintLine("{0}\r\n", element.ToString());
+#endif
                         if (ReceivedData != null)
                         {
                             ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
                         }
                     }
-                    return;
                 }
-                else
+                else if (args.Request.Header.RequestType == "GET")
                 {
-                    ErrorLog.Error("XML not as expected from Codec Feedback Event");
+                    args.Response.SendError(405, "Method not allowed");
                     return;
                 }
+                return;
             }
             catch (Exception e)
             {
                 ErrorLog.Exception("Exception on codec http feedback server", e);
-                
-                args.Response.Code = 200;
+
+                args.Response.SendError(500, "Internal server error");
                 return;
             }
         }

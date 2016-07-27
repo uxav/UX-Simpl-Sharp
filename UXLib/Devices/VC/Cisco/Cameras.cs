@@ -3,119 +3,84 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronXml;
+using Crestron.SimplSharp.CrestronXmlLinq;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class Cameras
+    public class Cameras : IEnumerable<Camera>
     {
         public Cameras(CiscoCodec codec)
         {
-            this.Codec = codec;
+            Codec = codec;
+            SpeakerTrack = new SpeakerTrack(Codec);
+            Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
-        CiscoCodec Codec { get; set; }
+        CiscoCodec Codec;
+        Dictionary<int, Camera> _Cameras = new Dictionary<int, Camera>();
 
-        public void Ramp(int camera, CameraPanCommand panCommand)
+        public Camera this[int cameraID]
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Pan", panCommand.ToString());
-            this.Ramp(args);
+            get
+            {
+                return _Cameras[cameraID];
+            }
         }
 
-        public void Ramp(int camera, CameraPanCommand panCommand, int speed)
+        public SpeakerTrack SpeakerTrack { get; private set; }
+
+        void Codec_HasConnected(CiscoCodec codec)
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Pan", panCommand.ToString());
-            args.Add("PanSpeed", speed);
-            this.Ramp(args);
+            try
+            {
+                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/Cameras", true);
+
+                foreach (XElement element in statusInfo.Elements("Camera"))
+                {
+                    int cameraId = int.Parse(element.Attribute("item").Value);
+#if DEBUG
+                    CrestronConsole.PrintLine("Info for Camera {0}:", cameraId);
+
+                    foreach (XElement innerElement in element.Elements().Where(e => !e.HasElements))
+                    {
+                        CrestronConsole.PrintLine("   Camera.{0} = {1}", innerElement.XName.LocalName, innerElement.Value);
+                    }
+#endif
+
+                    Camera newCamera = new Camera(Codec, cameraId,
+                        bool.Parse(element.Element("Connected").Value),
+                        element.Element("MacAddress").Value,
+                        element.Element("Manufacturer").Value,
+                        element.Element("Model").Value,
+                        element.Element("SerialNumber").Value,
+                        element.Element("SoftwareID").Value);
+
+                    _Cameras[cameraId] = newCamera;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error in Cameras.Codec_HasConnected", e);
+            }
         }
 
-        public void Ramp(int camera, CameraTiltCommand tiltCommand)
+        #region IEnumerable<Camera> Members
+
+        public IEnumerator<Camera> GetEnumerator()
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Tilt", tiltCommand.ToString());
-            this.Ramp(args);
+            return _Cameras.Values.GetEnumerator();
         }
 
-        public void Ramp(int camera, CameraTiltCommand tiltCommand, int speed)
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Tilt", tiltCommand.ToString());
-            args.Add("TiltSpeed", speed);
-            this.Ramp(args);
+            return this.GetEnumerator();
         }
 
-        public void Ramp(int camera, CameraZoomCommand zoomCommand)
-        {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Zoom", zoomCommand.ToString());
-            this.Ramp(args);
-        }
-
-        public void Ramp(int camera, CameraZoomCommand zoomCommand, int speed)
-        {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Zoom", zoomCommand.ToString());
-            args.Add("ZoomSpeed", speed);
-            this.Ramp(args);
-        }
-
-        public void Ramp(int camera, CameraFocusCommand focusCommand)
-        {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Focus", focusCommand.ToString());
-            this.Ramp(args);
-        }
-
-        public void Ramp(int camera, CameraFocusCommand focusCommand, int speed)
-        {
-            CommandArgs args = new CommandArgs("CameraId", camera);
-            args.Add("Focus", focusCommand.ToString());
-            args.Add("FocusSpeed", speed);
-            this.Ramp(args);
-        }
-
-        void Ramp(CommandArgs args)
-        {
-            this.Codec.SendCommand("Camera/Ramp", args);
-        }
-
-        public void PanTiltReset(int camera)
-        {
-            this.Codec.SendCommand("Camera/PanTiltReset", new CommandArgs("CameraId", camera));
-        }
-
-        public void PresetActivate(int presetId)
-        {
-            this.Codec.SendCommand("Camera/Preset/Activate", new CommandArgs("PresetId", presetId));
-        }
-    }
-
-    public enum CameraPanCommand
-    {
-        Left,
-        Right,
-        Stop
-    }
-
-    public enum CameraTiltCommand
-    {
-        Down,
-        Up,
-        Stop
-    }
-
-    public enum CameraZoomCommand
-    {
-        In,
-        Out,
-        Stop
-    }
-
-    public enum CameraFocusCommand
-    {
-        Far,
-        Near,
-        Stop
+        #endregion
     }
 }

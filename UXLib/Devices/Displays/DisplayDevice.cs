@@ -58,6 +58,11 @@ namespace UXLib.Devices.Displays
             this.DeviceCommunicating = true;
         }
 
+        public virtual void OnReceive(byte[] bytes)
+        {
+            this.DeviceCommunicating = true;
+        }
+
         private bool _deviceCommunicating;
         public bool DeviceCommunicating
         {
@@ -133,6 +138,7 @@ namespace UXLib.Devices.Displays
 
     public enum DisplayDeviceInput
     {
+        Unknown,
         HDMI1,
         HDMI2,
         HDMI3,

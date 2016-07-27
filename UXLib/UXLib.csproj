@@ -24,7 +24,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,18 +32,20 @@
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+    <DocumentationFile>bin\Debug\UXLib.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <FileAlignment>512</FileAlignment>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+    <DocumentationFile>bin\Release\UXLib.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Crestron.SimplSharpPro.CrestronConnected, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -63,10 +65,6 @@
       <HintPath>C:\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="Newtonsoft.Json.Compact, Version=3.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\ProgramData\Crestron\SDK\Newtonsoft.Json.Compact.dll</HintPath>
-    </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
@@ -76,6 +74,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpPro, Version=1.5.0.7, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -119,6 +121,7 @@
     <Compile Include="Devices\Displays\CrestronConnectedDisplay.cs" />
     <Compile Include="Devices\Displays\NEC\NecDisplaySocket.cs" />
     <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
+    <Compile Include="Devices\Displays\NEC\NecComPortHandler.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCComPortHandler.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
@@ -138,12 +141,15 @@
     <Compile Include="Devices\VC\Cisco\CallHistory.cs" />
     <Compile Include="Devices\VC\Cisco\CallHistoryItem.cs" />
     <Compile Include="Devices\VC\Cisco\Calls.cs" />
+    <Compile Include="Devices\VC\Cisco\Camera.cs" />
     <Compile Include="Devices\VC\Cisco\Cameras.cs" />
+    <Compile Include="Devices\VC\Cisco\Capabilities.cs" />
     <Compile Include="Devices\VC\Cisco\CiscoCodec.cs" />
     <Compile Include="Devices\VC\Cisco\CodecFeedbackServer.cs" />
     <Compile Include="Devices\VC\Cisco\CodecHTTPClient.cs" />
     <Compile Include="Devices\VC\Cisco\CodecSSHClient.cs" />
     <Compile Include="Devices\VC\Cisco\Conference.cs" />
+    <Compile Include="Devices\VC\Cisco\CapabilitiesConference.cs" />
     <Compile Include="Devices\VC\Cisco\IPhonebookItem.cs" />
     <Compile Include="Devices\VC\Cisco\Microphones.cs" />
     <Compile Include="Devices\VC\Cisco\Network.cs" />
@@ -152,10 +158,11 @@
     <Compile Include="Devices\VC\Cisco\PhonebookContactMethod.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookFolder.cs" />
     <Compile Include="Devices\VC\Cisco\PhonebookSearchResults.cs" />
-    <Compile Include="Devices\VC\Cisco\PresentationInstance.cs" />
     <Compile Include="Devices\VC\Cisco\Site.cs" />
     <Compile Include="Devices\VC\Cisco\SiteCapabilities.cs" />
     <Compile Include="Devices\VC\Cisco\Sites.cs" />
+    <Compile Include="Devices\VC\Cisco\SpeakerTrack.cs" />
+    <Compile Include="Devices\VC\Cisco\SpeakerTrackCamera.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
@@ -198,6 +205,7 @@
     <Compile Include="UI\UISmartObjectButton.cs" />
     <Compile Include="UI\UISmartObjectButtonCollection.cs" />
     <Compile Include="UI\UISmartObjectCheckboxList.cs" />
+    <Compile Include="UI\UISmartObjectLevel.cs" />
     <Compile Include="UI\UISmartObjectList.cs" />
     <Compile Include="UI\UISmartObjectSpinnerList.cs" />
     <Compile Include="UI\UISmartObjectTabBar.cs" />
@@ -217,18 +225,6 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <FlavorProperties GUID="{0B4745B0-194B-4BB6-8E21-E9057CA92300}">
-        <ProgramIdTag>UXLib</ProgramIdTag>
-        <SystemName>UXLib</SystemName>
-        <Programmer>Mike Jobson</Programmer>
-        <ArchiveFilename>C:\Users\mike\Developer\collercap\lib\uxlib\UXLib\bin\UXLib.cplz</ArchiveFilename>
-        <MinFirmwareVersion>1.009.0029</MinFirmwareVersion>
-        <CompiledOn>05/05/2016 15:39:32</CompiledOn>
-        <AdditionalInfo />
-        <EmbedSourceArchive>False</EmbedSourceArchive>
-        <CopyTo />
-        <OriginalReferenceSources />
-      </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>

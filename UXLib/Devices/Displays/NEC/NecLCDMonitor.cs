@@ -10,7 +10,7 @@ using UXLib.Models;
 
 namespace UXLib.Devices.Displays.NEC
 {
-    public class NecLCDMonitor : DisplayDevice, ISocketDevice, IVolumeDevice
+    public class NecLCDMonitor : DisplayDevice, ISocketDevice, IVolumeDevice, ICommDevice
     {
         public NecLCDMonitor(string name, int displayID, NecDisplaySocket socket)
         {
@@ -21,8 +21,18 @@ namespace UXLib.Devices.Displays.NEC
             this.Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
         }
 
+        public NecLCDMonitor(string name, int displayID, NecComPortHandler comPortHandler)
+        {
+            this.Name = name;
+            this.DisplayID = displayID;
+            this.ComPort = comPortHandler;
+            this.ComPort.ReceivedPacket += new NecComPortReceivedPacketEventHandler(ComPort_ReceivedPacket);
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        }
+
         public int DisplayID { get; protected set; }
-        public NecDisplaySocket Socket { get; protected set; }
+        private NecDisplaySocket Socket { get; set; }
+        private NecComPortHandler ComPort { get; set; }
 
         CTimer pollTimer;
 
@@ -54,22 +64,22 @@ namespace UXLib.Devices.Displays.NEC
             switch (pollCount)
             {
                 case 1:
-                    this.Socket.SendCommand(this.DisplayID, @"01D6");
+                    this.SendCommand(this.DisplayID, @"01D6");
                     break;
                 case 2:
                     if (this.PowerStatus == DevicePowerStatus.PowerCooling || this.PowerStatus == DevicePowerStatus.PowerWarming)
                     {
-                        this.Socket.SendCommand(this.DisplayID, @"01D6");
+                        this.SendCommand(this.DisplayID, @"01D6");
                         pollCount = 0;
                     }
                     break;
                 case 3:
                     if (this.PowerStatus == DevicePowerStatus.PowerOn)
-                        this.Socket.GetParameter(this.DisplayID, @"0060");
+                        this.GetParameter(this.DisplayID, @"0060");
                     break;
                 case 4:
                     if (this.PowerStatus == DevicePowerStatus.PowerOn)
-                        this.Socket.GetParameter(this.DisplayID, @"0062");
+                        this.GetParameter(this.DisplayID, @"0062");
                     pollCount = 0;
                     break;
             }
@@ -77,108 +87,139 @@ namespace UXLib.Devices.Displays.NEC
 
         bool commsEstablished = false;
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        public override void OnReceive(byte[] bytes)
         {
-            byte address = args.ReceivedPacket[3];
+            byte address = bytes[3];
             if (((int)address - 64) == this.DisplayID)
             {
                 this.DeviceCommunicating = true;
-                string messageLenString = Encoding.Default.GetString(args.ReceivedPacket, 5, 2);
+                string messageLenString = Encoding.Default.GetString(bytes, 5, 2);
                 int messageLen = Int16.Parse(messageLenString, System.Globalization.NumberStyles.HexNumber);
                 byte[] message = new byte[messageLen];
-                Array.Copy(args.ReceivedPacket, 7, message, 0, messageLen);
-                MessageType type = (MessageType)args.ReceivedPacket[4];
+                Array.Copy(bytes, 7, message, 0, messageLen);
+                MessageType type = (MessageType)bytes[4];
                 string messageStr = Encoding.Default.GetString(message, 1, message.Length - 2);
 #if DEBUG
                 CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
                 Tools.PrintBytes(message, message.Length);
                 CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
 #endif
-                switch (type)
+                try
                 {
-                    case MessageType.CommandReply:
-                        
-                        switch (messageStr)
-                        {
-                            case @"0200D60000040001":
-                                if (PowerStatus != DevicePowerStatus.PowerCooling)
-                                    PowerStatus = DevicePowerStatus.PowerOn;
-                                if (!RequestedPower && commsEstablished)
-                                    // Send power as should be off
-                                    SendPowerCommand(false);
-                                else if (!commsEstablished)
-                                {
-                                    // We have comms and the power is on so update the status
+                    switch (type)
+                    {
+                        case MessageType.CommandReply:
+
+                            switch (messageStr)
+                            {
+                                case @"0200D60000040001":
+                                    if (PowerStatus != DevicePowerStatus.PowerCooling)
+                                        PowerStatus = DevicePowerStatus.PowerOn;
+                                    if (!RequestedPower && commsEstablished)
+                                        // Send power as should be off
+                                        SendPowerCommand(false);
+                                    else if (!commsEstablished)
+                                    {
+                                        // We have comms and the power is on so update the status
+                                        commsEstablished = true;
+                                        // set requested power as true as we may not want to turn off once things have come online
+                                        RequestedPower = true;
+                                    }
+                                    break;
+                                case @"0200D60000040004":
+                                    if (PowerStatus != DevicePowerStatus.PowerWarming)
+                                        PowerStatus = DevicePowerStatus.PowerOff;
                                     commsEstablished = true;
-                                    // set requested power as true as we may not want to turn off once things have come online
-                                    RequestedPower = true;
+                                    if (RequestedPower)
+                                        SendPowerCommand(true);
+                                    break;
+                                case @"00C203D60001":
+                                    commsEstablished = true;
+                                    PowerStatus = DevicePowerStatus.PowerWarming;
+                                    break;
+                                case @"00C203D60004":
+                                    commsEstablished = true;
+                                    PowerStatus = DevicePowerStatus.PowerCooling;
+                                    break;
+                            }
+                            break;
+                        case MessageType.SetParameterReply:
+                            if (messageStr.StartsWith(@"00006200006400"))
+                            {
+                                _Level = (ushort)Tools.ScaleRange(
+                                    ushort.Parse(messageStr.Substring(14, 2), System.Globalization.NumberStyles.HexNumber)
+                                    , 0, 100, ushort.MinValue, ushort.MaxValue);
+                                if (VolumeChanged != null)
+                                    VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                            }
+                            break;
+                        case MessageType.GetParameterReply:
+                            if (messageStr.StartsWith(@"00006200006400"))
+                            {
+                                _Level = (ushort)Tools.ScaleRange(
+                                    ushort.Parse(messageStr.Substring(14, 2), System.Globalization.NumberStyles.HexNumber)
+                                    , 0, 100, ushort.MinValue, ushort.MaxValue);
+                                if (VolumeChanged != null)
+                                    VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                            }
+                            else if (messageStr.StartsWith(@"000060"))
+                            {
+                                byte value = byte.Parse(messageStr.Substring(14, 2), System.Globalization.NumberStyles.HexNumber);
+                                if (value != requestedInput && requestedInput > 0)
+                                {
+                                    SendInputCommand(requestedInput);
                                 }
-                                break;
-                            case @"0200D60000040004":
-                                if (PowerStatus != DevicePowerStatus.PowerWarming)
-                                    PowerStatus = DevicePowerStatus.PowerOff;
-                                commsEstablished = true;
-                                if (RequestedPower)
-                                    SendPowerCommand(true);
-                                break;
-                            case @"00C203D60001":
-                                commsEstablished = true;
-                                PowerStatus = DevicePowerStatus.PowerWarming;
-                                break;
-                            case @"00C203D60004":
-                                commsEstablished = true;
-                                PowerStatus = DevicePowerStatus.PowerCooling;
-                                break;
-                        }
-                        break;
-                    case MessageType.SetParameterReply:
-                        if (messageStr.StartsWith(@"00006200006400"))
-                        {
-                            _Level = (ushort)Tools.ScaleRange(
-                                ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber)
-                                , 0, 100, ushort.MinValue, ushort.MaxValue);
-                            if (VolumeChanged != null)
-                                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
-                        }
-                        break;
-                    case MessageType.GetParameterReply:
-                        if (messageStr.StartsWith(@"00006200006400"))
-                        {
-                            _Level = (ushort)Tools.ScaleRange(
-                                ushort.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber)
-                                , 0, 100, ushort.MinValue, ushort.MaxValue);
-                            if (VolumeChanged != null)
-                                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
-                        }
-                        else if (messageStr.StartsWith(@"000060"))
-                        {
-                            byte value = byte.Parse(messageStr.Substring(15, 2), System.Globalization.NumberStyles.HexNumber);
-                            if (value != requestedInput && requestedInput > 0)
-                            {
-                                SendInputCommand(requestedInput);
+                                else if (value == requestedInput && requestedInput > 0)
+                                {
+                                    requestedInput = 0x00;
+                                }
                             }
-                            else if (value == requestedInput && requestedInput > 0)
-                            {
-                                requestedInput = 0x00;
-                            }
-                        }
-                        break;
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    ErrorLog.Exception(string.Format("Error in NecLCDMonitor OnReceive(), type = {0}, messageStr = {1}", type.ToString(), messageStr), e);
                 }
             }
         }
 
-        public override void Send(string stringToSend)
+        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
         {
-            Socket.Send(this.DisplayID, MessageType.Command, stringToSend);
+            OnReceive(args.ReceivedPacket);
+        }
+
+        void ComPort_ReceivedPacket(NecComPortHandler handler, byte[] receivedPacket)
+        {
+            OnReceive(receivedPacket);
+        }
+
+        public void Initialize()
+        {
+            if (this.ComPort != null)
+            {
+                this.ComPort.Initialize();
+                pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
+            }
+        }
+
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (this.pollTimer != null && !this.pollTimer.Disposed)
+            {
+                this.pollTimer.Stop();
+                this.pollTimer.Dispose();
+                this.DeviceCommunicating = false;
+            }
         }
 
         void SendPowerCommand(bool power)
         {
             if (power)
-                this.Socket.SendCommand(this.DisplayID, "C203D60001");
+                this.SendCommand(this.DisplayID, "C203D60001");
             else
-                this.Socket.SendCommand(this.DisplayID, "C203D60004");
-            this.Socket.SendCommand(this.DisplayID, "01D6");
+                this.SendCommand(this.DisplayID, "C203D60004");
+            this.SendCommand(this.DisplayID, "01D6");
         }
 
         byte requestedInput = 0x00;
@@ -188,7 +229,7 @@ namespace UXLib.Devices.Displays.NEC
             requestedInput = command;
             string value = "00" + command.ToString("X2");
             CrestronConsole.PrintLine("Send display input command {0}", value);
-            this.Socket.SetParameter(this.DisplayID, "0060" + value);
+            this.SetParameter(this.DisplayID, "0060" + value);
         }
 
         public override bool Power
@@ -261,14 +302,41 @@ namespace UXLib.Devices.Displays.NEC
 
             string message = string.Format("006200{0}{1}", bytes[0].ToString("X2"), bytes[1].ToString("X2"));
 
-            this.Socket.SetParameter(this.DisplayID, message);
+            this.SetParameter(this.DisplayID, message);
         }
 
         bool _Mute;
 
         void SendMuteCommand(bool mute)
         {
-            this.Socket.SetParameter(this.DisplayID, string.Format("008D000{0}", Convert.ToInt16(mute)));
+            this.SetParameter(this.DisplayID, string.Format("008D000{0}", Convert.ToInt16(mute)));
+        }
+
+        public void SendCommand(int address, string message)
+        {
+            string str = "\x02" + message + "\x03";
+            if (this.Socket != null)
+                this.Socket.Send(address, MessageType.Command, str);
+            else if(this.ComPort != null)
+                this.ComPort.Send(address, MessageType.Command, str);
+        }
+
+        public void SetParameter(int address, string message)
+        {
+            string str = "\x02" + message + "\x03";
+            if (this.Socket != null)
+                this.Socket.Send(address, MessageType.SetParameter, str);
+            else if (this.ComPort != null)
+                this.ComPort.Send(address, MessageType.SetParameter, str);
+        }
+
+        public void GetParameter(int address, string message)
+        {
+            string str = "\x02" + message + "\x03";
+            if (this.Socket != null)
+                this.Socket.Send(address, MessageType.GetParameter, str);
+            else if (this.ComPort != null)
+                this.ComPort.Send(address, MessageType.GetParameter, str);
         }
 
         #region ISocketDevice Members

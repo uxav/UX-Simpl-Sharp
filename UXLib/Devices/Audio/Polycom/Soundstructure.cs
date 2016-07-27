@@ -286,6 +286,9 @@ namespace UXLib.Devices.Audio.Polycom
                                                 OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
                                             }
                                             break;
+                                        case SoundstructureCommandType.PHONE_DIAL:
+                                            // Cannot parse reply for string values and we don't currently need to track this.
+                                            break;
                                         default:
                                             if (elements.Count > 3)
                                                 OnValueChange(elements[2], commandType, Convert.ToDouble(elements[3]));
