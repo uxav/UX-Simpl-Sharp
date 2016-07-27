@@ -8,52 +8,113 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UIButton : UIButtonBase
+    public class UIButton : UIObject
     {
-        public UIButton(BoolOutputSig digitalPressJoin)
-            : base(digitalPressJoin)
+        public UIButton(BoolOutputSig pressDigitalJoin)
         {
-            this.Device.SigChange += new SigEventHandler(Device_SigChange);
+            this.PressDigitalJoin = pressDigitalJoin;
         }
 
-        public UIButton(BoolOutputSig digitalPressJoin, StringInputSig serialJoinSig)
-            : base(digitalPressJoin, serialJoinSig)
+        public UIButton(BasicTriList device, uint pressDigitalJoinNumber)
+            : this(device.BooleanOutput[pressDigitalJoinNumber]) { }
+
+        public UIButton(BoolOutputSig pressDigitalJoin, BoolInputSig feedbackDigitalJoin)
+            : this(pressDigitalJoin)
         {
-            this.Device.SigChange += new SigEventHandler(Device_SigChange);
+            this.FeedbackDigitalJoin = feedbackDigitalJoin;
         }
 
-        public UIButton(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin)
-            : base(digitalPressJoin, digitalFeedbackJoin)
+        public UIButton(BasicTriList device, uint pressDigitalJoinNumber, uint feedbackDigitalJoinNumber)
+            : this(device.BooleanOutput[pressDigitalJoinNumber],
+            device.BooleanInput[feedbackDigitalJoinNumber]) { }
+
+        public UIButton(BoolOutputSig pressDigitalJoin, BoolInputSig feedbackDigitalJoin,
+            StringInputSig textSerialJoin)
+            : this(pressDigitalJoin, feedbackDigitalJoin)
         {
-            this.Device.SigChange += new SigEventHandler(Device_SigChange);
-        }
-        
-        public UIButton(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
-            StringInputSig serialJoinSig)
-            : base(digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
-        {
-            this.Device.SigChange += new SigEventHandler(Device_SigChange);
+            this.TextSerialJoin = textSerialJoin;
         }
 
-        public UIButton(BoolOutputSig digitalPressJoin, BoolInputSig digitalFeedbackJoin,
-            StringInputSig serialJoinSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
-            : base(digitalPressJoin, digitalFeedbackJoin, serialJoinSig, enableJoinSig, visibleJoinSig)
+        public UIButton(BasicTriList device, uint pressDigitalJoinNumber, uint feedbackDigitalJoinNumber,
+            uint textSerialJoinNumber)
+            : this(device.BooleanOutput[pressDigitalJoinNumber],
+            device.BooleanInput[feedbackDigitalJoinNumber],
+            device.StringInput[textSerialJoinNumber]) { }
+
+        public UIButton(BoolOutputSig pressDigitalJoin, BoolInputSig feedbackDigitalJoin,
+            StringInputSig textSerialJoin, BoolInputSig enableDigitalJoin, BoolInputSig visibleDigitalJoin)
+            : this(pressDigitalJoin, feedbackDigitalJoin, textSerialJoin)
         {
-            this.Device.SigChange += new SigEventHandler(Device_SigChange);
+            this.EnableDigitalJoin = enableDigitalJoin;
+            this.VisibleDigitalJoin = visibleDigitalJoin;
         }
 
-        void Device_SigChange(BasicTriList currentDevice, SigEventArgs args)
+        public UIButton(BasicTriList device, uint pressDigitalJoinNumber, uint feedbackDigitalJoinNumber,
+            uint textSerialJoinNumber, uint enableDigitalJoinNumber, uint visibleDigitalJoinNumber)
+            : this(device.BooleanOutput[pressDigitalJoinNumber],
+            device.BooleanInput[feedbackDigitalJoinNumber],
+            device.StringInput[textSerialJoinNumber],
+            device.BooleanInput[enableDigitalJoinNumber],
+            device.BooleanInput[visibleDigitalJoinNumber]) { }
+
+        public UIButton(BoolOutputSig pressDigitalJoin, BoolInputSig feedbackDigitalJoin,
+            BoolInputSig enableDigitalJoin, BoolInputSig visibleDigitalJoin)
+            : this(pressDigitalJoin, feedbackDigitalJoin)
         {
-            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.JoinNumber)
+            this.EnableDigitalJoin = enableDigitalJoin;
+            this.VisibleDigitalJoin = visibleDigitalJoin;
+        }
+
+        public UIButton(BasicTriList device, uint pressDigitalJoinNumber, uint feedbackDigitalJoinNumber,
+            uint enableDigitalJoinNumber, uint visibleDigitalJoinNumber)
+            : this(device.BooleanOutput[pressDigitalJoinNumber],
+            device.BooleanInput[feedbackDigitalJoinNumber],
+            device.BooleanInput[enableDigitalJoinNumber],
+            device.BooleanInput[visibleDigitalJoinNumber]) { }
+
+        public UIButton(UIViewController ownerViewController, uint pressDigitalJoinNumber, UIViewBase targetView)
+            : this(ownerViewController.UIController.Device, pressDigitalJoinNumber)
+        {
+            TargetView = targetView;
+            this.SubscribeToSigChanges();
+        }
+
+        public string Title
+        {
+            get
             {
-                this.Down = args.Sig.BoolValue;
+                return this.Text;
+            }
+            set
+            {
+                this.Text = value;
             }
         }
 
-        public override void Dispose()
+        public void Toggle()
         {
-            this.Device.SigChange -= new SigEventHandler(Device_SigChange);
-            base.Dispose();
+            this.Feedback = !this.Feedback;
         }
+
+        public void SetAnalogModeJoin(UShortInputSig analogModeJoin)
+        {
+            this.AnalogModeJoin = analogModeJoin;
+        }
+
+        public void SetAnalogModeJoin(uint analogModeJoinNumber)
+        {
+            this.AnalogModeJoin = this.Device.UShortInput[analogModeJoinNumber];
+        }
+
+        protected override void OnRelease()
+        {
+            base.OnRelease();
+            if (this.TargetView != null)
+            {
+                this.TargetView.Show();
+            }
+        }
+
+        public UIViewBase TargetView { get; protected set; }
     }
 }

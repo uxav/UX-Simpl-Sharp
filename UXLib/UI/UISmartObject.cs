@@ -16,33 +16,21 @@ namespace UXLib.UI
         }
         protected SmartObject DeviceSmartObject;
         public UISmartObjectButtonCollection Buttons { get; protected set; }
-        public event UISmartObjectButtonEventHandler ButtonEvent;
-        BoolInputSig EnableJoin;
-        BoolInputSig VisibleJoin;
+        protected BoolInputSig EnableJoin { get; set; }
+        protected BoolInputSig VisibleJoin { get; set; }
 
         public UISmartObject(SmartObject smartObject)
         {
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
-            this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
         }
 
         public UISmartObject(SmartObject smartObject, BoolInputSig objectEnableJoin, BoolInputSig objectVisibleJoin)
         {
             this.Buttons = new UISmartObjectButtonCollection();
             this.DeviceSmartObject = smartObject;
-            this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             EnableJoin = objectEnableJoin;
-            if (EnableJoin != null)
-                EnableJoin.BoolValue = true;
             VisibleJoin = objectVisibleJoin;
-            if (VisibleJoin != null)
-                VisibleJoin.BoolValue = true;
-        }
-
-        protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
-        {
-            this.ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
         }
 
         public void AddButton(UISmartObjectButton button)
@@ -54,7 +42,7 @@ namespace UXLib.UI
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UISmartObjectButton newButton = new UISmartObjectButton(
+                UISmartObjectButton newButton = new UISmartObjectButton(this,
                     itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName
                     );
                 this.Buttons.Add(newButton);
@@ -66,7 +54,7 @@ namespace UXLib.UI
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UISmartObjectButton newButton = new UISmartObjectButton(
+                UISmartObjectButton newButton = new UISmartObjectButton(this,
                     itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName,
                     titleFeedbackSigName, iconFeedbackSigName
                     );
@@ -79,7 +67,7 @@ namespace UXLib.UI
         {
             if (this.DeviceSmartObject.BooleanOutput[digitalPressSigNam] != null)
             {
-                UISmartObjectButton newButton = new UISmartObjectButton(
+                UISmartObjectButton newButton = new UISmartObjectButton(this,
                     itemIndex, this.DeviceSmartObject, digitalPressSigNam, digitalFeedbackSigName,
                     titleFeedbackSigName, iconFeedbackSigName, enableSigName, visibleSigName
                     );
@@ -136,10 +124,80 @@ namespace UXLib.UI
             this.Enabled = false;
         }
 
-        public virtual void Dispose()
+        private event UISmartObjectButtonEventHandler _ButtonEvent;
+
+        int subscribeCount = 0;
+
+        public event UISmartObjectButtonEventHandler ButtonEvent
         {
-            this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+            add
+            {
+                if (subscribeCount == 0)
+                    this.Buttons.ButtonEvent += new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+
+                subscribeCount++;
+
+                _ButtonEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
+
+                _ButtonEvent -= value;
+            }
+        }
+
+        protected void Buttons_ButtonEvent(UISmartObjectButtonCollection buttonCollection, UISmartObjectButtonCollectionEventArgs args)
+        {
+            if (this._ButtonEvent != null)
+                this._ButtonEvent(this, new UISmartObjectButtonEventArgs(args.Button, args.EventType, args.HoldTime));
+        }
+
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            CrestronEnvironment.GC.SuppressFinalize(this);
+        }
+
+        bool disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                // Free any other managed objects here.
+                //
+            }
+
+            // Free any unmanaged objects here.
+            //
+            if (subscribeCount > 0)
+                this.Buttons.ButtonEvent -= new UISmartObjectButtonCollectionEventHandler(Buttons_ButtonEvent);
             this.Buttons.Dispose();
+
+            disposed = true;
         }
     }
 
@@ -147,11 +205,11 @@ namespace UXLib.UI
 
     public class UISmartObjectButtonEventArgs : EventArgs
     {
-        public eUIButtonEventType EventType;
+        public UIButtonEventType EventType;
         public uint ButtonIndex;
         public UISmartObjectButton Button;
         public long HoldTime;
-        public UISmartObjectButtonEventArgs(UISmartObjectButton button, eUIButtonEventType type, long holdTime)
+        public UISmartObjectButtonEventArgs(UISmartObjectButton button, UIButtonEventType type, long holdTime)
             : base()
         {
             this.ButtonIndex = button.ItemIndex;

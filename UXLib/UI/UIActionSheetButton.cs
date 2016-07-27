@@ -10,20 +10,21 @@ namespace UXLib.UI
 {
     public class UIActionSheetButton : UIButton
     {
-        public eActionSheetButtonAction Action;
+        public ActionSheetButtonAction Action;
 
         public UIActionSheetButton(BoolOutputSig digitalPressJoin,
-            BoolInputSig digitalFeedbackJoin, StringInputSig serialJoinSig, eActionSheetButtonAction action)
+            BoolInputSig digitalFeedbackJoin, StringInputSig serialJoinSig, ActionSheetButtonAction action)
             : base(digitalPressJoin, digitalFeedbackJoin, serialJoinSig)
         {
             this.Action = action;
         }
     }
 
-    public enum eActionSheetButtonAction
+    public enum ActionSheetButtonAction
     {
         Cancel,
         Destruct,
-        Confirm
+        Confirm,
+        TimedOut
     }
 }

@@ -21,13 +21,16 @@ namespace UXLib.UI
             this.TimeOutObject = timeOutObject;
             this.TimeOutInSeconds = timeOutInSeconds;
             Device = device;
-            Device.SigChange += new SigEventHandler(Device_SigChange);
         }
+
+        bool watchingDevice = false;
 
         public void Set()
         {
             if (this.TimeOutTimer == null || this.TimeOutTimer.Disposed)
                 this.TimeOutTimer = new CTimer(this.TimeOut, this.TimeOutInSeconds * 1000);
+            Device.SigChange += new SigEventHandler(Device_SigChange);
+            watchingDevice = true;
         }
 
         public void Reset()
@@ -45,6 +48,12 @@ namespace UXLib.UI
             {
                 this.TimeOutTimer.Stop();
                 this.TimeOutTimer.Dispose();
+            }
+
+            if (watchingDevice)
+            {
+                watchingDevice = false;
+                Device.SigChange -= new SigEventHandler(Device_SigChange);
             }
         }
 
@@ -64,9 +73,10 @@ namespace UXLib.UI
 
         public void Dispose()
         {
-            this.TimeOutTimer.Dispose();
-            this.TimeOutTimer = null;
-            Device.SigChange -= new SigEventHandler(Device_SigChange);
+            if (TimeOutTimer != null)
+                this.TimeOutTimer.Dispose();
+            if (watchingDevice)
+                Device.SigChange -= new SigEventHandler(Device_SigChange);
         }
     }
 

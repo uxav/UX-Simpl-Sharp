@@ -7,92 +7,79 @@ using Crestron.SimplSharpPro;
 
 namespace UXLib.UI
 {
-    public class UISmartObjectButton : UIButtonBase
+    public class UISmartObjectButton : UIObject
     {
-        public SmartObject SmartObject;
-        StringInputSig IconJoin;
-
-        public string Icon
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName)
         {
-            set
-            {
-                if (this.IconJoin != null)
-                    this.IconJoin.StringValue = value;
-            }
+            this.ItemIndex = itemIndex;
+            this.SmartObject = smartObject;
+            this.PressDigitalJoin = this.SmartObject.BooleanOutput[pressDigitalJoinName];
+            this.Owner = owner;
+        }
+
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+            string feedbackDigitalJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName)
+        {
+            if (feedbackDigitalJoinName != null)
+                this.FeedbackDigitalJoin = this.SmartObject.BooleanInput[feedbackDigitalJoinName];
+        }
+
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+            string feedbackDigitalJoinName, string textSerialJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName)
+        {
+            this.TextSerialJoin = this.SmartObject.StringInput[textSerialJoinName];
+        }
+
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+            string feedbackDigitalJoinName, string textSerialJoinName, string iconSerialJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName, textSerialJoinName)
+        {
+            if (iconSerialJoinName != null && iconSerialJoinName.Length > 0)
+                this.IconSerialJoin = this.SmartObject.StringInput[iconSerialJoinName];
+        }
+
+        public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
+            string feedbackDigitalJoinName, string textSerialJoinName, string iconSerialJoinName,
+            string enableDigitalJoinName, string visibleDigitalJoinName)
+            : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName,
+            textSerialJoinName, iconSerialJoinName)
+        {
+            if (enableDigitalJoinName != null && enableDigitalJoinName.Length > 0)
+                this.EnableDigitalJoin = this.SmartObject.BooleanInput[enableDigitalJoinName];
+            if (visibleDigitalJoinName != null && visibleDigitalJoinName.Length > 0)
+                this.VisibleDigitalJoin = this.SmartObject.BooleanInput[visibleDigitalJoinName];
+        }
+
+        public object LinkedObject { get; set; }
+        
+        public uint ItemIndex { get; protected set; }
+
+        public UISmartObject Owner { get; protected set; }
+
+        protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
+        {
+            SmartObjectEventArgs sArgs = args as SmartObjectEventArgs;
+
+            base.OnSigChange(currentDevice, args);
+        }
+
+        public string Title
+        {
             get
             {
-                if (this.IconJoin != null)
-                    return IconJoin.StringValue;
-                return null;
+                return this.Text;
             }
-        }
-
-        public uint ItemIndex { get; private set; }
-
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName)
-            : base(smartObject.BooleanOutput[digitalPressJoinName])
-        {
-            this.ItemIndex = itemIndex;
-            this.SmartObject = smartObject;
-            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
-        }
-
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
-            string digitalFeedbackJoinName)
-            : base(smartObject.BooleanOutput[digitalPressJoinName],
-            smartObject.BooleanInput[digitalFeedbackJoinName])
-        {
-            this.ItemIndex = itemIndex;
-            this.SmartObject = smartObject;
-            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
-        }
-
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
-            string digitalFeedbackJoinName, string titleJoinName)
-            : base(smartObject.BooleanOutput[digitalPressJoinName],
-            smartObject.BooleanInput[digitalFeedbackJoinName], smartObject.StringInput[titleJoinName])
-        {
-            this.ItemIndex = itemIndex;
-            this.SmartObject = smartObject;
-            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
-        }
-
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
-            string digitalFeedbackJoinName, string titleJoinName, string iconJoinSigName)
-            : base(smartObject.BooleanOutput[digitalPressJoinName],
-            smartObject.BooleanInput[digitalFeedbackJoinName], smartObject.StringInput[titleJoinName])
-        {
-            this.ItemIndex = itemIndex;
-            this.SmartObject = smartObject;
-            this.IconJoin = smartObject.StringInput[iconJoinSigName];
-            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
-        }
-
-        public UISmartObjectButton(uint itemIndex, SmartObject smartObject, string digitalPressJoinName,
-            string digitalFeedbackJoinName, string titleJoinName, string iconJoinSigName,
-            string enableJoinSigName, string visibleJoinSigName)
-            : base(smartObject.BooleanOutput[digitalPressJoinName],
-            smartObject.BooleanInput[digitalFeedbackJoinName], smartObject.StringInput[titleJoinName],
-            smartObject.BooleanInput[enableJoinSigName], smartObject.BooleanInput[visibleJoinSigName])
-        {
-            this.ItemIndex = itemIndex;
-            this.SmartObject = smartObject;
-            this.IconJoin = smartObject.StringInput[iconJoinSigName];
-            this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
-        }
-
-        void SmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
-        {
-            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.JoinNumber)
+            set
             {
-                this.Down = args.Sig.BoolValue;
+                this.Text = value;
             }
         }
 
-        public override void Dispose()
+        public void SetAnalogModeJoin(string analogModeJoinName)
         {
-            base.Dispose();
-            this.SmartObject.SigChange -= new SmartObjectSigChangeEventHandler(SmartObject_SigChange);
+            this.AnalogModeJoin = this.SmartObject.UShortInput[analogModeJoinName];
         }
     }
 }

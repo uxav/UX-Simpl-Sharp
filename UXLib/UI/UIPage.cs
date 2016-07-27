@@ -10,54 +10,31 @@ namespace UXLib.UI
 {
     public class UIPage : UIViewBase
     {
-        public BoolOutputSig VisibleJoinFeedbackSig { get; protected set; }
-
-        public UIPage(BoolInputSig visibleJoinSig, BoolOutputSig visibleJoinFeedbackSig)
-            : base(visibleJoinSig)
+        public UIPage(BoolInputSig visibleDigitalJoin, BoolOutputSig visibleFeedbackJoin)
+            : base(visibleDigitalJoin)
         {
-            VisibleJoinFeedbackSig = visibleJoinFeedbackSig;
-            BasicTriList device = VisibleJoinFeedbackSig.Owner as BasicTriList;
-            device.SigChange += new SigEventHandler(device_SigChange);
+            this.VisibleFeedbackJoin = visibleFeedbackJoin;
         }
 
-        public UIPage(BoolInputSig visibleJoinSig, BoolOutputSig visibleJoinFeedbackSig, UILabel titleLabel, string title)
-            : base(visibleJoinSig, titleLabel, title)
+        public UIPage(BoolInputSig visibleDigitalJoin, BoolOutputSig visibleFeedbackJoin, UILabel titleLabel, string title)
+            : base(visibleDigitalJoin, titleLabel)
         {
-            VisibleJoinFeedbackSig = visibleJoinFeedbackSig;
-            BasicTriList device = VisibleJoinFeedbackSig.Owner as BasicTriList;
-            device.SigChange += new SigEventHandler(device_SigChange);
+            this.VisibleFeedbackJoin = visibleFeedbackJoin;
+            this.Title = title;
         }
 
-        public override bool Visible
-        {
-            get
-            {
-                return this.VisibleJoinFeedbackSig.BoolValue;
-            }
-        }
+        private new void Hide() { }
 
-        void device_SigChange(BasicTriList currentDevice, SigEventArgs args)
-        {
-            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == VisibleJoinFeedbackSig.Number)
-            {
-                if (args.Sig.BoolValue)
-                    this.Show();
-                else
-                    this.Hide();
-            }
-        }
+        public UIPage(UIController uiController, uint visibleJoinNumber)
+            : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber]) { }
 
-        public override void Show()
-        {
-            base.Show();
-        }
+        public UIPage(UIController uiController, uint visibleJoinNumber, UILabel titleLabel, string title)
+            : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber], titleLabel, title) { }
 
-        public override void Dispose()
-        {
-            base.Dispose();
+        public UIPage(UIViewController viewController, uint visibleJoinNumber)
+            : this(viewController.UIController.Device.BooleanInput[visibleJoinNumber], viewController.UIController.Device.BooleanOutput[visibleJoinNumber]) { }
 
-            BasicTriList device = VisibleJoinFeedbackSig.Owner as BasicTriList;
-            device.SigChange -= new SigEventHandler(device_SigChange);
-        }
+        public UIPage(UIViewController viewController, uint visibleJoinNumber, UILabel titleLabel, string title)
+            : this(viewController.UIController.Device.BooleanInput[visibleJoinNumber], viewController.UIController.Device.BooleanOutput[visibleJoinNumber], titleLabel, title) { }
     }
 }

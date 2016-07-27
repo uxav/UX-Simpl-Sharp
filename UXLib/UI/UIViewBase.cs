@@ -8,24 +8,36 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UIViewBase
+    public class UIViewBase : UIObject
     {
-        public uint ID
+        public UIViewBase(BoolInputSig visibleDigitalJoin)
         {
-            get { return this.VisibleJoinNumber; }
+            this.VisibleDigitalJoin = visibleDigitalJoin;
+            this.SubscribeToSigChanges();
         }
-        public BoolInputSig VisibleJoin { get; protected set; }
-        protected BoolInputSig TransitionCompleteJoin;
+
+        public UIViewBase(BoolInputSig visibleDigitalJoin, UILabel titleLabel)
+            : this(visibleDigitalJoin)
+        {
+            this.TitleLabel = titleLabel;
+        }
+
+        public UIViewBase(BoolInputSig visibleDigitalJoin, UILabel titleLabel, UILabel subTitleLabel)
+            : this(visibleDigitalJoin, titleLabel)
+        {
+            this.SubTitleLabel = subTitleLabel;
+        }
+
         public UILabel TitleLabel { get; protected set; }
         public UILabel SubTitleLabel { get; protected set; }
-        public virtual event UIViewBaseVisibitlityEventHandler VisibilityChange;
-        string _Title;
+        
+        string _title;
         public string Title
         {
             set
             {
                 // Set the value
-                this._Title = value;
+                this._title = value;
 
                 // if the page has a serial join sig assigned for the Name:
                 if (this.TitleLabel != null)
@@ -33,21 +45,22 @@ namespace UXLib.UI
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
                     if (this.Visible)
-                        this.TitleLabel.Text = this._Title;
+                        this.TitleLabel.Text = this._title;
                 }
             }
             get
             {
-                return this._Title;
+                return this._title;
             }
         }
-        string _SubTitle;
+
+        string _subTitle;
         public string SubTitle
         {
             set
             {
                 // Set the value
-                this._SubTitle = value;
+                this._subTitle = value;
 
                 // if the page has a serial join sig assigned for the Name:
                 if (this.SubTitleLabel != null)
@@ -55,89 +68,50 @@ namespace UXLib.UI
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
                     if (this.Visible)
-                        this.SubTitleLabel.Text = this._SubTitle;
+                        this.SubTitleLabel.Text = this._subTitle;
                 }
             }
             get
             {
-                return this._SubTitle;
+                return this._subTitle;
             }
         }
+
         public uint VisibleJoinNumber
         {
             get
             {
-                return this.VisibleJoin.Number;
+                return this.VisibleDigitalJoin.Number;
             }
         }
-        public virtual bool Visible
+
+        bool visibleInTransition = false;
+
+        public override bool Visible
         {
             get
             {
-                return this.VisibleJoin.BoolValue;
+                return base.Visible;
             }
-            protected set
+            set
             {
-                if (this.VisibleJoin.BoolValue != value)
+                if (this.Visible != value && !visibleInTransition)
                 {
+                    visibleInTransition = true;
                     if (value && this.VisibilityChange != null)
                         this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
                     if (!value && this.VisibilityChange != null)
                         this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
-            
-                    this.VisibleJoin.BoolValue = value;
 
-                    if (value)
-                        OnShow();
-                    else
-                        OnHide();
+                    base.Visible = value;
+                    visibleInTransition = false;
                 }
             }
         }
+        
+        public virtual event UIViewBaseVisibitlityEventHandler VisibilityChange;
 
-        public UIViewBase(BoolInputSig visibleJoinSig)
-        {
-            this._Title = "";
-            this._SubTitle = "";
-            this.VisibleJoin = visibleJoinSig;
-        }
-
-        public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel)
-        {
-            this._Title = "";
-            this._SubTitle = "";
-            this.VisibleJoin = visibleJoinSig;
-            this.TitleLabel = titleLabel;
-        }
-
-        public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel, string title)
-        {
-            this._Title = title;
-            this._SubTitle = "";
-            this.VisibleJoin = visibleJoinSig;
-            this.TitleLabel = titleLabel;
-        }
-
-        public UIViewBase(BoolInputSig visibleJoinSig, UILabel titleLabel, UILabel subTitleLabel)
-        {
-            this._Title = "";
-            this._SubTitle = "";
-            this.VisibleJoin = visibleJoinSig;
-            this.TitleLabel = titleLabel;
-            this.SubTitleLabel = subTitleLabel;
-        }
-
-        public virtual void Show()
-        {
-            this.Visible = true;
-        }
-
-        public virtual void Hide()
-        {
-            this.Visible = false;
-        }
-
-        protected virtual void OnShow()
+        protected override void OnShow()
         {
             // If the page has a serial join sig then set the value to the name of the page
             if (this.TitleLabel != null)
@@ -149,40 +123,22 @@ namespace UXLib.UI
                 this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
         }
 
-        protected virtual void OnHide()
+        protected override void OnHide()
         {
             if (this.VisibilityChange != null)
                 this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
         }
 
-        public void SetTransitionCompleteJoin(BoolInputSig inputSig)
+        public void SetTransitionCompleteJoin(BoolOutputSig transitionCompleteDigitalJoin)
         {
-            this.TransitionCompleteJoin = inputSig;
-            BasicTriList device = this.TransitionCompleteJoin.Owner as BasicTriList;
-            device.SigChange += new SigEventHandler(device_SigChange);
+            this.TransitionCompleteDigitalJoin = transitionCompleteDigitalJoin;
         }
 
-        void device_SigChange(BasicTriList currentDevice, SigEventArgs args)
+        protected override void OnTransitionComplete()
         {
-            if (args.Sig.Type == eSigType.Bool && args.Sig.Number == this.TransitionCompleteJoin.Number)
-            {
-                OnTransitionComplete();
-            }
-        }
-
-        protected virtual void OnTransitionComplete()
-        {
+            base.OnTransitionComplete();
             if (this.VisibilityChange != null)
                 this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.TransitionComplete));
-        }
-
-        public virtual void Dispose()
-        {
-            if (this.TransitionCompleteJoin != null)
-            {
-                BasicTriList device = this.TransitionCompleteJoin.Owner as BasicTriList;
-                device.SigChange -= new SigEventHandler(device_SigChange);
-            }
         }
     }
 

@@ -8,46 +8,37 @@ namespace UXLib.UI
 {
     public class UIDateTime
     {
-        private CTimer TimeChangeTimer;
-        public DateTime TimeNow
-        {
-            get
-            {
-                return DateTime.Now;
-            }
-        }
-
-        public event UIDateTimeChangeEventHandler TimeHasChanged;
-
-        private UIDateTimeLabel DateLabel;
-        private UIDateTimeLabel TimeLabel;
-
         public UIDateTime()
         {
             int secondsUntilNextMinute = 60 - this.TimeNow.Second;
-            this.TimeChangeTimer = new CTimer(this.TimeSetup, secondsUntilNextMinute * 1000);
+            this.timeChangeTimer = new CTimer(timeSetup, secondsUntilNextMinute * 1000);
         }
 
         public UIDateTime(UIDateTimeLabel dateLabel, UIDateTimeLabel timeLabel)
+            : this()
         {
             this.DateLabel = dateLabel;
             this.TimeLabel = timeLabel;
             this.UpdateLabels();
-
-            int secondsUntilNextMinute = 60 - this.TimeNow.Second;
-            this.TimeChangeTimer = new CTimer(this.TimeSetup, secondsUntilNextMinute * 1000);
         }
 
-        public void TimeSetup(object obj)
+        CTimer timeChangeTimer;
+
+        public event UIDateTimeChangeEventHandler TimeHasChanged;
+
+        public UIDateTimeLabel DateLabel { get; protected set; }
+        public UIDateTimeLabel TimeLabel { get; protected set; }
+
+        void timeSetup(object obj)
         {
-            this.TimeChangeTimer.Dispose();
-            this.TimeChangeTimer = new CTimer(TimeChange, null, 60000, 60000);
+            this.timeChangeTimer.Dispose();
+            this.timeChangeTimer = new CTimer(timeChange, null, 60000, 60000);
             if (this.TimeHasChanged != null)
                 this.TimeHasChanged(this, new UIDateTimeChangeEventArgs(this.TimeNow));
             this.UpdateLabels();
         }
 
-        public void TimeChange(object obj)
+        void timeChange(object obj)
         {
             if (this.TimeHasChanged != null)
                 this.TimeHasChanged(this, new UIDateTimeChangeEventArgs(this.TimeNow));
@@ -62,6 +53,14 @@ namespace UXLib.UI
 
             if (this.TimeLabel != null)
                 this.TimeLabel.DateTime = this.TimeNow;
+        }
+
+        public DateTime TimeNow
+        {
+            get
+            {
+                return DateTime.Now;
+            }
         }
     }
 

@@ -24,9 +24,19 @@ namespace UXLib.UI
             this.interfaces = new List<UIController>();
         }
 
+        protected UIControllerCollection(List<UIController> fromList)
+        {
+            interfaces = new List<UIController>(fromList);
+        }
+
         public void Add(UIController ui)
         {
             this.interfaces.Add(ui);
+        }
+
+        public UIControllerCollection ForRoom(Models.Room room)
+        {
+            return new UIControllerCollection(interfaces.Where(ui => ui.Room == room).ToList());
         }
 
         public IEnumerator<UIController> GetEnumerator()

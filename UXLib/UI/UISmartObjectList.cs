@@ -9,43 +9,6 @@ namespace UXLib.UI
 {
     public class UISmartObjectList : UISmartObject
     {
-        private ListData Data;
-        public ushort MaxNumberOfItems { get; private set; }
-        protected BoolInputSig LoadingSubPageOverlay;
-
-        public ushort NumberOfItems
-        {
-            set
-            {
-                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
-                    this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
-            }
-            get
-            {
-                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
-                    return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
-                return this.MaxNumberOfItems;
-            }
-        }
-
-        public ushort ScrollToItem
-        {
-            set
-            {
-                this.DeviceSmartObject.UShortInput["Scroll To Item"].UShortValue = value;
-            }
-        }
-
-        public bool IsMoving
-        {
-            get
-            {
-                if (this.DeviceSmartObject.BooleanOutput["Is Moving"] != null)
-                    return this.DeviceSmartObject.BooleanOutput["Is Moving"].BoolValue;
-                return false;
-            }
-        }
-
         public UISmartObjectList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
             : base(smartObject, enableJoin, visibleJoin)
         {
@@ -56,7 +19,7 @@ namespace UXLib.UI
             {
                 while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Pressed", item)))
                 {
-                    UISmartObjectButton listButton = new UISmartObjectButton(
+                    UISmartObjectButton listButton = new UISmartObjectButton(this,
                         item, this.DeviceSmartObject,
                         string.Format("Item {0} Pressed", item),
                         string.Format("Item {0} Selected", item),
@@ -79,13 +42,46 @@ namespace UXLib.UI
             }
         }
 
-        public virtual void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
+        protected ListData Data { get; set; }
+        public ushort MaxNumberOfItems { get; protected set; }
+        protected BoolInputSig LoadingSubPageOverlay;
+
+        public ushort NumberOfItems
+        {
+            set
+            {
+                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
+                    this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
+            }
+            get
+            {
+                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
+                    return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
+                return this.MaxNumberOfItems;
+            }
+        }
+
+        public void ScrollToItem(ushort item)
+        {
+            this.DeviceSmartObject.UShortInput["Scroll To Item"].UShortValue = item;
+        }
+
+        public bool IsMoving
+        {
+            get
+            {
+                if (this.DeviceSmartObject.BooleanOutput["Is Moving"] != null)
+                    return this.DeviceSmartObject.BooleanOutput["Is Moving"].BoolValue;
+                return false;
+            }
+        }
+
+        protected virtual void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
         {
             if (args.EventType == eListDataChangeEventType.IsStartingToLoad)
             {
-                this.Disable();
                 this.Buttons[1].Title = "Loading...";
-                this.Buttons[1].Icon = "Info";
+                this.Buttons[1].Icon = UIMediaIcons.Info;
                 this.NumberOfItems = 1;
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = true;
@@ -119,9 +115,9 @@ namespace UXLib.UI
                     this.Buttons[item].Title = listData[listDataIndex].Title;
                     this.Buttons[item].Icon = listData[listDataIndex].Icon;
                     this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
+                    this.Buttons[item].Enabled = listData[listDataIndex].Enabled;
                 }
 
-                this.Enable();
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = false;
             }
@@ -145,10 +141,11 @@ namespace UXLib.UI
             this.LoadingSubPageOverlay = loadingSubPageOverlaySig;
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
-            this.Data.DataChange -= new ListDataChangeEventHandler(Data_DataChange);
+            if (disposing)
+                this.Data.DataChange -= new ListDataChangeEventHandler(Data_DataChange);
+            base.Dispose(disposing);
         }
     }
 }

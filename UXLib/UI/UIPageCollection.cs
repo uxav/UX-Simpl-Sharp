@@ -9,14 +9,27 @@ namespace UXLib.UI
 {
     public class UIPageCollection : IEnumerable<UIPage>
     {
-        private List<UIPage> Pages;
-        public UITimeOut PageTimeOut;
+        public UIPageCollection()
+        {
+            
+        }
 
-        public UIPage this[uint joinNumber]
+        List<UIPage> _pages;
+        List<UIPage> Pages
         {
             get
             {
-                return this.Pages.FirstOrDefault(p => p.VisibleJoinNumber == joinNumber);
+                if (this._pages == null)
+                    this._pages = new List<UIPage>();
+                return _pages;
+            }
+        }
+
+        public UIPage this[uint visibleJoinNumber]
+        {
+            get
+            {
+                return this.Pages.FirstOrDefault(p => p.VisibleJoinNumber == visibleJoinNumber);
             }
         }
 
@@ -28,20 +41,9 @@ namespace UXLib.UI
             }
         }
 
-        public UIPageCollection()
-        {
-            this.Pages = new List<UIPage>();
-        }
-
-        public UIPageCollection(UITimeOut timeout)
-        {
-            this.Pages = new List<UIPage>();
-            this.PageTimeOut = timeout;
-        }
-
         public void Add(UIPage newPage)
         {
-            if (!this.Pages.Exists(p => p.VisibleJoin == newPage.VisibleJoin))
+            if (!this.Pages.Exists(p => p.VisibleDigitalJoin == newPage.VisibleDigitalJoin))
             {
                 this.Pages.Add(newPage);
                 newPage.VisibilityChange += new UIViewBaseVisibitlityEventHandler(Page_VisibilityChange);
@@ -54,11 +56,23 @@ namespace UXLib.UI
 
         void Page_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
         {
-            if (sender.Visible && this.PageTimeOut != null)
+            if (VisibilityChange != null)
+                VisibilityChange(sender, args);
+            if (args.EventType == eViewEventType.WillShow)
             {
-                this.PageTimeOut.Set();
+                UIPage newPage = sender as UIPage;
+
+                foreach (UIPage page in this)
+                {
+                    if (page.Visible && page != newPage)
+                    {
+                        page.Visible = false;
+                    }
+                }
             }
         }
+
+        public event UIViewBaseVisibitlityEventHandler VisibilityChange;
 
         public IEnumerator<UIPage> GetEnumerator()
         {
@@ -68,20 +82,6 @@ namespace UXLib.UI
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        }
-
-        public void Dispose()
-        {
-            this.PageTimeOut.Dispose();
-
-            foreach (UIPage page in Pages)
-            {
-                page.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(Page_VisibilityChange);
-                page.Dispose();
-            }
-
-            this.Pages.Clear();
-            this.Pages = null;
         }
     }
 }

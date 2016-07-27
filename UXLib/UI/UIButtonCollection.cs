@@ -12,11 +12,11 @@ namespace UXLib.UI
     {
         private List<UIButton> Buttons;
 
-        public UIButton this[uint joinNumber]
+        public UIButton this[uint pressDigitalJoinNumber]
         {
             get
             {
-                return this.Buttons.FirstOrDefault(b => b.JoinNumber == joinNumber);
+                return this.Buttons.FirstOrDefault(b => b.PressDigitalJoin.Number == pressDigitalJoinNumber);
             }
         }
 
@@ -38,7 +38,16 @@ namespace UXLib.UI
             if (!this.Buttons.Contains(button))
             {
                 this.Buttons.Add(button);
-                button.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+                if (subscribeCount > 0)
+                    button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+            }
+        }
+
+        protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
+        {
+            if (this._ButtonEvent != null)
+            {
+                this._ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime, Buttons.IndexOf(currentObject as UIButton)));
             }
         }
 
@@ -52,23 +61,88 @@ namespace UXLib.UI
             return this.GetEnumerator();
         }
 
-        public event UIButtonCollectionEventHandler ButtonEvent;
+        private event UIButtonCollectionEventHandler _ButtonEvent;
 
-        void ButtonEventHandler(UIButtonBase button, UIButtonEventArgs args)
+        int subscribeCount = 0;
+
+        public event UIButtonCollectionEventHandler ButtonEvent
         {
-            if (this.ButtonEvent != null)
+            add
             {
-                this.ButtonEvent(this, new UIButtonCollectionEventArgs(button as UIButton, args.EventType, args.HoldTime));
+                if(subscribeCount == 0)
+                    foreach (UIButton button in Buttons)
+                        button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+                
+                subscribeCount++;
+
+                _ButtonEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    foreach (UIButton button in Buttons)
+                        button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+
+                _ButtonEvent -= value;
             }
         }
 
-        public virtual void Dispose()
+        public int IndexOf(UIButton button)
         {
+            return Buttons.IndexOf(button);
+        }
+
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            CrestronEnvironment.GC.SuppressFinalize(this);
+        }
+
+        bool disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                // Free any other managed objects here.
+                //
+                
+            }
+
+            // Free any unmanaged objects here.
+            //
             foreach (UIButton button in Buttons)
             {
-                button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
+                if (subscribeCount > 0)
+                    button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
+
+            Buttons.Clear();
+            Buttons = null;
+
+            disposed = true;
         }
     }
 
@@ -76,15 +150,17 @@ namespace UXLib.UI
 
     public class UIButtonCollectionEventArgs : EventArgs
     {
-        public eUIButtonEventType EventType;
+        public UIButtonEventType EventType;
         public UIButton Button;
         public long HoldTime;
-        public UIButtonCollectionEventArgs(UIButton button, eUIButtonEventType type, long holdTime)
+        public int ButtonIndexInCollection;
+        public UIButtonCollectionEventArgs(UIButton button, UIButtonEventType type, long holdTime, int buttonIndex)
             : base()
         {
             this.Button = button;
             this.EventType = type;
             this.HoldTime = holdTime;
+            this.ButtonIndexInCollection = buttonIndex;
         }
     }
 }

@@ -9,8 +9,6 @@ namespace UXLib.UI
 {
     public class UISmartObjectButtonCollection : IEnumerable<UISmartObjectButton>
     {
-        private List<UISmartObjectButton> Buttons;
-
         public UISmartObjectButton this[uint itemIndex]
         {
             get
@@ -18,6 +16,8 @@ namespace UXLib.UI
                 return this.Buttons.FirstOrDefault(b => b.ItemIndex == itemIndex);
             }
         }
+        
+        private List<UISmartObjectButton> Buttons;
 
         public int NumberOfButtons
         {
@@ -37,7 +37,16 @@ namespace UXLib.UI
             if (!this.Buttons.Contains(button))
             {
                 this.Buttons.Add(button);
-                button.ButtonEvent += new UIButtonEventHandler(ButtonEventHandler);
+                if (subscribeCount > 0)
+                    button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+            }
+        }
+
+        protected virtual void OnButtonEvent(UIObject currentObject, UIObjectButtonEventArgs args)
+        {
+            if (this._ButtonEvent != null)
+            {
+                this._ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(currentObject as UISmartObjectButton, args.EventType, args.HoldTime));
             }
         }
 
@@ -51,28 +60,88 @@ namespace UXLib.UI
             return this.GetEnumerator();
         }
 
-        public event UISmartObjectButtonCollectionEventHandler ButtonEvent;
+        private event UISmartObjectButtonCollectionEventHandler _ButtonEvent;
 
-        void ButtonEventHandler(UIButtonBase button, UIButtonEventArgs args)
+        int subscribeCount = 0;
+
+        public event UISmartObjectButtonCollectionEventHandler ButtonEvent
         {
-            if (this.ButtonEvent != null)
+            add
             {
-                this.ButtonEvent(this, new UISmartObjectButtonCollectionEventArgs(button as UISmartObjectButton, args.EventType, args.HoldTime));
+                if(subscribeCount == 0)
+                    foreach(UISmartObjectButton button in this.Buttons)
+                        button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
+
+                subscribeCount++;
+
+                _ButtonEvent += value;
+            }
+            remove
+            {
+                subscribeCount--;
+
+                if (subscribeCount == 0)
+                    foreach (UISmartObjectButton button in this.Buttons)
+                        button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
+
+                _ButtonEvent -= value;
             }
         }
 
-        public UISmartObjectButton UISmartObjectButtonBySigNumber(uint sigNumber)
+        public UISmartObjectButton UISmartObjectButtonBySigNumber(uint pressDigitalJoinNumber)
         {
-            return this.Buttons.FirstOrDefault(b => b.JoinNumber == sigNumber);
+            return this.Buttons.FirstOrDefault(b => b.PressDigitalJoin.Number == pressDigitalJoinNumber);
         }
 
-        public virtual void Dispose()
+        /// <summary>
+        /// Unregister from any sig changes and dispose of resources
+        /// </summary>
+        public void Dispose()
         {
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            CrestronEnvironment.GC.SuppressFinalize(this);
+        }
+
+        bool disposed = false;
+
+        public bool Disposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        /// <summary>
+        /// Override this to free resources
+        /// </summary>
+        /// <param name="disposing">true is Dispose() has been called</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                // Free any other managed objects here.
+                //
+
+            }
+
+            // Free any unmanaged objects here.
+            //
             foreach (UISmartObjectButton button in Buttons)
             {
-                button.ButtonEvent -= new UIButtonEventHandler(ButtonEventHandler);
+                if (subscribeCount > 0)
+                    button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
+
+            Buttons.Clear();
+            Buttons = null;
+
+            disposed = true;
         }
     }
 
@@ -80,10 +149,10 @@ namespace UXLib.UI
 
     public class UISmartObjectButtonCollectionEventArgs : EventArgs
     {
-        public eUIButtonEventType EventType;
+        public UIButtonEventType EventType;
         public UISmartObjectButton Button;
         public long HoldTime;
-        public UISmartObjectButtonCollectionEventArgs(UISmartObjectButton button, eUIButtonEventType type, long holdTime)
+        public UISmartObjectButtonCollectionEventArgs(UISmartObjectButton button, UIButtonEventType type, long holdTime)
             : base()
         {
             this.Button = button;

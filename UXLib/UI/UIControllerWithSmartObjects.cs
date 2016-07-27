@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using UXLib.Models;
 
 namespace UXLib.UI
 {

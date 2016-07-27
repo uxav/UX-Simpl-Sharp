@@ -9,7 +9,21 @@ namespace UXLib.UI
 {
     public class UISubPageCollection : IEnumerable<UISubPage>
     {
-        private List<UISubPage> SubPages;
+        public UISubPageCollection()
+        {
+            
+        }
+
+        List<UISubPage> _subPages;
+        List<UISubPage> SubPages
+        {
+            get
+            {
+                if (_subPages == null)
+                    _subPages = new List<UISubPage>();
+                return _subPages;
+            }
+        }
         
         public UISubPage this[uint joinNumber]
         {
@@ -17,11 +31,6 @@ namespace UXLib.UI
             {
                 return this.SubPages.FirstOrDefault(p => p.VisibleJoinNumber == joinNumber);
             }
-        }
-
-        public UISubPageCollection()
-        {
-            this.SubPages = new List<UISubPage>();
         }
 
         public void Add(UISubPage newSubPage)
@@ -32,7 +41,7 @@ namespace UXLib.UI
             }
             else
             {
-                throw new Exception(string.Format("SubPage with id '{0}' already exists", newSubPage.ID));
+                throw new Exception(string.Format("SubPage with join '{0}' already exists", newSubPage.VisibleJoinNumber));
             }
         }
 
@@ -57,7 +66,7 @@ namespace UXLib.UI
             if (SubPages.Contains(newSubPage))
                 newSubPage.Show();
             else
-                ErrorLog.Error("Cannot ShowOnly subpage with ID of {0} as it does not exist in the collection", newSubPage.ID);
+                ErrorLog.Error("Cannot ShowOnly subpage with join of {0} as it does not exist in the collection", newSubPage.VisibleJoinNumber);
         }
 
         public void ShowOnly(uint joinNumber)

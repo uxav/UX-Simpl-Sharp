@@ -7,51 +7,16 @@ using Crestron.SimplSharpPro;
 
 namespace UXLib.UI
 {
-    public class UISmartObjectCheckboxList : UISmartObject
+    public class UISmartObjectCheckboxList : UISmartObjectList
     {
-        private ListData Data;
-        public ushort MaxNumberOfItems { get; private set; }
-
         public UISmartObjectCheckboxList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
-            : base(smartObject, enableJoin, visibleJoin)
+            : base(smartObject, listData, enableJoin, visibleJoin)
         {
-            uint item = 1;
-            this.Data = listData;
-            this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
-            try
-            {
-                while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Checked", item)))
-                {
-                    UISmartObjectButton listButton = new UISmartObjectButton(
-                        item, this.DeviceSmartObject,
-                        string.Format("Item {0} Checked", item),
-                        string.Format("Item {0} Checked", item),
-                        string.Format("Item {0} Text", item)
-                        );
-                    this.AddButton(listButton);
-
-                    item++;
-                }
-
-                this.MaxNumberOfItems = (ushort)(item - 1);
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Error constructing UISmartObjectList with KeyName: {0}", e.Message);
-            }
         }
 
-        void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
+        protected override void Data_DataChange(ListData listData, ListDataChangeEventArgs args)
         {
-            if (args.EventType == eListDataChangeEventType.IsStartingToLoad)
-            {
-                this.Disable();
-            }
-            else if (args.EventType == eListDataChangeEventType.HasCleared)
-            {
-                this.Disable();
-            }
-            else if (args.EventType == eListDataChangeEventType.HasLoaded)
+            if (args.EventType == eListDataChangeEventType.HasLoaded)
             {
                 ushort listSize;
 
@@ -64,35 +29,38 @@ namespace UXLib.UI
                     listSize = (ushort)listData.Count;
                 }
 
-                for (uint item = 1; item <= MaxNumberOfItems; item++)
+                this.NumberOfItems = listSize;
+
+                for (uint item = 1; item <= listSize; item++)
                 {
-                    if (item <= listSize)
-                    {
-                        int listDataIndex = (int)item - 1;
-                        this.Buttons[item].Title = listData[listDataIndex].Title;
-                        this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
-                    }
+                    int listDataIndex = (int)item - 1;
+                    this.Buttons[item].Title = listData[listDataIndex].Title;
+                    if (listData[listDataIndex].IsSelected)
+                        this.Buttons[item].Icon = UIMediaIcons.CheckboxChecked;
                     else
-                    {
-                        this.Buttons[item].Title = "";
-                    }
+                        this.Buttons[item].Icon = UIMediaIcons.CheckboxOff;
+                    this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
+                    this.Buttons[item].Enabled = listData[listDataIndex].Enabled;
                 }
 
-                this.Enable();
+                if (LoadingSubPageOverlay != null)
+                    LoadingSubPageOverlay.BoolValue = false;
             }
             else if (args.EventType == eListDataChangeEventType.ItemSelectionHasChanged)
             {
-                for (uint item = 1; item <= listData.Count; item++)
+                for (uint item = 1; item <= this.NumberOfItems; item++)
                 {
                     int listDataIndex = (int)item - 1;
-                    this.Buttons[item].Feedback = listData[listDataIndex].IsSelected;
+                    if (listData[listDataIndex].IsSelected)
+                        this.Buttons[item].Icon = UIMediaIcons.CheckboxChecked;
+                    else
+                        this.Buttons[item].Icon = UIMediaIcons.CheckboxOff;
                 }
             }
-        }
-
-        public object LinkedObjectForButton(uint buttonIndex)
-        {
-            return this.Buttons[buttonIndex].LinkedObject;
+            else
+            {
+                base.Data_DataChange(listData, args);
+            }
         }
     }
 }

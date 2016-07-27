@@ -8,125 +8,33 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UILabel
+    public class UILabel : UIObject
     {
-        public uint ID
+        public UILabel(StringInputSig textSerialJoin)
         {
-            get { return this.SerialFeedbackJoin.Number; }
-        }
-        string _Text;
-        public string Text
-        {
-            set
-            {
-                this._Text = value;
-                this.SerialFeedbackJoin.StringValue = this._Text;
-            }
-            get
-            {
-                return this._Text;
-            }
+            this.TextSerialJoin = textSerialJoin;
         }
 
-        public bool Enabled
+        public UILabel(StringInputSig textSerialJoin, string defaultText)
+            : this(textSerialJoin)
         {
-            set
-            {
-                if (this.EnableJoin != null)
-                    this.EnableJoin.BoolValue = value;
-            }
-            get
-            {
-                if (this.EnableJoin != null)
-                    return this.EnableJoin.BoolValue;
-                return true;
-            }
-        }
-        public bool Visible
-        {
-            set
-            {
-                if (this.VisibleJoin != null)
-                    this.VisibleJoin.BoolValue = value;
-            }
-            get
-            {
-                if (this.VisibleJoin != null)
-                    return this.VisibleJoin.BoolValue;
-                return true;
-            }
+            this.Text = defaultText;
         }
 
-        public uint JoinNumber
+        public UILabel(StringInputSig textSerialJoin, BoolInputSig enableDigitalJoin, BoolInputSig visibleDigitalJoin)
+            : this(textSerialJoin)
         {
-            get
-            {
-                return this.SerialFeedbackJoin.Number;
-            }
+            this.EnableDigitalJoin = enableDigitalJoin;
+            this.VisibleDigitalJoin = visibleDigitalJoin;
         }
 
-        StringInputSig SerialFeedbackJoin;
-        BoolInputSig EnableJoin;
-        BoolInputSig VisibleJoin;
-
-        public UILabel(StringInputSig stringInputSig)
+        public UILabel(StringInputSig textSerialJoin, string defaultText, BoolInputSig enableDigitalJoin, BoolInputSig visibleDigitalJoin)
+            : this(textSerialJoin, enableDigitalJoin, visibleDigitalJoin)
         {
-            this._Text = "Label";
-            this.SerialFeedbackJoin = stringInputSig;
-            this.SerialFeedbackJoin.StringValue = this._Text;
+            this.Text = defaultText;
         }
 
-        public UILabel(StringInputSig stringInputSig, string defaultText)
-        {
-            this._Text = defaultText;
-            this.SerialFeedbackJoin = stringInputSig;
-            this.SerialFeedbackJoin.StringValue = this._Text;
-        }
-
-        public UILabel(StringInputSig stringInputSig, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
-        {
-            this._Text = "Label";
-            this.SerialFeedbackJoin = stringInputSig;
-            this.SerialFeedbackJoin.StringValue = this._Text;
-            this.EnableJoin = enableJoinSig;
-            if (this.EnableJoin != null)
-                this.Enable();
-            this.VisibleJoin = visibleJoinSig;
-            if (this.VisibleJoin != null)
-                this.Show();
-        }
-
-        public UILabel(StringInputSig stringInputSig, string defaultText, BoolInputSig enableJoinSig, BoolInputSig visibleJoinSig)
-        {
-            this._Text = defaultText;
-            this.SerialFeedbackJoin = stringInputSig;
-            this.SerialFeedbackJoin.StringValue = this._Text;
-            this.EnableJoin = enableJoinSig;
-            if (this.EnableJoin != null)
-                this.Enable();
-            this.VisibleJoin = visibleJoinSig;
-            if (this.VisibleJoin != null)
-                this.Show();
-        }
-
-        public void Show()
-        {
-            this.Visible = true;
-        }
-
-        public void Hide()
-        {
-            this.Visible = false;
-        }
-
-        public void Enable()
-        {
-            this.Enabled = true;
-        }
-
-        public void Disable()
-        {
-            this.Enabled = false;
-        }
+        private new UShortInputSig AnalogFeedbackJoin { get; set; }
+        private new UShortOutputSig AnalogTouchJoin { get; set; }
     }
 }
