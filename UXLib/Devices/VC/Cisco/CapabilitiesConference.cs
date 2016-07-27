@@ -45,18 +45,25 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            foreach (XElement element in Codec.RequestPath("Status/Capabilities/Conference", true).Elements().Where(e => !e.HasElements))
+            try
             {
-#if DEBUG
-                CrestronConsole.PrintLine("Capabilities.Conference.{0} = {1}", element.XName.LocalName, element.Value);
-#endif
-                switch (element.XName.LocalName)
+                foreach (XElement element in Codec.RequestPath("Status/Capabilities/Conference", true).Elements().Where(e => !e.HasElements))
                 {
-                    case "MaxActiveCalls": MaxActiveCalls = int.Parse(element.Value); break;
-                    case "MaxAudioCalls": MaxAudioCalls = int.Parse(element.Value); break;
-                    case "MaxCalls": MaxCalls = int.Parse(element.Value); break;
-                    case "MaxVideoCalls": MaxVideoCalls = int.Parse(element.Value); break;
+#if DEBUG
+                    CrestronConsole.PrintLine("Capabilities.Conference.{0} = {1}", element.XName.LocalName, element.Value);
+#endif
+                    switch (element.XName.LocalName)
+                    {
+                        case "MaxActiveCalls": MaxActiveCalls = int.Parse(element.Value); break;
+                        case "MaxAudioCalls": MaxAudioCalls = int.Parse(element.Value); break;
+                        case "MaxCalls": MaxCalls = int.Parse(element.Value); break;
+                        case "MaxVideoCalls": MaxVideoCalls = int.Parse(element.Value); break;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error in Conference.Capabilities.Codec_HasConnected", e);
             }
         }
     }

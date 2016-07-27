@@ -32,29 +32,36 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/Cameras", true);
-
-            foreach (XElement element in statusInfo.Elements("Camera"))
+            try
             {
-                int cameraId = int.Parse(element.Attribute("item").Value);
-#if DEBUG
-                CrestronConsole.PrintLine("Info for Camera {0}:", cameraId);
+                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/Cameras", true);
 
-                foreach (XElement innerElement in element.Elements().Where(e => !e.HasElements))
+                foreach (XElement element in statusInfo.Elements("Camera"))
                 {
-                    CrestronConsole.PrintLine("   Camera.{0} = {1}", innerElement.XName.LocalName, innerElement.Value);
-                }
+                    int cameraId = int.Parse(element.Attribute("item").Value);
+#if DEBUG
+                    CrestronConsole.PrintLine("Info for Camera {0}:", cameraId);
+
+                    foreach (XElement innerElement in element.Elements().Where(e => !e.HasElements))
+                    {
+                        CrestronConsole.PrintLine("   Camera.{0} = {1}", innerElement.XName.LocalName, innerElement.Value);
+                    }
 #endif
 
-                Camera newCamera = new Camera(Codec, cameraId,
-                    bool.Parse(element.Element("Connected").Value),
-                    element.Element("MacAddress").Value,
-                    element.Element("Manufacturer").Value,
-                    element.Element("Model").Value,
-                    element.Element("SerialNumber").Value,
-                    element.Element("SoftwareID").Value);
+                    Camera newCamera = new Camera(Codec, cameraId,
+                        bool.Parse(element.Element("Connected").Value),
+                        element.Element("MacAddress").Value,
+                        element.Element("Manufacturer").Value,
+                        element.Element("Model").Value,
+                        element.Element("SerialNumber").Value,
+                        element.Element("SoftwareID").Value);
 
-                _Cameras[cameraId] = newCamera;
+                    _Cameras[cameraId] = newCamera;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error in Cameras.Codec_HasConnected", e);
             }
         }
 

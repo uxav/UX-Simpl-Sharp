@@ -162,8 +162,15 @@ namespace UXLib.Devices.VC.Cisco
                 this.Registerfeedback();
             }
 
-            if (HasConnected != null)
-                HasConnected(this);
+            try
+            {
+                if (HasConnected != null)
+                    HasConnected(this);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error CiscoCodec calling HasConnected event notification in GetStatusThread", e);
+            }
 
             return null;
         }
