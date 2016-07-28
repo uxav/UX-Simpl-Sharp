@@ -14,11 +14,6 @@ namespace UXLib.Relays
 #if DEBUG
 		    this.CrestronRelay.StateChange += new Crestron.SimplSharpPro.RelayEventHandler(CrestronRelay_StateChange);  
 #endif
-            Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse response = relay.Register();
-            if (response != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
-            {
-                ErrorLog.Error("Could not register relay with ID: {0}, {1}", relay.ID, response.ToString());
-            }
         }
 
 #if DEBUG
@@ -84,6 +79,11 @@ namespace UXLib.Relays
                 else
                     this.Open();
             }
+        }
+
+        public Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse Register()
+        {
+            return this.CrestronRelay.Register();
         }
     }
 }

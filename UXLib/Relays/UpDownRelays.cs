@@ -13,18 +13,16 @@ namespace UXLib.Relays
             UpRelay = upRelay;
             DownRelay = downRelay;
             this.ModeType = modeType;
+            this.State = UpDownRelayState.Unknown;
         }
 
         public UpDownRelays(Crestron.SimplSharpPro.Relay upRelay, Crestron.SimplSharpPro.Relay downRelay, UpDownRelayModeType modeType)
-        {
-            UpRelay = new UXLib.Relays.Relay(upRelay);
-            DownRelay = new UXLib.Relays.Relay(downRelay);
-            this.ModeType = modeType;
-        }
+            : this(new UXLib.Relays.Relay(upRelay), new UXLib.Relays.Relay(downRelay), modeType) { }
 
         UXLib.Relays.Relay UpRelay;
         UXLib.Relays.Relay DownRelay;
         public UpDownRelayModeType ModeType { get; protected set; }
+        public UpDownRelayState State { get; protected set; }
         CTimer waitTimer;
 
         public void Up()
@@ -41,6 +39,8 @@ namespace UXLib.Relays
             {
                 RelaySet(UpRelay);
             }
+
+            this.State = UpDownRelayState.Up;
         }
 
         public void Down()
@@ -57,12 +57,16 @@ namespace UXLib.Relays
             {
                 RelaySet(DownRelay);
             }
+
+            this.State = UpDownRelayState.Down;
         }
 
         public void Stop()
         {
             UpRelay.Open();
             DownRelay.Open();
+
+            this.State = UpDownRelayState.Unknown;
         }
 
         void RelaySet(object obj)
@@ -81,11 +85,26 @@ namespace UXLib.Relays
                 }
             }
         }
+
+        public void Register()
+        {
+            if (this.UpRelay.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                ErrorLog.Error("Could not register UpDownRelays.UpRelay with ID {0}", UpRelay.CrestronRelay.ID);
+            if (this.DownRelay.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                ErrorLog.Error("Could not register UpDownRelays.DownRelay with ID {0}", DownRelay.CrestronRelay.ID);
+        }
     }
 
     public enum UpDownRelayModeType
     {
         Momentary,
         Interlocked
+    }
+
+    public enum UpDownRelayState
+    {
+        Up,
+        Down,
+        Unknown
     }
 }
