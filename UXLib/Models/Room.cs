@@ -78,7 +78,7 @@ namespace UXLib.Models
         public Room ParentRoom { get; private set; }
         public Room MasterRoom { get; private set; }
         public Room ChildRoom { get; private set; }
-        public FusionRoom FusionRoom;
+        public FusionRoom FusionRoom { get; protected set; }
 
         public virtual void OnSourceChange(Source previousSource, Source newSource)
         {
@@ -210,7 +210,7 @@ namespace UXLib.Models
             }
         }
 
-        public void FusionRegister(uint ipId, CrestronControlSystem controlSystem)
+        public virtual void FusionRegister(uint ipId, CrestronControlSystem controlSystem)
         {
             this.FusionRoom = new FusionRoom(ipId, controlSystem, this.Name, Guid.NewGuid().ToString());
 
@@ -226,17 +226,17 @@ namespace UXLib.Models
             }
         }
 
-        void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        protected virtual void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
             
         }
 
-        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        protected virtual void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
         {
             
         }
 
-        void FusionRoom_FusionStateChange(FusionBase device, FusionStateEventArgs args)
+        protected virtual void FusionRoom_FusionStateChange(FusionBase device, FusionStateEventArgs args)
         {
             
         }
