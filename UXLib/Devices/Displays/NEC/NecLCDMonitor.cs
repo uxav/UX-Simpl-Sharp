@@ -45,7 +45,7 @@ namespace UXLib.Devices.Displays.NEC
 #endif
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
-            else
+            else if(this.pollTimer != null)
             {
 #if DEBUG
                 CrestronConsole.PrintLine("NEC Display Disconnected");
