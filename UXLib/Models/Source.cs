@@ -79,6 +79,7 @@ namespace UXLib.Models
         ClickShare,
         CCTV,
         AuxInput,
-        LiveStream
+        LiveStream,
+        SignagePlayer
     }
 }
