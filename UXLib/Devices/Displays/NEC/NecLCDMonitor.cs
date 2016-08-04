@@ -228,7 +228,9 @@ namespace UXLib.Devices.Displays.NEC
         {
             requestedInput = command;
             string value = "00" + command.ToString("X2");
+#if DEBUG
             CrestronConsole.PrintLine("Send display input command {0}", value);
+#endif
             this.SetParameter(this.DisplayID, "0060" + value);
         }
 
