@@ -150,6 +150,7 @@
     <Compile Include="Devices\VC\Cisco\CodecSSHClient.cs" />
     <Compile Include="Devices\VC\Cisco\Conference.cs" />
     <Compile Include="Devices\VC\Cisco\CapabilitiesConference.cs" />
+    <Compile Include="Devices\VC\Cisco\DialResult.cs" />
     <Compile Include="Devices\VC\Cisco\IPhonebookItem.cs" />
     <Compile Include="Devices\VC\Cisco\Microphones.cs" />
     <Compile Include="Devices\VC\Cisco\Network.cs" />

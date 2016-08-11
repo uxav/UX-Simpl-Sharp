@@ -100,9 +100,9 @@ namespace UXLib.Devices.Displays.NEC
                 MessageType type = (MessageType)bytes[4];
                 string messageStr = Encoding.Default.GetString(message, 1, message.Length - 2);
 #if DEBUG
-                CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
-                Tools.PrintBytes(message, message.Length);
-                CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
+                //CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
+                //Tools.PrintBytes(message, message.Length);
+                //CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
 #endif
                 try
                 {
@@ -229,7 +229,7 @@ namespace UXLib.Devices.Displays.NEC
             requestedInput = command;
             string value = "00" + command.ToString("X2");
 #if DEBUG
-            CrestronConsole.PrintLine("Send display input command {0}", value);
+            //CrestronConsole.PrintLine("Send display input command {0}", value);
 #endif
             this.SetParameter(this.DisplayID, "0060" + value);
         }

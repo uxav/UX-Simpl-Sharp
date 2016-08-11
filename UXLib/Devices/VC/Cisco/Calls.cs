@@ -34,34 +34,30 @@ namespace UXLib.Devices.VC.Cisco
 
         public int Count { get { return calls.Count; } }
 
-        public int Dial(CommandArgs args)
+        public DialResult Dial(CommandArgs args)
         {
             try
             {
-                if (Codec.SystemUnit.State.NumberOfActiveCalls < Codec.Capabilities.Conference.MaxActiveCalls)
+                XDocument xml = Codec.SendCommand("Dial", args, true);
+                XElement dialResult = xml.Root.Element("DialResult");
+                if (dialResult.Attribute("status").Value == "OK")
                 {
-                    XDocument xml = Codec.SendCommand("Dial", args, true);
-                    XElement dialResult = xml.Root.Element("DialResult");
-                    if (dialResult.Attribute("status").Value == "OK")
+                    int callID = int.Parse(dialResult.Element("CallId").Value);
+                    if (!calls.ContainsKey(callID))
                     {
-                        int callID = int.Parse(dialResult.Element("CallId").Value);
-                        if (!calls.ContainsKey(callID))
-                        {
-                            calls.Add(callID, new Call(Codec, callID));
-                            if (args.ContainsArg("CallType"))
-                                calls[callID].Type = (CallType)Enum.Parse(typeof(CallType), args["CallType"].Value, false);
-                            calls[callID].RemoteNumber = args["Number"].Value;
-                            calls[callID].Direction = CallDirection.Outgoing;
-                            calls[callID].Status = CallStatus.Dialling;
-                            OnCallStatusChange(calls[callID]);
-                        }
-                        return callID;
+                        calls.Add(callID, new Call(Codec, callID));
+                        if (args.ContainsArg("CallType"))
+                            calls[callID].Type = (CallType)Enum.Parse(typeof(CallType), args["CallType"].Value, false);
+                        calls[callID].RemoteNumber = args["Number"].Value;
+                        calls[callID].Direction = CallDirection.Outgoing;
+                        calls[callID].Status = CallStatus.Dialling;
+                        OnCallStatusChange(calls[callID]);
                     }
+                    return new DialResult(callID);
                 }
-                else
+                else if(dialResult.Attribute("status").Value == "Error")
                 {
-                    ErrorLog.Warn("Codec: Could not dial, NumberOfActiveCalls = {0}, MaxActiveCalls = {1}",
-                        Codec.SystemUnit.State.NumberOfActiveCalls, Codec.Capabilities.Conference.MaxActiveCalls);
+                    return new DialResult(int.Parse(dialResult.Element("Cause").Value), dialResult.Element("Description").Value);
                 }
             }
             catch (Exception e)
@@ -69,16 +65,16 @@ namespace UXLib.Devices.VC.Cisco
                 ErrorLog.Error("Error in Codec.Dial(), {0}", e.Message);
             }
 
-            return 0;
+            return new DialResult(0, "Unknown Error");
         }
 
-        public int Dial(string number)
+        public DialResult Dial(string number)
         {
             CommandArgs args = new CommandArgs("Number", number);
             return Dial(args);
         }
 
-        public int Dial(string number, CallType callType)
+        public DialResult Dial(string number, CallType callType)
         {
             CommandArgs args = new CommandArgs("Number", number);
             args.Add("CallType", callType.ToString());

@@ -87,8 +87,8 @@ namespace UXLib.Devices.Displays.NEC
             finalPacket[packet.Length] = (byte)chk;
             finalPacket[packet.Length + 1] = 0x0D;
 #if DEBUG
-            CrestronConsole.Print("NEC Tx: ");
-            Tools.PrintBytes(finalPacket, finalPacket.Length);
+            //CrestronConsole.Print("NEC Tx: ");
+            //Tools.PrintBytes(finalPacket, finalPacket.Length);
 #endif
             return base.Send(finalPacket);
         }

@@ -39,7 +39,7 @@ namespace UXLib.Devices.Displays.Samsung
 
         bool standbyState;
 
-        public void OnReceive(byte[] packet)
+        public override void OnReceive(byte[] packet)
         {
             this.DeviceCommunicating = true;
 

@@ -110,7 +110,8 @@ namespace UXLib.Devices.VC.Cisco
         /// <summary>
         /// Register the feedback server and information required
         /// </summary>
-        public void Registerfeedback()
+        /// <param name="deregisterFirst">set as true if you want to deregister the slot first</param>
+        public void Registerfeedback(bool deregisterFirst)
         {
             this.FeedbackServer.Register(1, new string[] {
                 "/Configuration",
@@ -123,7 +124,15 @@ namespace UXLib.Devices.VC.Cisco
                 "/Event/IncomingCallIndication",
                 "/Status/Call",
                 "/Status/Conference"
-            });
+            }, deregisterFirst);
+        }
+
+        /// <summary>
+        /// Register the feedback server and information required
+        /// </summary>
+        public void Registerfeedback()
+        {
+            this.Registerfeedback(false);
         }
 
         /// <summary>
@@ -148,19 +157,11 @@ namespace UXLib.Devices.VC.Cisco
             if (standbyStatus == "On") _StandbyActive = true;
             else _StandbyActive = false;
 
-            bool registered = this.FeedbackServer.Registered;
-
 #if DEBUG
             CrestronConsole.PrintLine("Standby = {0}", StandbyActive);
-            CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
 #endif
-            if (!registered)
-            {
-#if DEBUG
-                CrestronConsole.PrintLine("Registering Feedback");
-#endif
-                this.Registerfeedback();
-            }
+            
+            this.Registerfeedback(this.FeedbackServer.Registered);
 
             try
             {

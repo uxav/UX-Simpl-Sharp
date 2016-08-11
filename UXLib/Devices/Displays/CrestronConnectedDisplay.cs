@@ -53,6 +53,29 @@ namespace UXLib.Devices.Displays
             }
         }
 
+        public override bool Blank
+        {
+            get
+            {
+                return Display.ImageMuteOnFeedback.BoolValue;
+            }
+            set
+            {
+                if (value)
+                    Display.ImageMuteOn();
+                else
+                    Display.ImageMuteOff();
+            }
+        }
+
+        public override ushort Usage
+        {
+            get
+            {
+                return Display.LampHoursFeedback.UShortValue;
+            }
+        }
+
         void Display_BaseEvent(GenericBase device, BaseEventArgs args)
         {
             switch (args.EventId)
@@ -76,6 +99,9 @@ namespace UXLib.Devices.Displays
                         if (Power != RequestedPower)
                             Power = RequestedPower;
                     }
+                    break;
+                case RoomViewConnectedDisplay.LampHoursFeedbackEventId:
+                    OnUsageChange(this.Usage);
                     break;
             }
         }

@@ -52,7 +52,7 @@ namespace UXLib.Devices.VC.Cisco
             Codec.SendCommand("Call/AcknowledgeMissedCall", new CommandArgs("CallHistoryId", this.ID));
         }
 
-        public int Callback()
+        public DialResult Callback()
         {
             return Codec.Calls.Dial(this.CallbackNumber);
         }

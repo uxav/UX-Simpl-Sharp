@@ -38,7 +38,7 @@ namespace UXLib.Devices.VC.Cisco
         public CallType CallType { get; set; }
         public PhonebookItemType ItemType { get; protected set; }
 
-        public int Dial()
+        public DialResult Dial()
         {
             return this.Contact.Dial(this);
         }

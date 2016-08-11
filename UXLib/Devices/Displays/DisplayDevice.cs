@@ -50,7 +50,7 @@ namespace UXLib.Devices.Displays
 
         public virtual void Send(string stringToSend)
         {
-            
+            throw new NotImplementedException();
         }
 
         public virtual void OnReceive(string receivedString)
@@ -118,6 +118,24 @@ namespace UXLib.Devices.Displays
 
         public virtual bool Blank { get; set; }
 
+        protected void OnUsageChange(ushort hours)
+        {
+            if (this.UsageChanged != null)
+            {
+                this.UsageChanged(this, hours);
+            }
+        }
+
+        public event DisplayDeviceUsageChangeEventHandler UsageChanged;
+
+        public virtual ushort Usage
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
         public virtual string DeviceManufacturer
         {
             get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceManufacturer property", GetType().ToString())); }
@@ -135,6 +153,8 @@ namespace UXLib.Devices.Displays
     }
 
     public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DevicePowerStatusEventArgs args);
+
+    public delegate void DisplayDeviceUsageChangeEventHandler(DisplayDevice device, ushort usageHours);
 
     public enum DisplayDeviceInput
     {
