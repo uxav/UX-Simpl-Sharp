@@ -87,8 +87,10 @@ namespace UXLib.Devices.VC.Cisco
         {
             if (args.Path.StartsWith("Status/Video"))
             {
+#if DEBUG
                 CrestronConsole.PrintLine("Status for {0}", args.Path);
                 CrestronConsole.PrintLine(args.Data.ToString());
+#endif
             }
 
             switch (args.Path)

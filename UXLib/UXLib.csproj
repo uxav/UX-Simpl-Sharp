@@ -164,6 +164,7 @@
     <Compile Include="Devices\VC\Cisco\Sites.cs" />
     <Compile Include="Devices\VC\Cisco\SpeakerTrack.cs" />
     <Compile Include="Devices\VC\Cisco\SpeakerTrackCamera.cs" />
+    <Compile Include="Devices\VC\Cisco\Standby.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />

@@ -46,6 +46,7 @@ namespace UXLib.Devices.VC.Cisco
             Cameras = new Cameras(this);
             Video = new Video(this);
             Capabilities = new Capabilities(this);
+            Standby = new Standby(this);
         }
 
         CodecHTTPClient HttpClient { get; set; }
@@ -96,6 +97,11 @@ namespace UXLib.Devices.VC.Cisco
         /// Get codec capabilities
         /// </summary>
         public Capabilities Capabilities { get; private set; }
+
+        /// <summary>
+        /// Codec standby functions and values
+        /// </summary>
+        public Standby Standby { get; private set; }
 
         Thread CheckStatus { get; set; }
 
@@ -153,9 +159,6 @@ namespace UXLib.Devices.VC.Cisco
             CrestronConsole.PrintLine("\r\nCodec connected... getting status updates... \r\n");
 #endif
             HttpClient.StartSession();
-            string standbyStatus = RequestPath("Status/Standby", true).FirstOrDefault().Elements().FirstOrDefault().Value;
-            if (standbyStatus == "On") _StandbyActive = true;
-            else _StandbyActive = false;
 
 #if DEBUG
             CrestronConsole.PrintLine("Standby = {0}", StandbyActive);
@@ -358,37 +361,6 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public int PresentationSource { get; private set; }
 
-        private bool _StandbyActive;
-
-        /// <summary>
-        /// Set or get the standby state of the codec
-        /// </summary>
-        public bool StandbyActive
-        {
-            get { return _StandbyActive; }
-            set
-            {
-                if (value)
-                    SendCommand("Standby/Activate", true);
-                else
-                    SendCommand("Standby/Deactivate", true);
-            }
-        }
-
-        public void Sleep() { this.StandbyActive = true; }
-        public void Wake() { this.StandbyActive = false; }
-
-        /// <summary>
-        /// Raised when the codec changes standby states
-        /// </summary>
-        public event CodecStandbyChangeEventHandler StandbyChanged;
-
-        void OnStandbyChange(bool value)
-        {
-            if (StandbyChanged != null)
-                StandbyChanged(this, StandbyActive);
-        }
-
         void State_SystemStateChange(CiscoCodec Codec, SystemState State)
         {
 #if DEBUG
@@ -405,14 +377,6 @@ namespace UXLib.Devices.VC.Cisco
             {
                 switch (args.Path)
                 {
-                    case @"Status/Standby":
-                        switch (args.Data.Elements().Where(e => e.XName.LocalName == "Active").FirstOrDefault().Value)
-                        {
-                            case "Off": _StandbyActive = false; break;
-                            case "On": _StandbyActive = true; break;
-                        }
-                        OnStandbyChange(_StandbyActive);
-                        break;
                     case @"Status/Conference/Presentation":
 #if DEBUG
                         CrestronConsole.PrintLine("Received feedback for {0}", args.Path);
@@ -434,13 +398,6 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
     }
-
-    /// <summary>
-    /// Event handler for the codec standby change event
-    /// </summary>
-    /// <param name="codec">The instance of the Codec</param>
-    /// <param name="StandbyActive">Current standby state</param>
-    public delegate void CodecStandbyChangeEventHandler(CiscoCodec codec, bool StandbyActive);
 
     /// <summary>
     /// Event handler for the codec connected event
