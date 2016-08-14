@@ -199,8 +199,13 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        void Codec_HasConnected(CiscoCodec codec)
+        /// <summary>
+        /// Update the calls list from the codec. Returns itself.
+        /// </summary>
+        /// <returns></returns>
+        public Calls GetCalls()
         {
+
 #if DEBUG
             CrestronConsole.Print("Checking for calls...");
 #endif
@@ -211,6 +216,8 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine(" Call count = {0}", xCalls.Count());
 #endif
+                calls.Clear();
+
                 foreach (XElement xCall in xCalls)
                 {
                     int callID = int.Parse(xCall.Attribute("item").Value);
@@ -270,6 +277,13 @@ namespace UXLib.Devices.VC.Cisco
                 CrestronConsole.PrintLine(" No Calls");
 #endif
             }
+
+            return this;
+        }
+
+        void Codec_HasConnected(CiscoCodec codec)
+        {
+            this.GetCalls();
         }
 
         #region IEnumerable<Call> Members

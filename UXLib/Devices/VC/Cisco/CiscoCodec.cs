@@ -188,12 +188,12 @@ namespace UXLib.Devices.VC.Cisco
                     Thread.Sleep(60000);
 
                     bool registered = this.FeedbackServer.Registered;
-
 #if DEBUG
                     CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
 #endif
                     if (!registered)
                     {
+                        ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
 #if DEBUG
                         CrestronConsole.PrintLine("Registering Feedback");
 #endif

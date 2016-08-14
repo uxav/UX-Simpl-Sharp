@@ -24,6 +24,11 @@ namespace UXLib.Devices.VC.Cisco
             try
             {
                 xml = Codec.SendCommand("Command/CallHistory/Get", args, true);
+
+                if (xml == null)
+                {
+                    ErrorLog.Error("Error getting Call History from codec, xml == null");
+                }
             }
             catch (Exception e)
             {

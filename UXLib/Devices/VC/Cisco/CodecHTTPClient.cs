@@ -65,8 +65,8 @@ namespace UXLib.Devices.VC.Cisco
                     CrestronConsole.PrintLine(item.Name + ": " + item.Value);
                 }
 #endif
-                if (response.Code == 200 && 
-                    response.Header.ContainsHeaderValue("Content-Type") && response.Header["Content-Type"].Value.Contains("text/html")
+                if (response.Code == 200 && response.Header != null
+                    && response.Header.ContainsHeaderValue("Content-Type") && response.Header["Content-Type"].Value.Contains("text/html")
                     && this.Cookies.ContainsKey("SessionId"))
                 {
 #if DEBUG
@@ -138,14 +138,19 @@ namespace UXLib.Devices.VC.Cisco
 
         XDocument PutXML(string xmlString)
         {
+            HttpClientResponse response;
+            int code = 0;
+
             try
             {
-                string reply = this.Post("/putxml", xmlString).ContentString;
+                response = this.Post("/putxml", xmlString);
+                string reply = response.ContentString;
+                code = response.Code;
                 return XDocument.Load(new XmlReader(reply));
             }
             catch (Exception e)
             {
-                ErrorLog.Error("Error occured in CodecHTTPClient.PutXML() {0}", e.Message);
+                ErrorLog.Error("Error occured in CodecHTTPClient.PutXML() {0}, response.Code = {1}", e.Message, code);
             }
 
             return null;
@@ -153,8 +158,22 @@ namespace UXLib.Devices.VC.Cisco
 
         XDocument GetXML(string path)
         {
-            string result = Get(string.Format("/getxml?location={0}", path)).ContentString;
-            return XDocument.Load(new XmlReader(result));
+            HttpClientResponse response;
+            int code = 0;
+
+            try
+            {
+                response = Get(string.Format("/getxml?location={0}", path));
+                string reply = response.ContentString;
+                code = response.Code;
+                return XDocument.Load(new XmlReader(reply));
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error occured in CodecHTTPClient.PutXML() {0}, response.Code = {1}", e.Message, code);
+            }
+
+            return null;
         }
 
         public XDocument SendCommand(string path)
