@@ -118,6 +118,11 @@
     <Compile Include="Devices\Audio\Polycom\VoipLine.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipLineCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipOutChannel.cs" />
+    <Compile Include="Devices\Audio\QSC\QSys.cs" />
+    <Compile Include="Devices\Audio\QSC\QSysControl.cs" />
+    <Compile Include="Devices\Audio\QSC\QSysControlCollection.cs" />
+    <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
+    <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
     <Compile Include="Devices\Displays\CrestronConnectedDisplay.cs" />
     <Compile Include="Devices\Displays\NEC\NecDisplaySocket.cs" />
     <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
