@@ -159,10 +159,6 @@ namespace UXLib.Devices.VC.Cisco
             CrestronConsole.PrintLine("\r\nCodec connected... getting status updates... \r\n");
 #endif
             HttpClient.StartSession();
-
-#if DEBUG
-            CrestronConsole.PrintLine("Standby = {0}", StandbyActive);
-#endif
             
             this.Registerfeedback(this.FeedbackServer.Registered);
 

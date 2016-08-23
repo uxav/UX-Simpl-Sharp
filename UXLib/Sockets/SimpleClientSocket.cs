@@ -95,7 +95,7 @@ namespace UXLib.Sockets
                 rxQueue.Clear();
                 if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
                     rxHandler = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
-                rxHandler.Priority = Thread.eThreadPriority.LowestPriority;
+                rxHandler.Priority = Thread.eThreadPriority.HighPriority;
                 if (SocketConnectionEvent != null)
                     SocketConnectionEvent(this, socket.ClientStatus);
                 socket.ReceiveDataAsync(OnReceive);

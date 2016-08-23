@@ -123,6 +123,7 @@
     <Compile Include="Devices\Audio\QSC\QSysControlCollection.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
+    <Compile Include="Devices\Audio\QSC\QSCSoftPhone.cs" />
     <Compile Include="Devices\Displays\CrestronConnectedDisplay.cs" />
     <Compile Include="Devices\Displays\NEC\NecDisplaySocket.cs" />
     <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
