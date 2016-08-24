@@ -16,6 +16,7 @@ namespace UXLib.Devices.Audio.QSC
             ControlID = controlId;
             ControlType = type;
             ChangeGroupID = 0;
+            Initialized = false;
             QSys.DataReceived += new QSysReceivedDataEventHandler(QSys_DataReceived);
 
             if (QSys.Connected)
@@ -37,6 +38,12 @@ namespace UXLib.Devices.Audio.QSC
         /// The QSysControlType of the control
         /// </summary>
         public QSysControlType ControlType { get; protected set; }
+
+        /// <summary>
+        /// Return true if the control has successfully received a valid value from the device
+        /// </summary>
+        /// <remarks>False value may indicate a problem with the Control ID</remarks>
+        public bool Initialized { get; protected set; }
 
         internal int ChangeGroupID { get; set; }
 
@@ -203,24 +210,38 @@ namespace UXLib.Devices.Audio.QSC
                 CrestronConsole.PrintLine("{0} Value = {1}", args.Arguments[0], args.Arguments[1]);
 #endif
 
-                if (_Value != float.Parse(args.Arguments[2]) && VolumeChanged != null)
+                try
                 {
-                    if (this.SupportsVolumeLevel)
-                        VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
-                    else if (this.SupportsVolumeMute)
-                        VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                    if (_Value != float.Parse(args.Arguments[2]) && VolumeChanged != null)
+                    {
+                        if (this.SupportsVolumeLevel)
+                            VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                        else if (this.SupportsVolumeMute)
+                            VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                        if (ValueChanged != null)
+                            ValueChanged(this);
+                    }
+
+                    _StringValue = args.Arguments[1];
+                    _Value = float.Parse(args.Arguments[2]);
+                    _ControlPosition = float.Parse(args.Arguments[3]);
+
+                    if (Waiting)
+                    {
+                        Waiting = false;
+                    }
+
+                    if (this.Initialized == false)
+                        this.Initialized = true;
                 }
-
-                _StringValue = args.Arguments[1];
-                _Value = float.Parse(args.Arguments[2]);
-                _ControlPosition = float.Parse(args.Arguments[3]);
-
-                if (Waiting)
+                catch (Exception e)
                 {
-                    Waiting = false;
+                    ErrorLog.Exception(string.Format("Error in QSysControl wiht id: \"{0}\"", this.Name), e);
                 }
             }
         }
+
+        public event QSysControlChangeEventHandler ValueChanged;
 
         #region IVolumeDevice Members
 
@@ -281,6 +302,8 @@ namespace UXLib.Devices.Audio.QSC
 
         #endregion
     }
+
+    public delegate void QSysControlChangeEventHandler(QSysControl control);
 
     public enum QSysControlType
     {

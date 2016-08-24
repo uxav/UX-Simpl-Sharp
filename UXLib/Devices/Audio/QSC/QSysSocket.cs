@@ -74,7 +74,8 @@ namespace UXLib.Devices.Audio.QSC
         public override Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(string str)
         {
 #if DEBUG
-            CrestronConsole.PrintLine("QSys Tx: {0}", str);
+            if (str != "sg")
+                CrestronConsole.PrintLine("QSys Tx: {0}", str);
 #endif
 
             str = str + "\x0a";

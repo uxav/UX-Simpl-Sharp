@@ -123,7 +123,9 @@ namespace UXLib.Devices.Audio.QSC
 
         public void Send(string stringToSend)
         {
-            Socket.Send(stringToSend);
+            Crestron.SimplSharp.CrestronSockets.SocketErrorCodes result = Socket.Send(stringToSend);
+            if (result != Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
+                ErrorLog.Error("Could not send command \"{0}\" result = {1}", stringToSend, result.ToString());
         }
 
         #endregion
