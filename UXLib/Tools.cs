@@ -45,19 +45,26 @@ namespace UXLib
 
         public static void PrintBytes(byte[] bytes, int length, bool showReadable)
         {
+            CrestronConsole.PrintLine(GetBytesAsReadableString(bytes, length, showReadable));
+        }
+
+        public static string GetBytesAsReadableString(byte[] bytes, int length, bool showReadable)
+        {
+            string result = string.Empty;
+
             for (int i = 0; i < length; i++)
             {
                 if (showReadable && bytes[i] > 32 && bytes[i] < 127)
                 {
-                    CrestronConsole.Print("{0}", (char)bytes[i]);
+                    result = result + string.Format("{0}", (char)bytes[i]);
                 }
                 else
                 {
-                    CrestronConsole.Print(@"\x");
-                    CrestronConsole.Print(bytes[i].ToString("X2"));
+                    result = result + @"\x" + bytes[i].ToString("X2");
                 }
             }
-            CrestronConsole.PrintLine("");
+
+            return result;
         }
 
         public static double ScaleRange(double Value,
