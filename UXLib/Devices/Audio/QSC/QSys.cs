@@ -22,6 +22,7 @@ namespace UXLib.Devices.Audio.QSC
         {
             Socket = new QSysSocket(address);
             Controls = new QSysControlCollection(this);
+            Phones = new QSysPhoneCollection(this);
             Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
             Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
         }
@@ -33,6 +34,12 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         /// <remarks>You need to register controls by using the Register method</remarks>
         public QSysControlCollection Controls { get; internal set; }
+
+        /// <summary>
+        /// Collection of QSysSoftPhones
+        /// </summary>
+        /// <remarks>You need to register phones by using the Register method</remarks>
+        public QSysPhoneCollection Phones { get; internal set; }
 
         void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {

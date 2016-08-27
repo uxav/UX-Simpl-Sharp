@@ -7,7 +7,7 @@ using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.QSC
 {
-    public class QSysSocket : SimpleClientSocket
+    internal class QSysSocket : SimpleClientSocket
     {
         public QSysSocket(string address)
             : base(address, 1702, 1000)

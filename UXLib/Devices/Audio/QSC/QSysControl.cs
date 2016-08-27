@@ -212,19 +212,20 @@ namespace UXLib.Devices.Audio.QSC
 
                 try
                 {
+                    _StringValue = args.Arguments[1];
+                    _Value = float.Parse(args.Arguments[2]);
+                    _ControlPosition = float.Parse(args.Arguments[3]);
+
                     if (_Value != float.Parse(args.Arguments[2]) && VolumeChanged != null)
                     {
                         if (this.SupportsVolumeLevel)
                             VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
                         else if (this.SupportsVolumeMute)
                             VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
-                        if (ValueChanged != null)
-                            ValueChanged(this);
                     }
-
-                    _StringValue = args.Arguments[1];
-                    _Value = float.Parse(args.Arguments[2]);
-                    _ControlPosition = float.Parse(args.Arguments[3]);
+                    
+                    if (ValueChanged != null)
+                        ValueChanged(this);
 
                     if (Waiting)
                     {
