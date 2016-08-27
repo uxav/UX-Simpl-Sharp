@@ -125,6 +125,9 @@
     <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSoftPhone.cs" />
+    <Compile Include="Devices\Audio\Shure\ShureCeilingMic.cs" />
+    <Compile Include="Devices\Audio\Shure\ShureCeilingMicCollection.cs" />
+    <Compile Include="Devices\Audio\Shure\ShureSocket.cs" />
     <Compile Include="Devices\Displays\CrestronConnectedDisplay.cs" />
     <Compile Include="Devices\Displays\NEC\NecDisplaySocket.cs" />
     <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
