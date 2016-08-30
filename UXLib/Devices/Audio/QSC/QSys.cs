@@ -124,7 +124,7 @@ namespace UXLib.Devices.Audio.QSC
             {
                 List<string> arguments = new List<string>(elements);
                 arguments.RemoveAt(0);
-                DataReceived(this, new QSysReceivedDataEventArgs(elements.First(), arguments));
+                DataReceived(this, new QSysReceivedDataEventArgs(elements.First(), arguments, receivedString));
             }
         }
 
@@ -198,10 +198,11 @@ namespace UXLib.Devices.Audio.QSC
     /// </summary>
     public class QSysReceivedDataEventArgs : EventArgs
     {
-        internal QSysReceivedDataEventArgs(string type, List<string> arguments)
+        internal QSysReceivedDataEventArgs(string type, List<string> arguments, string dataString)
         {
             ResponseType = type;
             Arguments = arguments;
+            DataString = dataString;
         }
 
         /// <summary>
@@ -215,5 +216,10 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         /// <remarks>These have been processed to remove quotes on string values. Numeric values will need parsing</remarks>
         public List<string> Arguments { get; private set; }
+
+        /// <summary>
+        /// The raw data string received
+        /// </summary>
+        public string DataString { get; private set; }
     }
 }

@@ -12,17 +12,17 @@ namespace UXLib.Devices.Audio.QSC
     public class QSysSoftPhone
     {
         internal QSysSoftPhone(QSys device, int id, string idOffHookLED, string idRingingLED, string idConnect, string idDisconnect,
-            string idDialString, string idDND, string idProgress, string idKeypadBaseName)
+            string idDialString, string idDND, string idProgress, string idKeypadBaseName, int changeGroupID)
         {
             this.QSys = device;
             KeypadControls = new Dictionary<string, QSysControl>();
-            OffHookLEDControl = this.QSys.Controls.Register(idOffHookLED, QSysControlType.Other, 2);
+            OffHookLEDControl = this.QSys.Controls.Register(idOffHookLED, QSysControlType.Other, changeGroupID);
             ConnectControl = this.QSys.Controls.Register(idConnect, QSysControlType.Other);
             DisconnectControl = this.QSys.Controls.Register(idDisconnect, QSysControlType.Other);
-            DialStringControl = this.QSys.Controls.Register(idDialString, QSysControlType.Other, 2);
-            RingingLEDControl = this.QSys.Controls.Register(idRingingLED, QSysControlType.Other, 2);
-            DNDControl = this.QSys.Controls.Register(idDND, QSysControlType.Other, 2);
-            ProgressControl = this.QSys.Controls.Register(idProgress, QSysControlType.Other, 2);
+            DialStringControl = this.QSys.Controls.Register(idDialString, QSysControlType.Other, changeGroupID);
+            RingingLEDControl = this.QSys.Controls.Register(idRingingLED, QSysControlType.Other, changeGroupID);
+            DNDControl = this.QSys.Controls.Register(idDND, QSysControlType.Other, changeGroupID);
+            ProgressControl = this.QSys.Controls.Register(idProgress, QSysControlType.Other, changeGroupID);
 
             for (int digit = 0; digit <= 9; digit++)
             {
@@ -167,7 +167,8 @@ namespace UXLib.Devices.Audio.QSC
 
         void OnValueChange(QSysControl control)
         {
-            if(StatusChanged != null) {
+            if (StatusChanged != null)
+            {
                 if (control == RingingLEDControl)
                 {
                     StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.IsRingingStatusChanged));
@@ -182,7 +183,8 @@ namespace UXLib.Devices.Audio.QSC
 
             if (control == ProgressControl)
             {
-                StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.ProgressStatusChanged));
+                if (StatusChanged != null)
+                    StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.ProgressStatusChanged));
 
                 if (control.StringValue == "Disconnected")
                 {
@@ -198,7 +200,7 @@ namespace UXLib.Devices.Audio.QSC
                     if (CallStatusChanged != null)
                         CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Disconnected));
                 }
-                else if (control.StringValue.Length > 0)
+                else if (control.StringValue.Length > 0 && control.StringValue != "NO_ROUTE_DESTINATION")
                 {
                     if (!this.OffHook)
                     {
@@ -209,6 +211,12 @@ namespace UXLib.Devices.Audio.QSC
                 }
                 else
                 {
+                    if (this.OffHook)
+                    {
+                        this.OffHook = false;
+                        if (StatusChanged != null)
+                            StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.OffHookStatusChanged));
+                    }
                     if (CallStatusChanged != null)
                         CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Idle));
                 }

@@ -44,11 +44,11 @@ namespace UXLib.Devices.Audio.QSC
         /// <param name="idKeypadBaseName"></param>
         /// <returns>The instance of the phone created</returns>
         public QSysSoftPhone Register(string idOffHookLED, string idRingingLED, string idConnect, string idDisconnect,
-            string idDialString, string idDND, string idProgress, string idKeypadBaseName)
+            string idDialString, string idDND, string idProgress, string idKeypadBaseName, int changeGroupID)
         {
             int id = Phones.Count + 1;
             Phones[id] = new QSysSoftPhone(this.QSys, id, idOffHookLED, idRingingLED, idConnect, idDisconnect,
-                idDialString, idDND, idProgress, idKeypadBaseName);
+                idDialString, idDND, idProgress, idKeypadBaseName, changeGroupID);
             return this[id];
         }
 

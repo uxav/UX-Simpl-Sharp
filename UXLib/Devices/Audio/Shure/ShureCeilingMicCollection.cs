@@ -113,7 +113,7 @@ namespace UXLib.Devices.Audio.Shure
         {
             get
             {
-                foreach (IVolumeDevice device in this)
+                foreach (IVolumeDevice device in this.Where(m => m.Connected))
                 {
                     if (device.VolumeMute == false)
                         return false;

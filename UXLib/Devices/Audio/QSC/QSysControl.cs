@@ -237,7 +237,7 @@ namespace UXLib.Devices.Audio.QSC
                 }
                 catch (Exception e)
                 {
-                    ErrorLog.Exception(string.Format("Error in QSysControl wiht id: \"{0}\"", this.Name), e);
+                    ErrorLog.Exception(string.Format("Error in QSysControl Rx: \"{0}\"", args.DataString), e);
                 }
             }
         }

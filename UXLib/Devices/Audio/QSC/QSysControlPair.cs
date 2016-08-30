@@ -13,11 +13,17 @@ namespace UXLib.Devices.Audio.QSC
         {
             _Name = name;
             if (levelControl.SupportsVolumeLevel)
+            {
                 QSysLevelControl = levelControl;
+                QSysLevelControl.ValueChanged += new QSysControlChangeEventHandler(QSysLevelControl_ValueChanged);
+            }
             else
                 ErrorLog.Error("QSysControlPair Constructor - {0} does not support level", levelControl.Name);
             if (muteControl.SupportsVolumeMute)
+            {
                 QSysMuteControl = muteControl;
+                QSysMuteControl.ValueChanged += new QSysControlChangeEventHandler(QSysMuteControl_ValueChanged);
+            }
             else
                 ErrorLog.Error("QSysControlPair Constructor - {0} does not support mute", muteControl.Name);
         }
@@ -30,7 +36,17 @@ namespace UXLib.Devices.Audio.QSC
         string _Name;
         public string Name
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (_Name.Length > 0)
+                    return _Name;
+                else
+                    return string.Format("{0} / {1}", QSysLevelControl.Name, QSysMuteControl.Name);
+            }
+            set
+            {
+                _Name = value;
+            }
         }
 
         public bool SupportsVolumeLevel
@@ -86,6 +102,18 @@ namespace UXLib.Devices.Audio.QSC
                         this.QSysMuteControl.Value = 0;
                 }
             }
+        }
+
+        void QSysMuteControl_ValueChanged(QSysControl control)
+        {
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+        }
+
+        void QSysLevelControl_ValueChanged(QSysControl control)
+        {
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
         }
 
         #endregion
