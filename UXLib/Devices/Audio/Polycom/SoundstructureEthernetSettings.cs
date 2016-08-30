@@ -9,7 +9,7 @@ namespace UXLib.Devices.Audio.Polycom
 {
     public class SoundstructureEthernetSettings
     {
-        public SoundstructureEthernetSettings(string fromValueString)
+        internal SoundstructureEthernetSettings(string fromValueString)
         {
             try
             {

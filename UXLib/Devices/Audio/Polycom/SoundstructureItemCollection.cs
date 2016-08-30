@@ -8,7 +8,7 @@ namespace UXLib.Devices.Audio.Polycom
 {
     public class SoundstructureItemCollection : IEnumerable<ISoundstructureItem>
     {
-        public SoundstructureItemCollection(List<ISoundstructureItem> fromChannels)
+        internal SoundstructureItemCollection(List<ISoundstructureItem> fromChannels)
         {
             items = new Dictionary<string, ISoundstructureItem>();
             foreach (ISoundstructureItem item in fromChannels)
