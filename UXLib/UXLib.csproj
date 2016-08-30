@@ -157,7 +157,6 @@
     <Compile Include="Devices\VC\Cisco\CiscoCodec.cs" />
     <Compile Include="Devices\VC\Cisco\CodecFeedbackServer.cs" />
     <Compile Include="Devices\VC\Cisco\CodecHTTPClient.cs" />
-    <Compile Include="Devices\VC\Cisco\CodecSSHClient.cs" />
     <Compile Include="Devices\VC\Cisco\Conference.cs" />
     <Compile Include="Devices\VC\Cisco\CapabilitiesConference.cs" />
     <Compile Include="Devices\VC\Cisco\DialResult.cs" />

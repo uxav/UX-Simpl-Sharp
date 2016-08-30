@@ -36,7 +36,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public PhonebookSearchResults Search(CommandArgs searchCommandArgs)
         {
-            XDocument xml = Codec.SendCommand("Phonebook/Search", searchCommandArgs, true);
+            XDocument xml = Codec.SendCommand("Phonebook/Search", searchCommandArgs);
             
             XElement element = xml.Root.Element("PhonebookSearchResult");
 #if DEBUG

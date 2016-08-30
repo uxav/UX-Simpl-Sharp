@@ -23,7 +23,7 @@ namespace UXLib.Devices.VC.Cisco
             XDocument xml;
             try
             {
-                xml = Codec.SendCommand("Command/CallHistory/Get", args, true);
+                xml = Codec.SendCommand("Command/CallHistory/Get", args);
 
                 if (xml == null)
                 {

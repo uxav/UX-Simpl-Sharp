@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Video
     {
-        public Video(CiscoCodec codec)
+        internal Video(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -59,7 +59,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                XElement element = Codec.RequestPath("Status/Video/SelfView", true).Elements().FirstOrDefault();
+                XElement element = Codec.RequestPath("Status/Video/SelfView").Elements().FirstOrDefault();
                 XElement s = element.Elements().Where(x => x.XName.LocalName == "Selfview").FirstOrDefault();
 
 #if DEBUG

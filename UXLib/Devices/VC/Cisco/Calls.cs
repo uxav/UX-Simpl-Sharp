@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Calls : IEnumerable<Call>
     {
-        public Calls(CiscoCodec codec)
+        internal Calls(CiscoCodec codec)
         {
             this.Codec = codec;
             this.Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -38,7 +38,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                XDocument xml = Codec.SendCommand("Dial", args, true);
+                XDocument xml = Codec.SendCommand("Dial", args);
                 XElement dialResult = xml.Root.Element("DialResult");
                 if (dialResult.Attribute("status").Value == "OK")
                 {
@@ -209,7 +209,7 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
             CrestronConsole.Print("Checking for calls...");
 #endif
-            IEnumerable<XElement> xCalls = Codec.RequestPath("Status/Call", true);
+            IEnumerable<XElement> xCalls = Codec.RequestPath("Status/Call");
 
             if (xCalls != null)
             {
@@ -307,29 +307,19 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecCallInfoChangeEventArgs : EventArgs
     {
-        public CodecCallInfoChangeEventArgs(Call call)
+        internal CodecCallInfoChangeEventArgs(Call call)
         {
             this.Call = call;
         }
 
-        public CodecCallInfoChangeEventArgs(Call call, bool disconnected)
+        internal CodecCallInfoChangeEventArgs(Call call, bool disconnected)
         {
             this.Call = call;
             this.HasDisconnected = true;
         }
-        /*
-        public CodecCallInfoChangeEventArgs(Call call, string disconnectCause, CallDisconnectCauseType disconnectCauseType)
-        {
-            this.Call = call;
-            this.HasDisconnected = true;
-            this.DisconnectCause = disconnectCause;
-            this.DisconnectCauseType = disconnectCauseType;
-        }*/
 
         public Call Call;
         public bool HasDisconnected = false;
-        //public string DisconnectCause;
-        //public CallDisconnectCauseType DisconnectCauseType;
     }
 
     public delegate void CodecCallInfoChangeEventHandler(CiscoCodec codec, CodecCallInfoChangeEventArgs args);

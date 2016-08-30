@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Audio
     {
-        public Audio(CiscoCodec codec)
+        internal Audio(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -80,7 +80,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            foreach (XElement element in Codec.RequestPath("Status/Audio", true).Elements().Where(e => !e.HasElements))
+            foreach (XElement element in Codec.RequestPath("Status/Audio").Elements().Where(e => !e.HasElements))
             {
                 switch (element.XName.LocalName)
                 {

@@ -26,7 +26,7 @@ namespace UXLib.Devices.VC.Cisco
             this.HttpClient = new HttpClient();
             UserName = username;
             Password = password;
-            this.HttpClient.KeepAlive = false;
+            this.HttpClient.KeepAlive = true;
             Cookies = new Dictionary<string, string>();
         }
 
@@ -56,8 +56,12 @@ namespace UXLib.Devices.VC.Cisco
 
             try
             {
-                HttpClientResponse response = this.HttpClient.Dispatch(request);
+                if (this.HttpClient.ProcessBusy)
+                {
+                    ErrorLog.Error("CiscoCodec.HttpClient.ProcessBusy = {0}", this.HttpClient.ProcessBusy);
+                }
 
+                HttpClientResponse response = this.HttpClient.Dispatch(request);
 #if DEBUG
                 CrestronConsole.PrintLine("Response status {0}", response.Code);
                 foreach (HttpHeader item in response.Header)
@@ -82,6 +86,15 @@ namespace UXLib.Devices.VC.Cisco
                 else if (response.Code != 204)
                     CrestronConsole.PrintLine("Response body:\r\n{0}", response.ContentString.Replace("\n", "\r\n"));
 #endif
+                if (response != null && response.Code >= 400)
+                {
+                    ErrorLog.Error("CiscoCodec.HttpClient.Request Response.Code = {0}", response.Code);
+                }
+                else if (response == null)
+                {
+                    ErrorLog.Error("CiscoCodec.HttpClient.Request Response == null");
+                }
+
                 return response;
             }
             catch (Exception e)
@@ -90,6 +103,14 @@ namespace UXLib.Devices.VC.Cisco
             }
 
             return null;
+        }
+
+        public bool Busy
+        {
+            get
+            {
+                return this.HttpClient.ProcessBusy;
+            }
         }
 
         HttpClientResponse Get(string path)
@@ -133,6 +154,14 @@ namespace UXLib.Devices.VC.Cisco
             else
             {
                 ErrorLog.Warn("CodecHTTPClient did not get a SessionId");
+            }
+        }
+
+        public bool HasSessionKey
+        {
+            get
+            {
+                return (this.Cookies.ContainsKey("SessionId") && this.Cookies["SessionId"].Length > 0);
             }
         }
 

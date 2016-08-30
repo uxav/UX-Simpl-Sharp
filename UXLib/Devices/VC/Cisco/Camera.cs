@@ -8,7 +8,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Camera
     {
-        public Camera(CiscoCodec codec, int id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
+        internal Camera(CiscoCodec codec, int id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
         {
             this.Codec = codec;
             this.ID = id;

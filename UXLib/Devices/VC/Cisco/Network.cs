@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Network
     {
-        public Network(CiscoCodec codec)
+        internal Network(CiscoCodec codec)
         {
             Codec = codec;
             Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
@@ -31,7 +31,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                foreach (XElement networkInfo in Codec.RequestPath("Status/Network", true).FirstOrDefault().Elements())
+                foreach (XElement networkInfo in Codec.RequestPath("Status/Network").FirstOrDefault().Elements())
                 {
                     switch (networkInfo.XName.LocalName)
                     {

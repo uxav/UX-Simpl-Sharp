@@ -49,7 +49,7 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine("Deresgistering feedback mechanism with CiscoCodec");
 #endif
-                response = Codec.SendCommand("HttpFeedback/Deregister", args, true);
+                response = Codec.SendCommand("HttpFeedback/Deregister", args);
 
 #if DEBUG
                 CrestronConsole.PrintLine("Deregister repsonse:\r\n{0}", response.ToString());
@@ -69,7 +69,7 @@ namespace UXLib.Devices.VC.Cisco
             CrestronConsole.PrintLine("Resgistering feedback mechanism with CiscoCodec");
 #endif
 
-            response = Codec.SendCommand("HttpFeedback/Register", args, true);
+            response = Codec.SendCommand("HttpFeedback/Register", args);
 
 #if DEBUG
             CrestronConsole.PrintLine("Register repsonse:\r\n{0}", response.ToString());
@@ -88,7 +88,7 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine("Checking codec feedback registration....");
 #endif
-                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback", true);
+                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback");
 #if DEBUG
                 CrestronConsole.PrintLine("");
 #endif
@@ -249,7 +249,7 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecFeedbackServerReceiveEventArgs : EventArgs
     {
-        public CodecFeedbackServerReceiveEventArgs(string path, XElement element)
+        internal CodecFeedbackServerReceiveEventArgs(string path, XElement element)
         {
             this.Path = path;
             this.Data = element;
@@ -263,13 +263,13 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecIncomingCallEventArgs : EventArgs
     {
-        public CodecIncomingCallEventArgs()
+        internal CodecIncomingCallEventArgs()
         {
 
         }
 
-        public string RemoteURI;
-        public string DisplayNameValue;
-        public Call Call;
+        public string RemoteURI { get; internal set; }
+        public string DisplayNameValue { get; internal set; }
+        public Call Call { get; internal set; }
     }
 }

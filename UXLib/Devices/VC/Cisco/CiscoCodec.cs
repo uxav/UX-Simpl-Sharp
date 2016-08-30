@@ -30,11 +30,10 @@ namespace UXLib.Devices.VC.Cisco
             HttpClient = new CodecHTTPClient(hostNameOrIPAddress, username, password);
             FeedbackServer = new CodecFeedbackServer(this, ethernetAdapter, feedbackListenerPort);
             FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
+            FeedbackServer.IncomingCallEvent += new CodecIncomingCallEventHandler(FeedbackServer_IncomingCallEvent);
             this.password = password;
             KeyboardInteractiveConnectionInfo sshInfo = new KeyboardInteractiveConnectionInfo(hostNameOrIPAddress, 22, username);
             sshInfo.AuthenticationPrompt += new EventHandler<Crestron.SimplSharp.Ssh.Common.AuthenticationPromptEventArgs>(sshInfo_AuthenticationPrompt);
-            SSHClient = new CodecSSHClient(sshInfo);
-            SSHClient.OnConnect += new CodecSSHClientConnectedEventHandler(SSHClient_OnConnect);
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
             SystemUnit = new SystemUnit(this);
             SystemUnit.State.SystemStateChange += new SystemUnitStateSystemChangeEventHandler(State_SystemStateChange);
@@ -50,8 +49,10 @@ namespace UXLib.Devices.VC.Cisco
         }
 
         CodecHTTPClient HttpClient { get; set; }
-        public CodecFeedbackServer FeedbackServer { get; protected set; }
-        CodecSSHClient SSHClient { get; set; }
+
+        public bool HttpClientBusy { get { return this.HttpClient.Busy; } }
+
+        internal CodecFeedbackServer FeedbackServer { get; set; }
 
         /// <summary>
         /// This contains information on the main Codec system unit
@@ -110,7 +111,8 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public void Initialize()
         {
-            SSHClient.Connect();
+            //SSHClient.Connect();
+            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
         }
 
         /// <summary>
@@ -146,33 +148,43 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public event CodecConnectedEventHandler HasConnected;
 
-        void SSHClient_OnConnect(CodecSSHClient client)
-        {
-            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
-            CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
-        }
-
         object GetStatusThread(object threadObject)
         {
-            Thread.Sleep(5000);
-#if DEBUG
-            CrestronConsole.PrintLine("\r\nCodec connected... getting status updates... \r\n");
-#endif
-            HttpClient.StartSession();
-            
-            this.Registerfeedback(this.FeedbackServer.Registered);
+            int count = 0;
 
-            try
+            while (true)
             {
-                if (HasConnected != null)
-                    HasConnected(this);
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Exception("Error CiscoCodec calling HasConnected event notification in GetStatusThread", e);
-            }
+                count++;
 
-            return null;
+                try
+                {
+                    if (!this.HttpClient.HasSessionKey)
+                        this.HttpClient.StartSession();
+
+                    this.Registerfeedback(this.FeedbackServer.Registered);
+
+                    try
+                    {
+                        if (HasConnected != null)
+                            HasConnected(this);
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
+                    }
+
+                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
+
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    if (count >= 5)
+                        ErrorLog.Exception("Error in CiscoCodec.GetStatusThread", e);
+
+                    Thread.Sleep(10000);
+                }
+            }
         }
 
         object CheckStatusThread(object threadObject)
@@ -182,6 +194,9 @@ namespace UXLib.Devices.VC.Cisco
                 try
                 {
                     Thread.Sleep(60000);
+
+                    if (!this.HttpClient.HasSessionKey)
+                        this.HttpClient.StartSession();
 
                     bool registered = this.FeedbackServer.Registered;
 #if DEBUG
@@ -222,8 +237,6 @@ namespace UXLib.Devices.VC.Cisco
                 CheckStatus.Abort();
             if (FeedbackServer != null && FeedbackServer.Active)
                 FeedbackServer.Active = false;
-            if (SSHClient != null && SSHClient.IsConnected)
-                SSHClient.Disconnect();
         }
 
         /// <summary>
@@ -235,19 +248,6 @@ namespace UXLib.Devices.VC.Cisco
         public XDocument SendCommand(string path)
         {
             return this.HttpClient.SendCommand(path);
-        }
-
-        /// <summary>
-        /// Post a command
-        /// </summary>
-        /// <param name="path">The XPath of the command</param>
-        /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
-        /// <returns>XDocument containing the XML response</returns>
-        public XDocument SendCommand(string path, bool useHttp)
-        {
-            if (useHttp)
-                return this.HttpClient.SendCommand(path);
-            return this.SSHClient.SendCommand(path);
         }
 
         /// <summary>
@@ -263,40 +263,14 @@ namespace UXLib.Devices.VC.Cisco
         }
 
         /// <summary>
-        /// Post a command with arguments
-        /// </summary>
-        /// <param name="path">The XPath of the command</param>
-        /// <param name="args">The arguments in the form of a built CommandArgs instance</param>
-        /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
-        /// <returns>XDocument containing the XML response</returns>
-        public XDocument SendCommand(string path, CommandArgs args, bool useHttp)
-        {
-            if (useHttp)
-                return HttpClient.SendCommand(path, args);
-            return SSHClient.SendCommand(path, args);
-        }
-
-        /// <summary>
-        /// Get a path
-        /// </summary>
-        /// <param name="path">The XPath of the request</param>
-        /// <returns>An IEnumberable containing returned XElements of data</returns>
-        public IEnumerable<XElement> RequestPath(string path)
-        {
-            return SSHClient.RequestPath(path);
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="path">The XPath of the request</param>
         /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
         /// <returns>An IEnumberable containing returned XElements of data</returns>
-        public IEnumerable<XElement> RequestPath(string path, bool useHttp)
+        public IEnumerable<XElement> RequestPath(string path)
         {
-            if (useHttp)
-                return HttpClient.RequestPath(path);
-            return SSHClient.RequestPath(path);
+            return HttpClient.RequestPath(path);
         }
         
         /// <summary>
@@ -361,10 +335,8 @@ namespace UXLib.Devices.VC.Cisco
         {
 #if DEBUG
             CrestronConsole.PrintLine("Codec State.{0}", State.ToString());
-            CrestronConsole.PrintLine("Codec SSHClient.IsConnected = {0}", SSHClient.IsConnected);
 #endif
-            if (State == SystemState.Initialized && !SSHClient.IsConnected)
-                SSHClient.Connect();
+            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
         }
         
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
@@ -392,6 +364,14 @@ namespace UXLib.Devices.VC.Cisco
             {
                 ErrorLog.Exception(string.Format("Error in CiscoCodec.FeedbackServer_ReceivedData, path = {0}", args.Path), e);
             }
+        }
+
+        public event CodecIncomingCallEventHandler IncomingCall;
+
+        void FeedbackServer_IncomingCallEvent(CiscoCodec codec, CodecIncomingCallEventArgs args)
+        {
+            if (IncomingCall != null)
+                IncomingCall(this, args);
         }
     }
 

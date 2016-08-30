@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Sites : IEnumerable<Site>
     {
-        public Sites(CiscoCodec codec)
+        internal Sites(CiscoCodec codec)
         {
             Codec = codec;
             _Sites = new Dictionary<int, Site>();

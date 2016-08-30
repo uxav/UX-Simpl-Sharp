@@ -9,7 +9,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Microphones
     {
-        public Microphones(CiscoCodec codec)
+        internal Microphones(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -53,7 +53,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            XElement element = Codec.RequestPath("Status/Audio/Microphones", true).Elements().FirstOrDefault();
+            XElement element = Codec.RequestPath("Status/Audio/Microphones").Elements().FirstOrDefault();
             if (element.XName.LocalName == "Mute")
             {
                 if (element.Value == "On") _Mute = true;

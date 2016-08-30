@@ -8,7 +8,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Capabilities
     {
-        public Capabilities(CiscoCodec codec)
+        internal Capabilities(CiscoCodec codec)
         {
             Codec = codec;
             Conference = new CapabilitiesConference(codec);

@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class CapabilitiesConference
     {
-        public CapabilitiesConference(CiscoCodec codec)
+        internal CapabilitiesConference(CiscoCodec codec)
         {
             Codec = codec;
             Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -47,7 +47,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                foreach (XElement element in Codec.RequestPath("Status/Capabilities/Conference", true).Elements().Where(e => !e.HasElements))
+                foreach (XElement element in Codec.RequestPath("Status/Capabilities/Conference").Elements().Where(e => !e.HasElements))
                 {
 #if DEBUG
                     CrestronConsole.PrintLine("Capabilities.Conference.{0} = {1}", element.XName.LocalName, element.Value);

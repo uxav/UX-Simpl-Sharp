@@ -8,7 +8,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Standby
     {
-        public Standby(CiscoCodec codec)
+        internal Standby(CiscoCodec codec)
         {
             Codec = codec;
             Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
@@ -30,12 +30,12 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Activate()
         {
-            Codec.SendCommand("Standby/Activate", true);
+            Codec.SendCommand("Standby/Activate");
         }
 
         public void Deactivate()
         {
-            Codec.SendCommand("Standby/Deactivate", true);
+            Codec.SendCommand("Standby/Deactivate");
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                string standbyStatus = codec.RequestPath("Status/Standby", true).FirstOrDefault().Elements().FirstOrDefault().Value;
+                string standbyStatus = codec.RequestPath("Status/Standby").FirstOrDefault().Elements().FirstOrDefault().Value;
                 _StandbyState = (StandbyState)Enum.Parse(typeof(StandbyState), standbyStatus, true);
             }
             catch (Exception e)
