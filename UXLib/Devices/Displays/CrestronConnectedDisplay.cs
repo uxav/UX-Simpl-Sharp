@@ -120,5 +120,15 @@ namespace UXLib.Devices.Displays
         {
             get { return Display.MacAddressFeedback.StringValue; }
         }
+
+        public override CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
+
+        public override void Initialize()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

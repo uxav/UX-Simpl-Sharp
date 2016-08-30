@@ -232,6 +232,17 @@ namespace UXLib.Devices.Audio.Shure
         }
 
         #endregion
+
+        public void Initialize()
+        {
+            if (!this.Connected)
+                this.Connect();
+        }
+
+        public CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
     }
 
     public enum ShureLEDState

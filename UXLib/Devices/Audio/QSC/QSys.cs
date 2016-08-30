@@ -167,6 +167,17 @@ namespace UXLib.Devices.Audio.QSC
         }
 
         #endregion
+
+        public void Initialize()
+        {
+            if (!this.Connected)
+                this.Connect();
+        }
+
+        public CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
     }
 
     /// <summary>

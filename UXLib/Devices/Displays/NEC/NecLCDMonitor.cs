@@ -194,9 +194,12 @@ namespace UXLib.Devices.Displays.NEC
             OnReceive(receivedPacket);
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
-            if (this.ComPort != null)
+            if (this.CommunicationType == CommDeviceType.IP && !this.Connected)
+                this.Connect();
+            
+            else if (this.ComPort != null)
             {
                 this.ComPort.Initialize();
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
@@ -364,6 +367,17 @@ namespace UXLib.Devices.Displays.NEC
         }
 
         #endregion
+
+        public override CommDeviceType CommunicationType
+        {
+            get
+            {
+                if (this.Socket != null)
+                    return CommDeviceType.IP;
+                else
+                    return CommDeviceType.Serial;
+            }
+        }
 
         #region IVolumeDevice Members
 

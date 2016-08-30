@@ -409,6 +409,22 @@ namespace UXLib.Devices.Audio.Polycom
         }
 
         #endregion
+
+        #region ICommDevice Members
+
+
+        public void Initialize()
+        {
+            if (!this.Connected)
+                this.Connect();
+        }
+
+        public CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
+
+        #endregion
     }
 
     public enum SoundstructureVirtualChannelType

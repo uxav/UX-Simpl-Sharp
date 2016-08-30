@@ -198,6 +198,19 @@ namespace UXLib.Devices.Audio.Shure
             throw new NotImplementedException();
         }
 
+        public void Initialize()
+        {
+            if (!this.Connected)
+            {
+                this.Connect();
+            }
+        }
+
+        public CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
+
         #endregion
     }
 }

@@ -7,7 +7,7 @@ using UXLib.Devices;
 
 namespace UXLib.Devices.Displays
 {
-    public class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
+    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
     {
         public virtual string Name { get; set; }
 
@@ -150,6 +150,10 @@ namespace UXLib.Devices.Displays
         {
             get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceSerialNumber property", GetType().ToString())); }
         }
+
+        public abstract void Initialize();
+
+        public abstract CommDeviceType CommunicationType { get; }
     }
 
     public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DevicePowerStatusEventArgs args);

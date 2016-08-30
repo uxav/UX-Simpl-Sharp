@@ -165,9 +165,12 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
-            if (this.ComPort != null)
+            
+            if (this.CommunicationType == CommDeviceType.IP && !this.Connected)
+                this.Connect();
+            else if (this.ComPort != null)
             {
                 this.ComPort.Initialize();
                 PollCommand(CommandType.SerialNumber);
@@ -494,6 +497,17 @@ namespace UXLib.Devices.Displays.Samsung
         public event VolumeDeviceChangeEventHandler VolumeChanged;
 
         #endregion
+
+        public override CommDeviceType CommunicationType
+        {
+            get
+            {
+                if (this.Socket != null)
+                    return CommDeviceType.IP;
+                else
+                    return CommDeviceType.Serial;
+            }
+        }
     }
 
     public delegate void SamsungMDCDisplayVideoSyncEventHandler(SamsungMDCDisplay display, bool value);
