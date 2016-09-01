@@ -26,7 +26,7 @@ namespace UXLib.Devices.VC.Cisco
             this.HttpClient = new HttpClient();
             UserName = username;
             Password = password;
-            this.HttpClient.KeepAlive = true;
+            this.HttpClient.KeepAlive = false;
             Cookies = new Dictionary<string, string>();
         }
 

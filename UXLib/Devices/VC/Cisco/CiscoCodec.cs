@@ -158,10 +158,17 @@ namespace UXLib.Devices.VC.Cisco
 
                 try
                 {
-                    if (!this.HttpClient.HasSessionKey)
-                        this.HttpClient.StartSession();
+                    try
+                    {
+                        if (!this.HttpClient.HasSessionKey)
+                            this.HttpClient.StartSession();
 
-                    this.Registerfeedback(this.FeedbackServer.Registered);
+                        this.Registerfeedback(this.FeedbackServer.Registered);
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Error("Could not connect to CiscoCodec", e.Message);
+                    }
 
                     try
                     {
