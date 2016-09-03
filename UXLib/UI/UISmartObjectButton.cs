@@ -29,7 +29,8 @@ namespace UXLib.UI
             string feedbackDigitalJoinName, string textSerialJoinName)
             : this(owner, itemIndex, smartObject, pressDigitalJoinName, feedbackDigitalJoinName)
         {
-            this.TextSerialJoin = this.SmartObject.StringInput[textSerialJoinName];
+            if (textSerialJoinName != null && textSerialJoinName.Length > 0)
+                this.TextSerialJoin = this.SmartObject.StringInput[textSerialJoinName];
         }
 
         public UISmartObjectButton(UISmartObject owner, uint itemIndex, SmartObject smartObject, string pressDigitalJoinName,
