@@ -134,6 +134,7 @@
     <Compile Include="Devices\Displays\NEC\NecComPortHandler.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCComPortHandler.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
+    <Compile Include="Devices\ICamera.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
     <Compile Include="Devices\IDevice.cs" />
