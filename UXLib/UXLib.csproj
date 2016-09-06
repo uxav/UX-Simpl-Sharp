@@ -184,7 +184,7 @@
     <Compile Include="Extensions\TimeExtensions.cs" />
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
-    <Compile Include="Models\Extensions\LinqExtensions.cs" />
+    <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
     <Compile Include="Models\VolumeLevel.cs" />
     <Compile Include="Models\VolumeLevelCollection.cs" />

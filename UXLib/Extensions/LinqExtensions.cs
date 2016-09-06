@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Models.Extensions
+namespace UXLib.Models
 {
     public static class LinqExtensions
     {
