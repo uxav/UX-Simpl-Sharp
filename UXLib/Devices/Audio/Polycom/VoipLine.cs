@@ -61,7 +61,7 @@ namespace UXLib.Devices.Audio.Polycom
                                     }
                                     catch(Exception e)
                                     {
-                                        ErrorLog.Error("Could not parse VoipCallAppearanceState for Line {0}, {1}", lineNumber, e.Message);
+                                        ErrorLog.Error("Could not parse VoipCallAppearanceState \"{0}\" for Line {1}, {2}", elements[1], lineNumber, e.Message);
                                     }
                                     break;
                                 case "voip_call_appearance_info":
