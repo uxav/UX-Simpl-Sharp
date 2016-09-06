@@ -8,10 +8,6 @@ namespace UXLib.UI
 {
     public class UIActionSheet : IDisposable
     {
-        UISubPage SubPage;
-        public UIButtonCollection Buttons;
-        Action<UIActionSheet, ActionSheetButtonAction> CallBack;
-
         public UIActionSheet(UISubPage subPage, string title, string subTitle, Action<UIActionSheet, ActionSheetButtonAction> callBack)
         {
             this.SubPage = subPage;
@@ -20,6 +16,10 @@ namespace UXLib.UI
             this.Buttons = new UIButtonCollection();
             this.CallBack = callBack;
         }
+
+        public UISubPage SubPage { get; protected set; }
+        public UIButtonCollection Buttons { get; protected set; }
+        Action<UIActionSheet, ActionSheetButtonAction> CallBack;
 
         public virtual void AddButton(UIActionSheetButton button)
         {
