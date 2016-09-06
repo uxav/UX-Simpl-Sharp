@@ -95,9 +95,9 @@ namespace UXLib.Devices.VC.Cisco
             this.Codec.SendCommand("Camera/Ramp", args);
         }
 
-        public void PanTiltReset()
+        public void PresetActivateDefaultPosition()
         {
-            this.Codec.SendCommand("Camera/PanTiltReset", new CommandArgs("CameraId", this.ID));
+            this.Codec.SendCommand("Camera/Preset/ActivateDefaultPosition", new CommandArgs("CameraId", this.ID));
         }
 
         public void PresetActivate(int presetId)
@@ -154,7 +154,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Home()
         {
-            this.PanTiltReset();
+            this.PresetActivateDefaultPosition();
         }
 
         public string Name

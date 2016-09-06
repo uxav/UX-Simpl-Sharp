@@ -107,11 +107,10 @@ namespace UXLib.Devices.VC.Cisco
         Thread CheckStatus { get; set; }
 
         /// <summary>
-        /// Connect the codec SSH client and initialize the comms to the system
+        /// Connect the codec and initialize the comms to the system
         /// </summary>
         public void Initialize()
         {
-            //SSHClient.Connect();
             new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
         }
 
@@ -131,7 +130,8 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Cameras/SpeakerTrack",
                 "/Event/IncomingCallIndication",
                 "/Status/Call",
-                "/Status/Conference"
+                "/Status/Conference",
+                "/Status/UserInterface"
             }, deregisterFirst);
         }
 
@@ -142,6 +142,8 @@ namespace UXLib.Devices.VC.Cisco
         {
             this.Registerfeedback(false);
         }
+
+        bool hasConnectedOnce = false;
 
         /// <summary>
         /// Event raised when the codec connects
@@ -172,8 +174,11 @@ namespace UXLib.Devices.VC.Cisco
 
                     try
                     {
-                        if (HasConnected != null)
+                        if (HasConnected != null && !hasConnectedOnce)
+                        {
+                            hasConnectedOnce = true;
                             HasConnected(this);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -196,26 +201,35 @@ namespace UXLib.Devices.VC.Cisco
 
         object CheckStatusThread(object threadObject)
         {
+            Thread.Sleep(60000);
+            
             while (true)
             {
                 try
                 {
-                    Thread.Sleep(60000);
+                    if (!this.HttpClient.Busy)
+                    {
+                        if (!this.HttpClient.HasSessionKey)
+                            this.HttpClient.StartSession();
 
-                    if (!this.HttpClient.HasSessionKey)
-                        this.HttpClient.StartSession();
-
-                    bool registered = this.FeedbackServer.Registered;
+                        bool registered = this.FeedbackServer.Registered;
 #if DEBUG
                     CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
 #endif
-                    if (!registered)
-                    {
-                        ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
+                        if (!registered)
+                        {
+                            ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
 #if DEBUG
                         CrestronConsole.PrintLine("Registering Feedback");
 #endif
-                        this.Registerfeedback();
+                            this.Registerfeedback();
+                        }
+
+                        Thread.Sleep(60000);
+                    }
+                    else
+                    {
+                        Thread.Sleep(5000);
                     }
                 }
                 catch (Exception e)

@@ -9,6 +9,7 @@ using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
 using Crestron.SimplSharp.Net;
 using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.Devices.VC.Cisco
 {
@@ -58,7 +59,8 @@ namespace UXLib.Devices.VC.Cisco
             {
                 if (this.HttpClient.ProcessBusy)
                 {
-                    ErrorLog.Error("CiscoCodec.HttpClient.ProcessBusy = {0}", this.HttpClient.ProcessBusy);
+                    Thread waitThread = new Thread(WaitForHttpClientThread, null, Thread.eThreadStartOptions.Running);
+                    waitThread.Join(2000);
                 }
 
                 HttpClientResponse response = this.HttpClient.Dispatch(request);
@@ -100,6 +102,16 @@ namespace UXLib.Devices.VC.Cisco
             catch (Exception e)
             {
                 ErrorLog.Error("Error dispatching request to Cisco Codec. Exception: {0}", e.Message);
+            }
+
+            return null;
+        }
+
+        private object WaitForHttpClientThread(object obj)
+        {
+            while (this.HttpClient.ProcessBusy)
+            {
+                Thread.Sleep(10);
             }
 
             return null;
