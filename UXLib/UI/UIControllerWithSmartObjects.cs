@@ -28,5 +28,10 @@ namespace UXLib.UI
         {
             this.Device.LoadSmartObjects(sgdFilePath);
         }
+
+        public void LoadSmartObjects(ISmartObject deviceWithSmartObjects)
+        {
+            this.Device.LoadSmartObjects(deviceWithSmartObjects);
+        }
     }
 }
