@@ -18,6 +18,7 @@ namespace UXLib.Devices
     public enum CommDeviceType
     {
         Serial,
-        IP
+        IP,
+        OneWayIRSerial
     }
 }

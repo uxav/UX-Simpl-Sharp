@@ -18,5 +18,15 @@ namespace UXLib.Extensions
             }
             port.Send(str);
         }
+
+        public static void SendSerialData(this IROutputPort port, byte[] bytes, int count)
+        {
+            string str = string.Empty;
+            for (int i = 0; i < count; i++)
+            {
+                str = str + (char)bytes[i];
+            }
+            port.SendSerialData(str);
+        }
     }
 }
