@@ -19,12 +19,12 @@ namespace UXLib.UI
             }
         }
 
-        public UIControllerCollection()
+        internal UIControllerCollection()
         {
             this.interfaces = new Dictionary<uint, UIController>();
         }
 
-        protected UIControllerCollection(List<UIController> fromList)
+        internal UIControllerCollection(List<UIController> fromList)
         {
             interfaces = new Dictionary<uint, UIController>();
             foreach (UIController ui in fromList)

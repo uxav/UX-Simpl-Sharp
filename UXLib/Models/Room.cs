@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
+using UXLib.UI;
 
 namespace UXLib.Models
 {
@@ -128,6 +129,22 @@ namespace UXLib.Models
             get
             {
                 return _Source;
+            }
+        }
+
+        public SourceCollection Sources
+        {
+            get
+            {
+                return this.System.Sources.ForRoom(this);
+            }
+        }
+
+        public UIControllerCollection UserInterfaces
+        {
+            get
+            {
+                return this.System.UserInterfaces.ForRoom(this);
             }
         }
 

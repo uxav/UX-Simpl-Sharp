@@ -8,7 +8,7 @@ namespace UXLib.Models
 {
     public class RoomCollection : IEnumerable<Room>
     {
-        public RoomCollection()
+        internal RoomCollection()
         {
             this.RoomList = new List<Room>();
         }
