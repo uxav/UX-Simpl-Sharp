@@ -88,7 +88,7 @@ namespace UXLib.UI
             }
         }
 
-        string _Text;
+        string _Text = string.Empty;
         public string Text
         {
             get
