@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Devices
+namespace UXLib.Devices.Cameras
 {
     public interface ICamera : IDevice
     {

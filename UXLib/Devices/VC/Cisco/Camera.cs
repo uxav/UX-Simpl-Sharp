@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Devices.Cameras;
 
 namespace UXLib.Devices.VC.Cisco
 {
