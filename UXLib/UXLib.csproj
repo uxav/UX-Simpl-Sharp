@@ -192,8 +192,8 @@
     <Compile Include="Models\VolumeLevel.cs" />
     <Compile Include="Models\VolumeLevelCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Relays\UpDownRelays.cs" />
-    <Compile Include="Relays\Relay.cs" />
+    <Compile Include="Devices\Relays\UpDownRelays.cs" />
+    <Compile Include="Devices\Relays\Relay.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Models\RoomCollection.cs" />
     <Compile Include="Devices\ISocketDevice.cs" />

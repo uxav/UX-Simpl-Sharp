@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Relays
+namespace UXLib.Devices.Relays
 {
     public class UpDownRelays
     {
-        public UpDownRelays(UXLib.Relays.Relay upRelay, UXLib.Relays.Relay downRelay, UpDownRelayModeType modeType)
+        public UpDownRelays(UXLib.Devices.Relays.Relay upRelay, UXLib.Devices.Relays.Relay downRelay, UpDownRelayModeType modeType)
         {
             UpRelay = upRelay;
             DownRelay = downRelay;
@@ -17,10 +17,10 @@ namespace UXLib.Relays
         }
 
         public UpDownRelays(Crestron.SimplSharpPro.Relay upRelay, Crestron.SimplSharpPro.Relay downRelay, UpDownRelayModeType modeType)
-            : this(new UXLib.Relays.Relay(upRelay), new UXLib.Relays.Relay(downRelay), modeType) { }
+            : this(new UXLib.Devices.Relays.Relay(upRelay), new UXLib.Devices.Relays.Relay(downRelay), modeType) { }
 
-        UXLib.Relays.Relay UpRelay;
-        UXLib.Relays.Relay DownRelay;
+        UXLib.Devices.Relays.Relay UpRelay;
+        UXLib.Devices.Relays.Relay DownRelay;
         public UpDownRelayModeType ModeType { get; protected set; }
         public UpDownRelayState State { get; protected set; }
         CTimer waitTimer;
@@ -71,9 +71,9 @@ namespace UXLib.Relays
 
         void RelaySet(object obj)
         {
-            if (obj is UXLib.Relays.Relay)
+            if (obj is UXLib.Devices.Relays.Relay)
             {
-                UXLib.Relays.Relay relay = obj as UXLib.Relays.Relay;
+                UXLib.Devices.Relays.Relay relay = obj as UXLib.Devices.Relays.Relay;
                 switch (this.ModeType)
                 {
                     case UpDownRelayModeType.Momentary:

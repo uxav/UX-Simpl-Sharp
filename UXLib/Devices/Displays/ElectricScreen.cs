@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using UXLib.Relays;
+using UXLib.Devices.Relays;
 using UXLib.Devices;
 
 namespace UXLib.Devices.Displays

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Relays
+namespace UXLib.Devices.Relays
 {
     public class Relay
     {
