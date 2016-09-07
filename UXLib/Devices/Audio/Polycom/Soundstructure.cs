@@ -27,9 +27,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         public void Initialise()
         {
-#if DEBUG
-            CrestronConsole.PrintLine("Initialise() Soundstructure");
-#endif
+            CrestronConsole.PrintLine("{0}.Initialise()", this.GetType().Name);
             this.Initialised = false;
             this.Send("get eth_settings 1");
             listedItems.Clear();
@@ -41,6 +39,11 @@ namespace UXLib.Devices.Audio.Polycom
             this.Initialise();
         }
 
+        public void Reboot()
+        {
+            this.Socket.Send(string.Format("set {0}\r", SoundstructureCommandType.SYS_REBOOT.ToString().ToLower()));
+        }
+
         void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
         {
             this.OnReceive(Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length));
@@ -50,10 +53,13 @@ namespace UXLib.Devices.Audio.Polycom
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
-#if DEBUG
-                CrestronConsole.PrintLine("Soundstructure Connected!");
-#endif
+                CrestronConsole.PrintLine("Soundstructure device Connected on {0}", this.Socket.HostAddress);
+                ErrorLog.Notice("Soundstructure device Connected on {0}", this.Socket.HostAddress);
                 this.Initialise();
+            }
+            else
+            {
+                this.DeviceCommunicating = false;
             }
         }
 
@@ -81,10 +87,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         #endregion
 
-        public bool DeviceCommunicating
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public bool DeviceCommunicating { get; protected set; }
 
         public void Send(string stringToSend)
         {
@@ -133,6 +136,9 @@ namespace UXLib.Devices.Audio.Polycom
 #if DEBUG
             CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
 #endif
+            if (!this.DeviceCommunicating)
+                this.DeviceCommunicating = true;
+
             if (receivedString.Contains(' '))
             {
                 List<string> elements = SoundstructureSocket.ElementsFromString(receivedString);
@@ -476,7 +482,9 @@ namespace UXLib.Devices.Audio.Polycom
         VOIP_SEND,
         VOIP_ANSWER,
         VOIP_LINE,
-        VOIP_DND
+        VOIP_DND,
+        VOIP_REBOOT,
+        SYS_REBOOT
     }
 
     public delegate void SoundstructureValueChangeHandler(ISoundstructureItem item, SoundstructureValueChangeEventArgs args);

@@ -122,6 +122,11 @@ namespace UXLib.Devices.Audio.Polycom
             this.OffHook = true;
         }
 
+        public void Reboot()
+        {
+            this.Device.Socket.Set(this, SoundstructureCommandType.VOIP_REBOOT);
+        }
+
         #endregion
     }
 }
