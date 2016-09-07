@@ -31,9 +31,7 @@ namespace UXLib.Devices.VC.Cisco
             FeedbackServer = new CodecFeedbackServer(this, ethernetAdapter, feedbackListenerPort);
             FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
             FeedbackServer.IncomingCallEvent += new CodecIncomingCallEventHandler(FeedbackServer_IncomingCallEvent);
-            this.password = password;
-            KeyboardInteractiveConnectionInfo sshInfo = new KeyboardInteractiveConnectionInfo(hostNameOrIPAddress, 22, username);
-            sshInfo.AuthenticationPrompt += new EventHandler<Crestron.SimplSharp.Ssh.Common.AuthenticationPromptEventArgs>(sshInfo_AuthenticationPrompt);
+            FeedbackServer.WidgetActionEvent += new CodecUserInterfaceWidgetActionEventHandler(FeedbackServer_WidgetActionEvent);
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
             SystemUnit = new SystemUnit(this);
             SystemUnit.State.SystemStateChange += new SystemUnitStateSystemChangeEventHandler(State_SystemStateChange);
@@ -236,18 +234,6 @@ namespace UXLib.Devices.VC.Cisco
                 {
                     if (e.Message != "ThreadAbortException")
                         ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
-                }
-            }
-        }
-
-        string password;
-        void sshInfo_AuthenticationPrompt(object sender, Crestron.SimplSharp.Ssh.Common.AuthenticationPromptEventArgs e)
-        {
-            foreach (var prompt in e.Prompts)
-            {
-                if (prompt.Request.Equals("Password: ", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    prompt.Response = password;
                 }
             }
         }
