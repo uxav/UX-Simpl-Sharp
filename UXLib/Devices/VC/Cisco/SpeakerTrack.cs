@@ -39,7 +39,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            IEnumerable<XElement> status = Codec.RequestPath("Status/Cameras/SpeakerTrack", true);
+            IEnumerable<XElement> status = Codec.RequestPath("Status/Cameras/SpeakerTrack");
             
             foreach (XElement element in status.FirstOrDefault().Elements())
             {

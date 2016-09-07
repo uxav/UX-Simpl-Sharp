@@ -9,7 +9,7 @@ namespace UXLib.Devices.Audio.Polycom
 {
     public class VirtualChannelGroup : ISoundstructureItem, IVolumeDevice, IEnumerable<ISoundstructureItem>
     {
-        public VirtualChannelGroup(Soundstructure device, string name, List<ISoundstructureItem> fromChannels)
+        internal VirtualChannelGroup(Soundstructure device, string name, List<ISoundstructureItem> fromChannels)
         {
             this.Device = device;
             this.Device.ValueChange += new SoundstructureValueChangeHandler(Device_ValueChange);

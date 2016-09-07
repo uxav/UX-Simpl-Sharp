@@ -35,9 +35,16 @@ namespace UXLib.Devices.Audio.Polycom
                             switch (args.Command)
                             {
                                 case "voip_line_state":
-                                    this.State = (VoipLineState)Enum.Parse(typeof(VoipLineState), elements[1], true);
-                                    if (StateChanged != null)
-                                        StateChanged(this, this.State);
+                                    try
+                                    {
+                                        this.State = (VoipLineState)Enum.Parse(typeof(VoipLineState), elements[1], true);
+                                        if (StateChanged != null)
+                                            StateChanged(this, this.State);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        ErrorLog.Error("Could not parse VoipLineState for Line {0}, {1}", lineNumber, e.Message);
+                                    }
                                     break;
                                 case "voip_line_label":
                                     this.Label = elements[1];
@@ -46,9 +53,16 @@ namespace UXLib.Devices.Audio.Polycom
                                     this.CallAppearance = uint.Parse(elements[1]);
                                     break;
                                 case "voip_call_appearance_state":
-                                    this.CallAppearanceState = (VoipCallAppearanceState)Enum.Parse(typeof(VoipCallAppearanceState), elements[1], true);
-                                    if (CallAppearanceStateChanged != null)
-                                        CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
+                                    try
+                                    {
+                                        this.CallAppearanceState = (VoipCallAppearanceState)Enum.Parse(typeof(VoipCallAppearanceState), elements[1], true);
+                                        if (CallAppearanceStateChanged != null)
+                                            CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        ErrorLog.Error("Could not parse VoipCallAppearanceState \"{0}\" for Line {1}, {2}", elements[1], lineNumber, e.Message);
+                                    }
                                     break;
                                 case "voip_call_appearance_info":
                                     uint lineIndex = uint.Parse(elements[1]);
@@ -61,7 +75,7 @@ namespace UXLib.Devices.Audio.Polycom
                         catch (Exception e)
                         {
                             ErrorLog.Error("Error parsing Voip feedback info in VoipLine[{0}], {1}", this.Number, e.Message);
-                            ErrorLog.Error("VoipInfoReceived() \"{0}\"", args.Info);
+                            ErrorLog.Error("VoipInfoReceived() args.Command = \"{0}\" args.Info = \"{1}\"", args.Command, args.Info);
                         }
                     }
                 }
@@ -149,6 +163,7 @@ namespace UXLib.Devices.Audio.Polycom
 
     public enum VoipLineState
     {
+        None,
         Line_Not_Registered,
         Line_Registered,
         Proceed,

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Devices.Cameras;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class Camera
+    public class Camera : ICamera
     {
-        public Camera(CiscoCodec codec, int id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
+        internal Camera(CiscoCodec codec, int id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
         {
             this.Codec = codec;
             this.ID = id;
@@ -95,15 +96,96 @@ namespace UXLib.Devices.VC.Cisco
             this.Codec.SendCommand("Camera/Ramp", args);
         }
 
-        public void PanTiltReset()
+        public void PresetActivateDefaultPosition()
         {
-            this.Codec.SendCommand("Camera/PanTiltReset", new CommandArgs("CameraId", this.ID));
+            this.Codec.SendCommand("Camera/Preset/ActivateDefaultPosition", new CommandArgs("CameraId", this.ID));
         }
 
         public void PresetActivate(int presetId)
         {
             this.Codec.SendCommand("Camera/Preset/Activate", new CommandArgs("PresetId", presetId));
         }
+
+        #region ICamera Members
+
+        public void TiltUp()
+        {
+            this.Ramp(CameraTiltCommand.Up);
+        }
+
+        public void TiltDown()
+        {
+            this.Ramp(CameraTiltCommand.Down);
+        }
+
+        public void TiltStop()
+        {
+            this.Ramp(CameraTiltCommand.Stop);
+        }
+
+        public void PanLeft()
+        {
+            this.Ramp(CameraPanCommand.Left);
+        }
+
+        public void PanRight()
+        {
+            this.Ramp(CameraPanCommand.Right);
+        }
+
+        public void PanStop()
+        {
+            this.Ramp(CameraPanCommand.Stop);
+        }
+
+        public void ZoomIn()
+        {
+            this.Ramp(CameraZoomCommand.In);
+        }
+
+        public void ZoomOut()
+        {
+            this.Ramp(CameraZoomCommand.Out);
+        }
+
+        public void ZoomStop()
+        {
+            this.Ramp(CameraZoomCommand.Stop);
+        }
+
+        public void Home()
+        {
+            this.PresetActivateDefaultPosition();
+        }
+
+        public string Name
+        {
+            get
+            {
+                return string.Format("Camera {0}", this.ID);
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string DeviceManufacturer
+        {
+            get { return this.Manufacturer; }
+        }
+
+        public string DeviceModel
+        {
+            get { return this.Model; }
+        }
+
+        public string DeviceSerialNumber
+        {
+            get { return this.SerialNumber; }
+        }
+
+        #endregion
     }
 
     public enum CameraPanCommand

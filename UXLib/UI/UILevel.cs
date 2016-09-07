@@ -91,6 +91,11 @@ namespace UXLib.UI
         public ushort LevelMinimumValue { get; set; }
         public ushort LevelMaximumValue { get; set; }
 
+        public void OverridePressDigitalJoinNumber(uint digitalJoinNumber)
+        {
+            this.PressDigitalJoin = this.Device.BooleanOutput[digitalJoinNumber];
+        }
+
         public static double ScaleRange(double Value,
            double FromMinValue, double FromMaxValue,
            double ToMinValue, double ToMaxValue)

@@ -9,12 +9,12 @@ namespace UXLib.Models
 {
     public class SourceCollection : IEnumerable<Source>
     {
-        public SourceCollection()
+        internal SourceCollection()
         {
             this.Sources = new List<Source>();
         }
 
-        public SourceCollection(IEnumerable<Source> listOfSources)
+        internal SourceCollection(IEnumerable<Source> listOfSources)
         {
             this.Sources = new List<Source>(listOfSources);
         }

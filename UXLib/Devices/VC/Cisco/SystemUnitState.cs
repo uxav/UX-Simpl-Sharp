@@ -61,7 +61,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            foreach (XElement element in Codec.RequestPath("Status/SystemUnit/State", true).Elements().Where(e => !e.HasElements))
+            foreach (XElement element in Codec.RequestPath("Status/SystemUnit/State").Elements().Where(e => !e.HasElements))
             {
 #if DEBUG
                 CrestronConsole.PrintLine("SystemUnit.State.{0} = {1}", element.XName.LocalName, element.Value);

@@ -35,9 +35,9 @@ namespace UXLib.Extensions
             {
                 return ts.Minutes + " minutes ago";
             }
-            if (delta < 5400) // 90 * 60
+            if (delta < 7200) // 120 * 60
             {
-                return "an hour ago";
+                return "about an hour ago";
             }
             if (delta < 86400) // 24 * 60 * 60
             {

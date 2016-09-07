@@ -27,7 +27,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            foreach (XElement element in Codec.RequestPath("Status/SystemUnit/Software", true)
+            foreach (XElement element in Codec.RequestPath("Status/SystemUnit/Software")
                 .Elements().Where(e => !e.HasElements))
             {
 #if DEBUG

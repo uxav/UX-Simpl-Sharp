@@ -20,10 +20,21 @@ namespace UXLib.Devices.VC.Cisco
             args.Add("DetailLevel", "Full");
             args.Add("Limit", limit);
 
-            bool useHttp = false;
-            if (limit > 0) useHttp = true;
+            XDocument xml;
+            try
+            {
+                xml = Codec.SendCommand("Command/CallHistory/Get", args);
 
-            XDocument xml = Codec.SendCommand("Command/CallHistory/Get", args, useHttp);
+                if (xml == null)
+                {
+                    ErrorLog.Error("Error getting Call History from codec, xml == null");
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error getting Call history data", e);
+                return;
+            }
 #if DEBUG
             CrestronConsole.PrintLine("Callhistory: \r\n{0}", xml.ToString());
 #endif

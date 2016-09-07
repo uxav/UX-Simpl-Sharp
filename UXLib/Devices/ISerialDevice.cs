@@ -8,6 +8,6 @@ namespace UXLib.Devices
 {
     public interface ISerialDevice : ICommDevice
     {
-        void Initialize();
+        
     }
 }

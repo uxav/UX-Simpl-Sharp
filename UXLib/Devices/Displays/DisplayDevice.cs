@@ -7,7 +7,7 @@ using UXLib.Devices;
 
 namespace UXLib.Devices.Displays
 {
-    public class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
+    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
     {
         public virtual string Name { get; set; }
 
@@ -50,7 +50,7 @@ namespace UXLib.Devices.Displays
 
         public virtual void Send(string stringToSend)
         {
-            
+            throw new NotImplementedException();
         }
 
         public virtual void OnReceive(string receivedString)
@@ -118,6 +118,24 @@ namespace UXLib.Devices.Displays
 
         public virtual bool Blank { get; set; }
 
+        protected void OnUsageChange(ushort hours)
+        {
+            if (this.UsageChanged != null)
+            {
+                this.UsageChanged(this, hours);
+            }
+        }
+
+        public event DisplayDeviceUsageChangeEventHandler UsageChanged;
+
+        public virtual ushort Usage
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
         public virtual string DeviceManufacturer
         {
             get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceManufacturer property", GetType().ToString())); }
@@ -132,9 +150,15 @@ namespace UXLib.Devices.Displays
         {
             get { throw new NotImplementedException(string.Format("Check that {0} overrides DeviceSerialNumber property", GetType().ToString())); }
         }
+
+        public abstract void Initialize();
+
+        public abstract CommDeviceType CommunicationType { get; }
     }
 
     public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DevicePowerStatusEventArgs args);
+
+    public delegate void DisplayDeviceUsageChangeEventHandler(DisplayDevice device, ushort usageHours);
 
     public enum DisplayDeviceInput
     {

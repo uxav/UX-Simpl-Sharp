@@ -11,7 +11,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Conference
     {
-        public Conference(CiscoCodec codec)
+        internal Conference(CiscoCodec codec)
         {
             Codec = codec;
             Sites = new Sites(Codec);

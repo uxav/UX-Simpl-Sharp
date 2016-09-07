@@ -88,7 +88,7 @@ namespace UXLib.Devices.Displays.NEC
             finalPacket[packet.Length + 1] = 0x0D;
 #if DEBUG
             CrestronConsole.Print("NEC Tx: ");
-            Tools.PrintBytes(finalPacket, finalPacket.Length);
+            Tools.PrintBytes(finalPacket, finalPacket.Length, true);
 #endif
             return base.Send(finalPacket);
         }
@@ -107,6 +107,14 @@ namespace UXLib.Devices.Displays.NEC
                     // If find byte = CR
                     if (b == 13)
                     {
+                        // check the next byte may also be 13 in which this one maybe the checksum
+                        if (rxQueue.Peek() == 13)
+                        {
+                            b = rxQueue.Dequeue();
+                            bytes[byteIndex] = b;
+                            byteIndex++;
+                        }
+
                         // Copy bytes to new array with length of packet and ignoring the CR.
                         Byte[] copiedBytes = new Byte[byteIndex];
                         Array.Copy(bytes, copiedBytes, byteIndex);
@@ -120,20 +128,26 @@ namespace UXLib.Devices.Displays.NEC
                             chk = chk ^ copiedBytes[i];
                         }
 
-                        if (chk == (int)copiedBytes.Last())
-                        {
 #if DEBUG
-                            //CrestronConsole.Print("NEC Rx: ");
-                            //Tools.PrintBytes(copiedBytes, copiedBytes.Length);
+                        CrestronConsole.Print("NEC Rx: ");
+                        Tools.PrintBytes(copiedBytes, copiedBytes.Length, false);
 #endif
+
+                        if (copiedBytes.Length > 0 && chk == (int)copiedBytes.Last())
+                        {
                             OnReceivedPacket(copiedBytes);
                         }
-                        else
+                        else if(copiedBytes.Length > 0)
                         {
+                            ErrorLog.Error("NEC Display Rx: \"{0}\"", Tools.GetBytesAsReadableString(copiedBytes, copiedBytes.Length, true));
+                            ErrorLog.Error("NEC Display Rx - Checksum Error, chk = 0x{0}, byteIndex = {1}, copiedBytes.Length = {2}",
+                                chk.ToString("X2"), byteIndex, copiedBytes.Length);
 #if DEBUG
-                            CrestronConsole.PrintLine("NEC Display Rx - Checksum Error");
+                            CrestronConsole.PrintLine("NEC Display Rx - Checksum Error, chk = 0x{0}, byteIndex = {1}, copiedBytes.Length = {2}",
+                                chk.ToString("X2"), byteIndex, copiedBytes.Length);
+
+                            CrestronConsole.PrintLine("rxQueue.Peek() = {0}", rxQueue.Peek());
 #endif
-                            ErrorLog.Error("NEC Display Rx - Checksum Error");
                         }
                     }
                     else
@@ -145,7 +159,7 @@ namespace UXLib.Devices.Displays.NEC
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
-                        ErrorLog.Error("{0} - Error in thread: {1}", GetType().ToString(), e.Message);
+                        ErrorLog.Exception(string.Format("{0} - Exception in ReceiveBufferProcess", GetType().ToString()), e);
                 }
             }
         }

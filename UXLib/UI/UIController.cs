@@ -65,7 +65,7 @@ namespace UXLib.UI
                         this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
                         this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
 
-                        RoomWillChange();
+                        RoomWillChange(value);
                     }
 
                     _room = value;
@@ -77,7 +77,7 @@ namespace UXLib.UI
                         this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
                     }
 
-                    OnRoomChange();
+                    OnRoomChange(value);
                 }
             }
             get
@@ -116,14 +116,18 @@ namespace UXLib.UI
             
         }
 
-        protected virtual void RoomWillChange()
-        {
+        public event RoomChangeEventHandler RoomChanged;
 
+        protected virtual void RoomWillChange(Room newRoom)
+        {
+            if (RoomChanged != null)
+                RoomChanged(this, new RoomChangeEventArgs(newRoom, RoomChangeEventType.WillChange));
         }
 
-        protected virtual void OnRoomChange()
+        protected virtual void OnRoomChange(Room newRoom)
         {
-
+            if (RoomChanged != null)
+                RoomChanged(this, new RoomChangeEventArgs(newRoom, RoomChangeEventType.HasChanged));
         }
 
         protected virtual void OnRoomDetailsChange()
@@ -170,5 +174,25 @@ namespace UXLib.UI
             if (this.SystemReservedSigs != null)
                 this.SystemReservedSigs.BacklightOff();
         }
+    }
+
+    public delegate void RoomChangeEventHandler(UIController uiController, RoomChangeEventArgs args);
+
+    public class RoomChangeEventArgs : EventArgs
+    {
+        public RoomChangeEventArgs(Room newRoom, RoomChangeEventType eventType)
+        {
+            NewRoom = newRoom;
+            EventType = eventType;
+        }
+
+        public Room NewRoom { get; protected set; }
+        public RoomChangeEventType EventType { get; protected set; }
+    }
+
+    public enum RoomChangeEventType
+    {
+        WillChange,
+        HasChanged
     }
 }

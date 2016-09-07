@@ -101,7 +101,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             CommandArgs args = new CommandArgs("CallId", this.ID);
             args.Add(new CommandArg("DTMFString", dtmfString));
-            Codec.SendCommand("DTMFSend", args);
+            Codec.SendCommand("Call/DTMFSend", args);
         }
 
         void SendCommand(string command)

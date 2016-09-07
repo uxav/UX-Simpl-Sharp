@@ -10,7 +10,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Cameras : IEnumerable<Camera>
     {
-        public Cameras(CiscoCodec codec)
+        internal Cameras(CiscoCodec codec)
         {
             Codec = codec;
             SpeakerTrack = new SpeakerTrack(Codec);
@@ -34,7 +34,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/Cameras", true);
+                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/Cameras");
 
                 foreach (XElement element in statusInfo.Elements("Camera"))
                 {

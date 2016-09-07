@@ -4,27 +4,25 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace UXLib.Relays
+namespace UXLib.Devices.Relays
 {
     public class UpDownRelays
     {
-        public UpDownRelays(UXLib.Relays.Relay upRelay, UXLib.Relays.Relay downRelay, UpDownRelayModeType modeType)
+        public UpDownRelays(UXLib.Devices.Relays.Relay upRelay, UXLib.Devices.Relays.Relay downRelay, UpDownRelayModeType modeType)
         {
             UpRelay = upRelay;
             DownRelay = downRelay;
             this.ModeType = modeType;
+            this.State = UpDownRelayState.Unknown;
         }
 
         public UpDownRelays(Crestron.SimplSharpPro.Relay upRelay, Crestron.SimplSharpPro.Relay downRelay, UpDownRelayModeType modeType)
-        {
-            UpRelay = new UXLib.Relays.Relay(upRelay);
-            DownRelay = new UXLib.Relays.Relay(downRelay);
-            this.ModeType = modeType;
-        }
+            : this(new UXLib.Devices.Relays.Relay(upRelay), new UXLib.Devices.Relays.Relay(downRelay), modeType) { }
 
-        UXLib.Relays.Relay UpRelay;
-        UXLib.Relays.Relay DownRelay;
+        UXLib.Devices.Relays.Relay UpRelay;
+        UXLib.Devices.Relays.Relay DownRelay;
         public UpDownRelayModeType ModeType { get; protected set; }
+        public UpDownRelayState State { get; protected set; }
         CTimer waitTimer;
 
         public void Up()
@@ -41,6 +39,8 @@ namespace UXLib.Relays
             {
                 RelaySet(UpRelay);
             }
+
+            this.State = UpDownRelayState.Up;
         }
 
         public void Down()
@@ -57,19 +57,23 @@ namespace UXLib.Relays
             {
                 RelaySet(DownRelay);
             }
+
+            this.State = UpDownRelayState.Down;
         }
 
         public void Stop()
         {
             UpRelay.Open();
             DownRelay.Open();
+
+            this.State = UpDownRelayState.Unknown;
         }
 
         void RelaySet(object obj)
         {
-            if (obj is UXLib.Relays.Relay)
+            if (obj is UXLib.Devices.Relays.Relay)
             {
-                UXLib.Relays.Relay relay = obj as UXLib.Relays.Relay;
+                UXLib.Devices.Relays.Relay relay = obj as UXLib.Devices.Relays.Relay;
                 switch (this.ModeType)
                 {
                     case UpDownRelayModeType.Momentary:
@@ -81,11 +85,26 @@ namespace UXLib.Relays
                 }
             }
         }
+
+        public void Register()
+        {
+            if (this.UpRelay.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                ErrorLog.Error("Could not register UpDownRelays.UpRelay with ID {0}", UpRelay.CrestronRelay.ID);
+            if (this.DownRelay.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                ErrorLog.Error("Could not register UpDownRelays.DownRelay with ID {0}", DownRelay.CrestronRelay.ID);
+        }
     }
 
     public enum UpDownRelayModeType
     {
         Momentary,
         Interlocked
+    }
+
+    public enum UpDownRelayState
+    {
+        Up,
+        Down,
+        Unknown
     }
 }

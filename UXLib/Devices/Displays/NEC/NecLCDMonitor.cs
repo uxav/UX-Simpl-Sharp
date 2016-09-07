@@ -45,7 +45,7 @@ namespace UXLib.Devices.Displays.NEC
 #endif
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
-            else
+            else if(this.pollTimer != null)
             {
 #if DEBUG
                 CrestronConsole.PrintLine("NEC Display Disconnected");
@@ -100,9 +100,9 @@ namespace UXLib.Devices.Displays.NEC
                 MessageType type = (MessageType)bytes[4];
                 string messageStr = Encoding.Default.GetString(message, 1, message.Length - 2);
 #if DEBUG
-                CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
-                Tools.PrintBytes(message, message.Length);
-                CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
+                //CrestronConsole.Print("Message Type = MessageType.{0}  ", type.ToString());
+                //Tools.PrintBytes(message, message.Length);
+                //CrestronConsole.PrintLine("Message = {0}, Length = {1}", messageStr, messageStr.Length);
 #endif
                 try
                 {
@@ -194,9 +194,12 @@ namespace UXLib.Devices.Displays.NEC
             OnReceive(receivedPacket);
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
-            if (this.ComPort != null)
+            if (this.CommunicationType == CommDeviceType.IP && !this.Connected)
+                this.Connect();
+            
+            else if (this.ComPort != null)
             {
                 this.ComPort.Initialize();
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
@@ -228,7 +231,9 @@ namespace UXLib.Devices.Displays.NEC
         {
             requestedInput = command;
             string value = "00" + command.ToString("X2");
-            CrestronConsole.PrintLine("Send display input command {0}", value);
+#if DEBUG
+            //CrestronConsole.PrintLine("Send display input command {0}", value);
+#endif
             this.SetParameter(this.DisplayID, "0060" + value);
         }
 
@@ -362,6 +367,17 @@ namespace UXLib.Devices.Displays.NEC
         }
 
         #endregion
+
+        public override CommDeviceType CommunicationType
+        {
+            get
+            {
+                if (this.Socket != null)
+                    return CommDeviceType.IP;
+                else
+                    return CommDeviceType.Serial;
+            }
+        }
 
         #region IVolumeDevice Members
 

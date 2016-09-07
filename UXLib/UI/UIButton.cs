@@ -96,6 +96,13 @@ namespace UXLib.UI
             this.Feedback = !this.Feedback;
         }
 
+        public object LinkedObject { get; protected set; }
+
+        public void SetLinkedObject(object linkedObject)
+        {
+            LinkedObject = linkedObject;
+        }
+
         public void SetAnalogModeJoin(UShortInputSig analogModeJoin)
         {
             this.AnalogModeJoin = analogModeJoin;

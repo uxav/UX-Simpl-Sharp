@@ -8,12 +8,18 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
+    /// <summary>
+    /// An object to control levels on the UI
+    /// </summary>
     public class UISmartObjectLevel : UILevel
     {
         /// <summary>
         /// Create a level which can have feedback only
         /// </summary>
-        /// <param name="analogFeedbackJoin">The analog input signal join</param>
+        /// <param name="owner">The owner UISmartObject of the object</param>
+        /// <param name="itemIndex">index of the object</param>
+        /// <param name="smartObject">The SmartObject used</param>
+        /// <param name="analogFeedbackJoinName">The analog input signal join</param>
         public UISmartObjectLevel(UISmartObject owner, uint itemIndex, SmartObject smartObject, string analogFeedbackJoinName)
             : base(smartObject.UShortInput[analogFeedbackJoinName])
         {
@@ -25,8 +31,12 @@ namespace UXLib.UI
         /// <summary>
         /// Create a level that is touch settable
         /// </summary>
-        /// <param name="analogFeedbackJoin">The analog input signal join</param>
-        /// <param name="analogTouchJoin">The analog 'touch' output signal join</param>
+        /// <param name="owner">The owner UISmartObject of the object</param>
+        /// <param name="itemIndex">index of the object</param>
+        /// <param name="smartObject">The SmartObject used</param>
+        /// <param name="analogFeedbackJoinName">The analog input signal join</param>
+        /// <param name="analogTouchJoinName">The analog 'touch' output signal join</param>
+        /// <param name="pressDigitalJoinName"></param>
         public UISmartObjectLevel(UISmartObject owner, uint itemIndex, SmartObject smartObject,
             string analogFeedbackJoinName, string analogTouchJoinName, string pressDigitalJoinName)
             : base(smartObject.UShortInput[analogFeedbackJoinName], smartObject.UShortOutput[analogTouchJoinName])
@@ -40,10 +50,13 @@ namespace UXLib.UI
         /// <summary>
         /// Create a level that is touch settable
         /// </summary>
-        /// <param name="analogFeedbackJoin">The analog input signal join</param>
-        /// <param name="analogTouchJoin">The analog 'touch' output signal join</param>
-        /// <param name="enableDigitalJoin">The digital enable join</param>
-        /// <param name="visibleDigitalJoin">The digital visible join</param>
+        /// <param name="owner">The owner UISmartObject of the object</param>
+        /// <param name="itemIndex">index of the object</param>
+        /// <param name="smartObject">The SmartObject used</param>
+        /// <param name="analogFeedbackJoinName">The analog input signal join</param>
+        /// <param name="pressDigitalJoinName">The analog 'touch' output signal join</param>
+        /// <param name="enableDigitalJoinName">The digital enable join</param>
+        /// <param name="visibleDigitalJoinName">The digital visible join</param>
         public UISmartObjectLevel(UISmartObject owner, uint itemIndex, SmartObject smartObject,
             string analogFeedbackJoinName, string analogTouchJoinName, string pressDigitalJoinName, string enableDigitalJoinName, string visibleDigitalJoinName)
             : this(owner, itemIndex, smartObject, analogFeedbackJoinName, analogTouchJoinName, pressDigitalJoinName)

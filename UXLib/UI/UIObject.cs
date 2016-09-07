@@ -9,7 +9,7 @@ using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.UI
 {
-    public class UIObject : IDisposable
+    public abstract class UIObject : IDisposable
     {
         /// <summary>
         /// The Digital output join which comes from a press
@@ -388,7 +388,7 @@ namespace UXLib.UI
         /// <summary>
         /// Use this to set a sig change event handler on the device
         /// </summary>
-        protected virtual void SubscribeToSigChanges()
+        protected void SubscribeToSigChanges()
         {
             if (!subscribed)
             {
@@ -403,7 +403,7 @@ namespace UXLib.UI
         /// <summary>
         /// Use this to set a sig change event handler on the device
         /// </summary>
-        protected virtual void UnSubscribeToSigChanges()
+        protected void UnSubscribeToSigChanges()
         {
             if (subscribed)
             {

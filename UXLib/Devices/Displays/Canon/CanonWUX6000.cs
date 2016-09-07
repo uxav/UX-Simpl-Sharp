@@ -254,5 +254,16 @@ namespace UXLib.Devices.Displays.Canon
         {
             get { return string.Empty; }
         }
+
+        public override void Initialize()
+        {
+            if (!this.Connected)
+                this.Connect();
+        }
+
+        public override CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
     }
 }

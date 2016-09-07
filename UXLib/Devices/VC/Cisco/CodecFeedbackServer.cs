@@ -14,24 +14,48 @@ namespace UXLib.Devices.VC.Cisco
     {
         HttpServer server;
         CiscoCodec Codec;
+        EthernetAdapterType AdapterForIPAddress;
 
-        public CodecFeedbackServer(CiscoCodec codec, EthernetAdapterType ethernetAdapterType, int port)
+        public CodecFeedbackServer(CiscoCodec codec, EthernetAdapterType ethernetAdapter, int feedbackListenerPort)
         {
+            AdapterForIPAddress = ethernetAdapter;
             Codec = codec;
-            server = new HttpServer();
-            server.Port = port;
+            server = new HttpServer(OnReceivedData, EthernetAdapterType.EthernetUnknownAdapter);
+            server.Port = feedbackListenerPort;
             server.ServerName = "Cisco Codec Feedback Listener";
-            server.EthernetAdapterToBindTo = ethernetAdapterType;
-            server.KeepAlive = true;
-            server.OnHttpRequest += new OnHttpRequestHandler(OnReceivedData);
             server.Active = true;
+#if DEBUG
+            CrestronConsole.PrintLine("Created Codec Feedback HttpServer");
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.EthernetAdapterToBindTo", server.EthernetAdapterToBindTo);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.ServerName", server.ServerName);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.ValidateRequests", server.ValidateRequests);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.BindV4", server.BindV4);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.BindingV4.BindingAddress", server.BindingV4.BindingAddress);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.BindingV4.EnableNagle", server.BindingV4.EnableNagle);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.BindingV4.EndPointAddress", server.BindingV4.EndPointAddress);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.BindingV4.EndPointPortNumber", server.BindingV4.EndPointPortNumber);
+            CrestronConsole.PrintLine("  {0,50} = {1}", "server.BindingV4.Port", server.BindingV4.Port);
+#endif
         }
 
-        public void Register(int feedbackSlot, string[] expressions)
+        public void Register(int feedbackSlot, string[] expressions, bool deregisterFirst)
         {
             CommandArgs args = new CommandArgs();
-
             args.Add("FeedbackSlot", feedbackSlot.ToString());
+            XDocument response;
+
+            if (deregisterFirst)
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("Deresgistering feedback mechanism with CiscoCodec");
+#endif
+                response = Codec.SendCommand("HttpFeedback/Deregister", args);
+
+#if DEBUG
+                CrestronConsole.PrintLine("Deregister repsonse:\r\n{0}", response.ToString());
+#endif
+            }
+
             args.Add("ServerUrl", this.ServerURL);
 
             int count = 1;
@@ -41,16 +65,20 @@ namespace UXLib.Devices.VC.Cisco
                 args.Add("Expression", count, expression);
                 count++;
             }
-
 #if DEBUG
             CrestronConsole.PrintLine("Resgistering feedback mechanism with CiscoCodec");
 #endif
 
-            XDocument response = Codec.SendCommand("HttpFeedback/Register", args, true);
+            response = Codec.SendCommand("HttpFeedback/Register", args);
 
 #if DEBUG
             CrestronConsole.PrintLine("Register repsonse:\r\n{0}", response.ToString());
 #endif
+        }
+
+        public void Register(int feedbackSlot, string[] expressions)
+        {
+            this.Register(feedbackSlot, expressions, false);
         }
 
         public bool Registered
@@ -60,7 +88,7 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine("Checking codec feedback registration....");
 #endif
-                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback", true);
+                IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback");
 #if DEBUG
                 CrestronConsole.PrintLine("");
 #endif
@@ -87,7 +115,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 return string.Format("http://{0}:{1}/",
                     CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS,
-                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.server.EthernetAdapterToBindTo)), this.server.Port
+                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.AdapterForIPAddress)), this.server.Port
                     );
             }
         }
@@ -221,7 +249,7 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecFeedbackServerReceiveEventArgs : EventArgs
     {
-        public CodecFeedbackServerReceiveEventArgs(string path, XElement element)
+        internal CodecFeedbackServerReceiveEventArgs(string path, XElement element)
         {
             this.Path = path;
             this.Data = element;
@@ -235,13 +263,13 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecIncomingCallEventArgs : EventArgs
     {
-        public CodecIncomingCallEventArgs()
+        internal CodecIncomingCallEventArgs()
         {
 
         }
 
-        public string RemoteURI;
-        public string DisplayNameValue;
-        public Call Call;
+        public string RemoteURI { get; internal set; }
+        public string DisplayNameValue { get; internal set; }
+        public Call Call { get; internal set; }
     }
 }

@@ -39,7 +39,7 @@ namespace UXLib.Devices.Displays.Samsung
 
         bool standbyState;
 
-        public void OnReceive(byte[] packet)
+        public override void OnReceive(byte[] packet)
         {
             this.DeviceCommunicating = true;
 
@@ -126,7 +126,9 @@ namespace UXLib.Devices.Displays.Samsung
                 }
                 else if (packet[4] == 'N') // Packet contains 'Nak'
                 {
-                    ErrorLog.Error("Samsung MDC Received Error with command type {0}", packet[5].ToString("X2"));
+#if DEBUG
+                    ErrorLog.Error("Samsung MDC Received Error with command type 0x{0}", packet[5].ToString("X2"));
+#endif
                 }
             }
         }
@@ -157,7 +159,7 @@ namespace UXLib.Devices.Displays.Samsung
                 PollCommand(CommandType.SerialNumber);
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
-            else
+            else if(this.pollTimer != null)
             {
                 this.pollTimer.Stop();
                 this.pollTimer.Dispose();
@@ -165,12 +167,15 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
-            if (this.ComPort != null)
+            
+            if (this.CommunicationType == CommDeviceType.IP && !this.Connected)
+                this.Connect();
+            else if (this.ComPort != null)
             {
                 this.ComPort.Initialize();
-                PollCommand(CommandType.SerialNumber);
+                //PollCommand(CommandType.SerialNumber);
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
         }
@@ -494,6 +499,17 @@ namespace UXLib.Devices.Displays.Samsung
         public event VolumeDeviceChangeEventHandler VolumeChanged;
 
         #endregion
+
+        public override CommDeviceType CommunicationType
+        {
+            get
+            {
+                if (this.Socket != null)
+                    return CommDeviceType.IP;
+                else
+                    return CommDeviceType.Serial;
+            }
+        }
     }
 
     public delegate void SamsungMDCDisplayVideoSyncEventHandler(SamsungMDCDisplay display, bool value);

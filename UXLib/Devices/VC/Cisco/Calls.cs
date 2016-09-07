@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,58 +11,104 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Calls : IEnumerable<Call>
     {
-        public Calls(CiscoCodec codec)
+        internal Calls(CiscoCodec codec)
         {
             this.Codec = codec;
+            this._Calls = new Dictionary<int, Call>();
             this.Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
             this.Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
         CiscoCodec Codec;
 
-        Dictionary<int, Call> calls = new Dictionary<int, Call>();
-        Dictionary<int, Call> persistantCalls = new Dictionary<int, Call>();
+        Dictionary<int, Call> _Calls { get; set; }
 
         public Call this[int callID]
         {
             get
             {
-                return calls[callID];
+                return _Calls[callID];
             }
         }
 
-        public ReadOnlyDictionary<int, Call> CallLog { get { return new ReadOnlyDictionary<int, Call>(persistantCalls); } }
+        /// <summary>
+        /// Get the count of active calls (Call.Status != CallStatus.Idle)
+        /// </summary>
+        public int Count { get { return _Calls.Count(c => c.Value.Status != CallStatus.Idle); } }
 
-        public int Count { get { return calls.Count; } }
+        /// <summary>
+        /// Get the total count of calls in the log
+        /// </summary>
+        public int CountLog { get { return _Calls.Count; } }
 
-        public int Dial(CommandArgs args)
+        /// <summary>
+        /// Get the calls which are in some form of active state
+        /// </summary>
+        public IEnumerable<Call> Active
+        {
+            get
+            {
+                return this.Where(c => c.Status != CallStatus.Idle);
+            }
+        }
+
+        /// <summary>
+        /// Get the calls which are dialling or connecting
+        /// </summary>
+        public IEnumerable<Call> InProgress
+        {
+            get
+            {
+                return this.Where(c => c.Status == CallStatus.Connecting || c.Status == CallStatus.Dialling);
+            }
+        }
+
+        /// <summary>
+        /// Get the calls which are connected
+        /// </summary>
+        public IEnumerable<Call> Connected
+        {
+            get
+            {
+                return this.Where(c => c.Status == CallStatus.Connected);
+            }
+        }
+
+        /// <summary>
+        /// Get the calls which are connected or on hold
+        /// </summary>
+        public IEnumerable<Call> ConnectedOrHeld
+        {
+            get
+            {
+                return this.Where(c => c.Status == CallStatus.Connected || c.Status == CallStatus.OnHold);
+            }
+        }
+
+        public DialResult Dial(CommandArgs args)
         {
             try
             {
-                if (Codec.SystemUnit.State.NumberOfActiveCalls < Codec.Capabilities.Conference.MaxActiveCalls)
+                XDocument xml = Codec.SendCommand("Dial", args);
+                XElement dialResult = xml.Root.Element("DialResult");
+                if (dialResult.Attribute("status").Value == "OK")
                 {
-                    XDocument xml = Codec.SendCommand("Dial", args, true);
-                    XElement dialResult = xml.Root.Element("DialResult");
-                    if (dialResult.Attribute("status").Value == "OK")
+                    int callID = int.Parse(dialResult.Element("CallId").Value);
+                    if (!_Calls.ContainsKey(callID))
                     {
-                        int callID = int.Parse(dialResult.Element("CallId").Value);
-                        if (!calls.ContainsKey(callID))
-                        {
-                            calls.Add(callID, new Call(Codec, callID));
-                            if (args.ContainsArg("CallType"))
-                                calls[callID].Type = (CallType)Enum.Parse(typeof(CallType), args["CallType"].Value, false);
-                            calls[callID].RemoteNumber = args["Number"].Value;
-                            calls[callID].Direction = CallDirection.Outgoing;
-                            calls[callID].Status = CallStatus.Dialling;
-                            OnCallStatusChange(calls[callID]);
-                        }
-                        return callID;
+                        _Calls.Add(callID, new Call(Codec, callID));
+                        if (args.ContainsArg("CallType"))
+                            _Calls[callID].Type = (CallType)Enum.Parse(typeof(CallType), args["CallType"].Value, false);
+                        _Calls[callID].RemoteNumber = args["Number"].Value;
+                        _Calls[callID].Direction = CallDirection.Outgoing;
+                        _Calls[callID].Status = CallStatus.Dialling;
+                        OnCallStatusChange(_Calls[callID]);
                     }
-                }
-                else
+                    return new DialResult(callID);
+                }   
+                else if(dialResult.Attribute("status").Value == "Error")
                 {
-                    ErrorLog.Warn("Codec: Could not dial, NumberOfActiveCalls = {0}, MaxActiveCalls = {1}",
-                        Codec.SystemUnit.State.NumberOfActiveCalls, Codec.Capabilities.Conference.MaxActiveCalls);
+                    return new DialResult(int.Parse(dialResult.Element("Cause").Value), dialResult.Element("Description").Value);
                 }
             }
             catch (Exception e)
@@ -69,16 +116,16 @@ namespace UXLib.Devices.VC.Cisco
                 ErrorLog.Error("Error in Codec.Dial(), {0}", e.Message);
             }
 
-            return 0;
+            return new DialResult(0, "Unknown Error");
         }
 
-        public int Dial(string number)
+        public DialResult Dial(string number)
         {
             CommandArgs args = new CommandArgs("Number", number);
             return Dial(args);
         }
 
-        public int Dial(string number, CallType callType)
+        public DialResult Dial(string number, CallType callType)
         {
             CommandArgs args = new CommandArgs("Number", number);
             args.Add("CallType", callType.ToString());
@@ -92,7 +139,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Disconnect(int callID)
         {
-            if (calls.ContainsKey(callID))
+            if (_Calls.ContainsKey(callID))
                 Codec.SendCommand("Call/Disconnect", new CommandArgs("CallId", callID));
         }
 
@@ -129,21 +176,18 @@ namespace UXLib.Devices.VC.Cisco
                         int callID = int.Parse(args.Data.Attribute("item").Value);
                         bool ghost = args.Data.Attribute("ghost") != null ? bool.Parse(args.Data.Attribute("ghost").Value) : false;
 
-                        if (ghost && calls.ContainsKey(callID))
+                        if (ghost && _Calls.ContainsKey(callID))
                         {
-                            if (calls[callID].Status != CallStatus.Idle)
-                                calls[callID].Status = CallStatus.Idle;
-                            Call disconnectedCall = calls[callID];
-                            calls.Remove(callID);
+                            if (_Calls[callID].Status != CallStatus.Idle)
+                                _Calls[callID].Status = CallStatus.Idle;
+                            Call disconnectedCall = _Calls[callID];
                             OnCallStatusChange(disconnectedCall, true);
                         }
                         else if (!ghost)
                         {
-                            if (!calls.ContainsKey(callID))
-                                calls.Add(callID, new Call(Codec, callID));
-                            Call call = calls[callID];
-                            if (!persistantCalls.ContainsKey(callID))
-                                persistantCalls.Add(callID, call);
+                            if (!_Calls.ContainsKey(callID))
+                                _Calls.Add(callID, new Call(Codec, callID));
+                            Call call = _Calls[callID];
 #if DEBUG
                             CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Data = \r\n{0}", args.Data.ToString());
                             CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Call ID = {0}", callID);
@@ -203,12 +247,13 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        void Codec_HasConnected(CiscoCodec codec)
+        private void GetCalls()
         {
+
 #if DEBUG
             CrestronConsole.Print("Checking for calls...");
 #endif
-            IEnumerable<XElement> xCalls = Codec.RequestPath("Status/Call", true);
+            IEnumerable<XElement> xCalls = Codec.RequestPath("Status/Call");
 
             if (xCalls != null)
             {
@@ -220,12 +265,12 @@ namespace UXLib.Devices.VC.Cisco
                     int callID = int.Parse(xCall.Attribute("item").Value);
                     Call call;
 
-                    if (calls.ContainsKey(callID))
-                        call = calls[callID];
+                    if (_Calls.ContainsKey(callID))
+                        call = _Calls[callID];
                     else
                     {
                         call = new Call(Codec, callID);
-                        calls.Add(callID, call);
+                        _Calls.Add(callID, call);
                     }
 
                     foreach (XElement e in xCall.Elements())
@@ -276,11 +321,16 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
+        void Codec_HasConnected(CiscoCodec codec)
+        {
+            this.GetCalls();
+        }
+
         #region IEnumerable<Call> Members
 
         public IEnumerator<Call> GetEnumerator()
         {
-            return calls.Values.GetEnumerator();
+            return _Calls.Values.GetEnumerator();
         }
 
         #endregion
@@ -297,29 +347,19 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecCallInfoChangeEventArgs : EventArgs
     {
-        public CodecCallInfoChangeEventArgs(Call call)
+        internal CodecCallInfoChangeEventArgs(Call call)
         {
             this.Call = call;
         }
 
-        public CodecCallInfoChangeEventArgs(Call call, bool disconnected)
+        internal CodecCallInfoChangeEventArgs(Call call, bool disconnected)
         {
             this.Call = call;
             this.HasDisconnected = true;
         }
-        /*
-        public CodecCallInfoChangeEventArgs(Call call, string disconnectCause, CallDisconnectCauseType disconnectCauseType)
-        {
-            this.Call = call;
-            this.HasDisconnected = true;
-            this.DisconnectCause = disconnectCause;
-            this.DisconnectCauseType = disconnectCauseType;
-        }*/
 
         public Call Call;
         public bool HasDisconnected = false;
-        //public string DisconnectCause;
-        //public CallDisconnectCauseType DisconnectCauseType;
     }
 
     public delegate void CodecCallInfoChangeEventHandler(CiscoCodec codec, CodecCallInfoChangeEventArgs args);
