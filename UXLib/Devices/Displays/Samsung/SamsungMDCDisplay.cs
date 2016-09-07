@@ -126,7 +126,9 @@ namespace UXLib.Devices.Displays.Samsung
                 }
                 else if (packet[4] == 'N') // Packet contains 'Nak'
                 {
+#if DEBUG
                     ErrorLog.Error("Samsung MDC Received Error with command type 0x{0}", packet[5].ToString("X2"));
+#endif
                 }
             }
         }
@@ -157,7 +159,7 @@ namespace UXLib.Devices.Displays.Samsung
                 PollCommand(CommandType.SerialNumber);
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
-            else
+            else if(this.pollTimer != null)
             {
                 this.pollTimer.Stop();
                 this.pollTimer.Dispose();
@@ -299,8 +301,7 @@ namespace UXLib.Devices.Displays.Samsung
             {
                 byte[] data = new byte[1];
                 data[0] = Convert.ToByte(value);
-                if (this.PowerStatus == DevicePowerStatus.PowerOn)
-                    SendCommand(CommandType.Mute, data);
+                SendCommand(CommandType.Mute, data);
             }
         }
 

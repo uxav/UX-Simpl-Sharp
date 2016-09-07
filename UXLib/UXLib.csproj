@@ -133,6 +133,7 @@
     <Compile Include="Devices\Displays\NEC\NecLCDMonitor.cs" />
     <Compile Include="Devices\Displays\NEC\NecComPortHandler.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCComPortHandler.cs" />
+    <Compile Include="Devices\Displays\Samsung\SamsungMDCDisplayOneWaySerial.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\Cameras\ICamera.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
