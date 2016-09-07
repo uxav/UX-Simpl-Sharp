@@ -10,12 +10,12 @@ namespace UXLib.Models
 {
     public class Room
     {
-        public Room(uint id)
-            : this(id, null) { }
+        public Room(UXSystem system, uint id)
+            : this(system, id, null) { }
 
-        public Room(uint id, Room parentRoom)
+        public Room(UXSystem system, uint id, Room parentRoom)
         {
-            // Room created with parent!
+            this.System = system;
             this.ID = id;
             this._Name = "";
             this._Location = "";
@@ -35,6 +35,9 @@ namespace UXLib.Models
                 this.MasterRoom = room;
             }
         }
+
+        public UXSystem System { get; private set; }
+        public CrestronControlSystem ControlSystem { get { return System.ControlSystem; } }
 
         /// <summary>
         /// This is the unique ID of the room. Try to use an ordered index
@@ -78,7 +81,17 @@ namespace UXLib.Models
         public Room ParentRoom { get; private set; }
         public Room MasterRoom { get; private set; }
         public Room ChildRoom { get; private set; }
-        public FusionRoom FusionRoom { get; protected set; }
+        public bool HasFusion
+        {
+            get
+            {
+                if (this.Fusion != null)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        public Fusion Fusion { get; protected set; }
 
         public virtual void OnSourceChange(Source previousSource, Source newSource)
         {
@@ -210,39 +223,18 @@ namespace UXLib.Models
             }
         }
 
-        public virtual void FusionRegister(uint ipId, CrestronControlSystem controlSystem)
+        public virtual void FusionAssign(uint ipId)
         {
-            this.FusionRoom = new FusionRoom(ipId, controlSystem, this.Name, Guid.NewGuid().ToString());
-
-            if (this.FusionRoom.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
-            {
-                ErrorLog.Error("Room ID: {0}, {1}, Could not register a Fusion Room instance", this.ID, this.Name);
-            }
-            else
-            {
-                this.FusionRoom.FusionStateChange += new FusionStateEventHandler(FusionRoom_FusionStateChange);
-                this.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
-                this.FusionRoom.OnlineStatusChange += new OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
-            }
-        }
-
-        protected virtual void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
-        {
-            
-        }
-
-        protected virtual void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
-        {
-            
-        }
-
-        protected virtual void FusionRoom_FusionStateChange(FusionBase device, FusionStateEventArgs args)
-        {
-            
+            this.Fusion = new Fusion(this, ipId);
         }
 
         public event RoomDetailsChangeEventHandler RoomDetailsChange;
         public event RoomSourceChangeEventHandler SourceChange;
+
+        public virtual void Initialize()
+        {
+            
+        }
     }
 
     public delegate void RoomDetailsChangeEventHandler(Room room, RoomDetailsChangeEventArgs args);

@@ -2,6 +2,7 @@
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
+using Crestron.SimplSharpPro;
 
 namespace UXLib.Models
 {
@@ -35,9 +36,9 @@ namespace UXLib.Models
             this.RoomList.Add(room);
         }
 
-        public void Add(uint id, string name)
+        public void Add(UXSystem system, uint id, string name)
         {
-            Room newRoom = new Room(id);
+            Room newRoom = new Room(system, id);
             newRoom.Name = name;
 
             if (!this.RoomList.Exists(r => r.ID == id))
@@ -46,11 +47,11 @@ namespace UXLib.Models
             }
         }
 
-        public void Add(uint id, string name, uint parentID)
+        public void Add(UXSystem system, uint id, string name, uint parentID)
         {
             if (this.RoomList.Exists(r => r.ID == parentID) && !this.RoomList.Exists(r => r.ID == id))
             {
-                Room newRoom = new Room(id, this.RoomList.FirstOrDefault(r => r.ID == parentID));
+                Room newRoom = new Room(system, id, this.RoomList.FirstOrDefault(r => r.ID == parentID));
                 newRoom.Name = name;
                 this.RoomList.Add(newRoom);
             }

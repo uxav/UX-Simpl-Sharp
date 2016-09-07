@@ -185,7 +185,10 @@
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
+    <Compile Include="Models\Fusion.cs" />
+    <Compile Include="Models\FusionAssetCollection.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
+    <Compile Include="Models\UXSystem.cs" />
     <Compile Include="Models\VolumeLevel.cs" />
     <Compile Include="Models\VolumeLevelCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
