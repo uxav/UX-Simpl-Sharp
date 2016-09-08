@@ -3,19 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using UXLib.Models;
 
 namespace UXLib.UI
 {
-    public class UIViewControllerCollection : IEnumerable<UIViewController>
+    public class UIViewControllerCollection : UXCollection<UIViewController>, IDisposable
     {
-        protected List<UIViewController> ViewControllers;
+        public UIViewControllerCollection() { }
+
+        public UIViewControllerCollection(UITimeOut timeout)
+        {
+            this.ViewTimeOut = timeout;
+        }
+
         public UITimeOut ViewTimeOut;
 
-        public UIViewController this[uint joinNumber]
+        public override UIViewController this[uint joinNumber]
         {
             get
             {
-                return this.ViewControllers.FirstOrDefault(p => p.VisibleJoinNumber == joinNumber);
+                return base[joinNumber];
+            }
+            internal set
+            {
+                base[joinNumber] = value;
             }
         }
 
@@ -23,30 +34,22 @@ namespace UXLib.UI
         {
             get
             {
-                return this.ViewControllers.FirstOrDefault(p => p.Visible == true);
+                return InternalDictionary.Values.FirstOrDefault(p => p.Visible == true);
             }
-        }
-
-        public UIViewControllerCollection()
-        {
-            ViewControllers = new List<UIViewController>();
-        }
-
-        public UIViewControllerCollection(UITimeOut timeout)
-        {
-            ViewControllers = new List<UIViewController>();
-            this.ViewTimeOut = timeout;
         }
 
         public void Add(UIViewController newView)
         {
-            ViewControllers.Add(newView);
-            newView.VisibilityChange += new UIViewControllerEventHandler(ViewController_VisibilityChange);
+            if (!this.Contains(newView))
+            {
+                this[newView.VisibleJoinNumber] = newView;
+                newView.VisibilityChange += new UIViewControllerEventHandler(ViewController_VisibilityChange);
+            }
         }
 
         public void ShowOnly(UIViewController newView)
         {
-            foreach (UIViewController view in ViewControllers)
+            foreach (UIViewController view in this)
             {
                 if (view != newView)
                 {
@@ -54,15 +57,18 @@ namespace UXLib.UI
                 }
             }
 
-            if (ViewControllers.Contains(newView))
+            if (this.Contains(newView))
             {
                 newView.Show();
             }
         }
 
-        public UIViewController GetCurrentView()
+        public void ShowOnly(uint joinNumber)
         {
-            return ViewControllers.FirstOrDefault(v => v.Visible);
+            if (this.Contains(joinNumber))
+            {
+                this.ShowOnly(this[joinNumber]);
+            }
         }
 
         void ViewController_VisibilityChange(UIViewController sender, UIViewVisibilityEventArgs args)
@@ -73,28 +79,18 @@ namespace UXLib.UI
             }
         }
 
-        public IEnumerator<UIViewController> GetEnumerator()
-        {
-            return this.ViewControllers.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-
         public virtual void Dispose()
         {
             this.ViewTimeOut.Dispose();
 
-            foreach (UIViewController view in ViewControllers)
+            foreach (UIViewController view in this)
             {
                 view.VisibilityChange -= new UIViewControllerEventHandler(ViewController_VisibilityChange);
                 view.Dispose();
             }
 
-            this.ViewControllers.Clear();
-            this.ViewControllers = null;
+            InternalDictionary.Clear();
+            InternalDictionary = null;
         }
     }
 }

@@ -4,58 +4,35 @@ using System.Linq;
 using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using UXLib.Models;
 
 namespace UXLib.UI
 {
-    public class UIControllerCollection : IEnumerable<UIController>
+    public class UIControllerCollection : UXCollection<UIController>
     {
-        private Dictionary<uint, UIController> interfaces;
+        internal UIControllerCollection() { }
 
-        public UIController this[uint id]
+        internal UIControllerCollection(IEnumerable<UIController> uiControllers)
         {
-            get
+            foreach (UIController ui in uiControllers)
             {
-                return this.interfaces[id];
-            }
-        }
-
-        internal UIControllerCollection()
-        {
-            this.interfaces = new Dictionary<uint, UIController>();
-        }
-
-        internal UIControllerCollection(List<UIController> fromList)
-        {
-            interfaces = new Dictionary<uint, UIController>();
-            foreach (UIController ui in fromList)
-            {
-                interfaces[ui.ID] = ui;
+                this[ui.ID] = ui;
             }
         }
 
         public void Add(UIController ui)
         {
-            this.interfaces[ui.ID] = ui;
+            this[ui.ID] = ui;
         }
 
-        public bool IsDefined(uint id)
+        public override bool Contains(uint id)
         {
-            return interfaces.ContainsKey(id);
+            return base.Contains(id);
         }
 
         public UIControllerCollection ForRoom(Models.Room room)
         {
-            return new UIControllerCollection(interfaces.Values.Where(ui => ui.Room == room).ToList());
-        }
-
-        public IEnumerator<UIController> GetEnumerator()
-        {
-            return this.interfaces.Values.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
+            return new UIControllerCollection(InternalDictionary.Values.Where(ui => ui.Room == room));
         }
     }
 }

@@ -5,18 +5,23 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using UXLib.Models;
 
 namespace UXLib.UI
 {
-    public class UIButtonCollection : IEnumerable<UIButton>
+    public class UIButtonCollection : UXCollection<UIButton>, IDisposable
     {
-        private List<UIButton> Buttons;
+        public UIButtonCollection() { }
 
-        public UIButton this[uint pressDigitalJoinNumber]
+        public override UIButton this[uint pressDigitalJoinNumber]
         {
             get
             {
-                return this.Buttons.FirstOrDefault(b => b.PressDigitalJoin.Number == pressDigitalJoinNumber);
+                return base[pressDigitalJoinNumber];
+            }
+            internal set
+            {
+                base[pressDigitalJoinNumber] = value;
             }
         }
 
@@ -24,20 +29,15 @@ namespace UXLib.UI
         {
             get
             {
-                return this.Buttons.Count;
+                return this.Count;
             }
-        }
-
-        public UIButtonCollection()
-        {
-            this.Buttons = new List<UIButton>();
         }
 
         public void Add(UIButton button)
         {
-            if (!this.Buttons.Contains(button))
+            if (!this.Contains(button))
             {
-                this.Buttons.Add(button);
+                this[button.PressDigitalJoin.Number] = button;
                 if (subscribeCount > 0)
                     button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
             }
@@ -47,18 +47,8 @@ namespace UXLib.UI
         {
             if (this._ButtonEvent != null)
             {
-                this._ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime, Buttons.IndexOf(currentObject as UIButton)));
+                this._ButtonEvent(this, new UIButtonCollectionEventArgs(currentObject as UIButton, args.EventType, args.HoldTime, this.IndexOf(currentObject as UIButton)));
             }
-        }
-
-        public IEnumerator<UIButton> GetEnumerator()
-        {
-            return Buttons.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
 
         private event UIButtonCollectionEventHandler _ButtonEvent;
@@ -70,7 +60,7 @@ namespace UXLib.UI
             add
             {
                 if(subscribeCount == 0)
-                    foreach (UIButton button in Buttons)
+                    foreach (UIButton button in this)
                         button.ButtonEvent += new UIObjectButtonEventHandler(OnButtonEvent);
                 
                 subscribeCount++;
@@ -82,16 +72,11 @@ namespace UXLib.UI
                 subscribeCount--;
 
                 if (subscribeCount == 0)
-                    foreach (UIButton button in Buttons)
+                    foreach (UIButton button in this)
                         button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
 
                 _ButtonEvent -= value;
             }
-        }
-
-        public int IndexOf(UIButton button)
-        {
-            return Buttons.IndexOf(button);
         }
 
         /// <summary>
@@ -132,15 +117,15 @@ namespace UXLib.UI
 
             // Free any unmanaged objects here.
             //
-            foreach (UIButton button in Buttons)
+            foreach (UIButton button in this)
             {
                 if (subscribeCount > 0)
                     button.ButtonEvent -= new UIObjectButtonEventHandler(OnButtonEvent);
                 button.Dispose();
             }
 
-            Buttons.Clear();
-            Buttons = null;
+            InternalDictionary.Clear();
+            InternalDictionary = null;
 
             disposed = true;
         }

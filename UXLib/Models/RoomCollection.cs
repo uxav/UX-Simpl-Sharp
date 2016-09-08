@@ -6,65 +6,52 @@ using Crestron.SimplSharpPro;
 
 namespace UXLib.Models
 {
-    public class RoomCollection : IEnumerable<Room>
+    public class RoomCollection : UXCollection<Room>
     {
-        internal RoomCollection()
-        {
-            this.RoomList = new List<Room>();
-        }
-        
-        private List<Room> RoomList;
+        internal RoomCollection() { }
 
-        public Room this[uint id]
+        public override Room this[uint roomID]
         {
             get
             {
-                return this.RoomList.FirstOrDefault(r => r.ID == id);
+                return base[roomID];
+            }
+            internal set
+            {
+                base[roomID] = value;
             }
         }
 
-        public int NumberOfRooms
+        public override bool Contains(uint roomID)
         {
-            get
-            {
-                return this.RoomList.Count;
-            }
+            return base.Contains(roomID);
         }
 
         public void Add(Room room)
         {
-            this.RoomList.Add(room);
+            this[room.ID] = room;
         }
 
-        public void Add(UXSystem system, uint id, string name)
+        public void Add(UXSystem system, uint roomID, string roomName)
         {
-            Room newRoom = new Room(system, id);
-            newRoom.Name = name;
+            Room newRoom = new Room(system, roomID);
+            newRoom.Name = roomName;
 
-            if (!this.RoomList.Exists(r => r.ID == id))
-            {
-                this.RoomList.Add(newRoom);
-            }
+            this[newRoom.ID] = newRoom;
         }
 
         public void Add(UXSystem system, uint id, string name, uint parentID)
         {
-            if (this.RoomList.Exists(r => r.ID == parentID) && !this.RoomList.Exists(r => r.ID == id))
+            if (this.Contains(parentID))
             {
-                Room newRoom = new Room(system, id, this.RoomList.FirstOrDefault(r => r.ID == parentID));
+                Room newRoom = new Room(system, id, this[parentID]);
                 newRoom.Name = name;
-                this.RoomList.Add(newRoom);
+                this[newRoom.ID] = newRoom;
             }
-        }
-
-        public IEnumerator<Room> GetEnumerator()
-        {
-            return this.RoomList.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
+            else
+            {
+                throw new IndexOutOfRangeException(string.Format("Cannot add room with parent as parentID {0} does not exist", parentID));
+            }
         }
     }
 }

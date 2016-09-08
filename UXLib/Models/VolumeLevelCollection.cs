@@ -6,75 +6,73 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Models
 {
-    public class VolumeLevelCollection : IEnumerable<VolumeLevel>
+    public class VolumeLevelCollection : UXCollection<VolumeLevel>
     {
-        public VolumeLevelCollection()
-        {
-            Levels = new List<VolumeLevel>();
-        }
+        public VolumeLevelCollection() { }
 
         public VolumeLevelCollection(List<VolumeLevel> fromLevels)
         {
-            Levels = new List<VolumeLevel>(fromLevels);
-
-#if DEBUG
-            CrestronConsole.PrintLine("Created new VolumeLevelCollection with {0} items.. ", Levels.Count);
-            foreach (VolumeLevel level in Levels)
+            InternalDictionary = new Dictionary<uint, VolumeLevel>();
+            uint count = 0;
+            foreach (VolumeLevel level in fromLevels)
             {
-                CrestronConsole.PrintLine("  {0}: {1} ({2})", Levels.IndexOf(level), level.Device.Name, level.LevelType, ToString());
+                this[count] = level;
+                count++;
             }
-#endif
         }
 
-        List<VolumeLevel> Levels { get; set; }
-
-        public VolumeLevel this[int index]
+        public override VolumeLevel this[uint index]
         {
             get
             {
-                return Levels[index];
+                return base[index];
             }
+            internal set
+            {
+                base[index] = value;
+            }
+        }
+
+        public VolumeLevel this[VolumeLevelType type]
+        {
+            get
+            {
+                return InternalDictionary.Values.FirstOrDefault(l => l.LevelType == type);
+            }
+        }
+
+        public override bool Contains(uint index)
+        {
+            return base.Contains(index);
+        }
+
+        public override bool Contains(VolumeLevel volumeLevel)
+        {
+            return base.Contains(volumeLevel);
+        }
+
+        public bool Contains(VolumeLevelType type)
+        {
+            return InternalDictionary.Values.Any(l => l.LevelType == type);
         }
 
         public VolumeLevelCollection LevelsForType(VolumeLevelType type)
         {
-            return new VolumeLevelCollection(Levels.Where(l => l.LevelType == type).ToList());
-        }
-
-        public int Count
-        {
-            get
-            {
-                return Levels.Count;
-            }
+            return new VolumeLevelCollection(InternalDictionary.Values.Where(l => l.LevelType == type).ToList());
         }
 
         public void Add(Room room, VolumeLevelType type, IVolumeDevice volumeDevice)
         {
-            Levels.Add(new VolumeLevel(room, type, volumeDevice));
+            this.Add(new VolumeLevel(room, type, volumeDevice));
         }
 
-        public void Add(VolumeLevel level)
+        public void Add(VolumeLevel newLevel)
         {
-            Levels.Add(level);
+            for (uint key = 0; key <= uint.MaxValue; key++)
+            {
+                if (!this.Contains(key))
+                    this[key] = newLevel;
+            }
         }
-
-        #region IEnumerable<VolumeLevel> Members
-
-        public IEnumerator<VolumeLevel> GetEnumerator()
-        {
-            return Levels.GetEnumerator();
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-
-        #endregion
     }
 }

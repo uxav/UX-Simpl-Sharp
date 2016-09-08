@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,42 +8,57 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Models
 {
-    public class SourceCollection : IEnumerable<Source>
+    public class SourceCollection : UXCollection<Source>
     {
-        internal SourceCollection()
-        {
-            this.Sources = new List<Source>();
-        }
+        internal SourceCollection() { }
 
         internal SourceCollection(IEnumerable<Source> listOfSources)
         {
-            this.Sources = new List<Source>(listOfSources);
+            InternalDictionary = new Dictionary<uint, Source>();
+            foreach (Source source in listOfSources)
+            {
+                this[source.ID] = source;
+            }
         }
 
-        List<Source> Sources;
-
-        public Source this[uint id]
+        public override Source this[uint sourceID]
         {
             get
             {
-                return this.Sources.FirstOrDefault(s => s.ID == id);
+                return base[sourceID];
+            }
+            internal set
+            {
+                base[sourceID] = value;
             }
         }
 
-        public int Count
+        public Source this[SourceType type]
         {
             get
             {
-                return this.Sources.Count;
+                return InternalDictionary.Values.FirstOrDefault(s => s.SourceType == type);
             }
         }
 
-        public void AddSource(Source newSource)
+        public void Add(Source source)
         {
-            if (!this.Sources.Contains(newSource))
-            {
-                this.Sources.Add(newSource);
-            }
+            this[source.ID] = source;
+        }
+        
+        public override bool Contains(uint sourceID)
+        {
+            return base.Contains(sourceID);
+        }
+
+        public bool Contains(SourceType type)
+        {
+            return InternalDictionary.Values.Any(s => s.SourceType == type);
+        }
+
+        public override bool Contains(Source source)
+        {
+            return base.Contains(source);
         }
 
         public SourceCollection GetSingleSources()
@@ -62,26 +78,32 @@ namespace UXLib.Models
 
         public SourceCollection SourcesInGroup(string groupName)
         {
-            return new SourceCollection(this.Sources.Where(s => s.GroupName == groupName).ToList());
+            return new SourceCollection(InternalDictionary.Values.Where(s => s.GroupName == groupName));
         }
 
         public SourceCollection SourcesOfType(SourceType sourceType)
         {
-            return new SourceCollection(this.Sources.Where(s => s.SourceType == sourceType).ToList());
+            return new SourceCollection(InternalDictionary.Values.Where(s => s.SourceType == sourceType));
         }
 
-        public int IndexOf(Source source)
+        public override int IndexOf(Source source)
         {
-            return this.Sources.IndexOf(source);
+            return base.IndexOf(source);
         }
 
-        public ReadOnlyCollection<string> GetGroupedSourcesGroupNames()
+        public ReadOnlyCollection<string> GroupNames()
         {
+            return this.GroupNames(false);
+        }
+
+        public ReadOnlyCollection<string> GroupNames(bool ofSourcesInGroupsOfMoreThanOne)
+        {
+            UXCollection<string> r = new UXCollection<string>();
             List<string> results = new List<string>();
 
             foreach (Source source in this)
             {
-                if (this.SourcesInGroup(source.GroupName).Count > 1 && !results.Contains(source.GroupName))
+                if ((this.SourcesInGroup(source.GroupName).Count > 1 || !ofSourcesInGroupsOfMoreThanOne) && !results.Contains(source.GroupName))
                 {
                     results.Add(source.GroupName);
                 }
@@ -94,17 +116,7 @@ namespace UXLib.Models
         {
             for (uint id = 1; id < uint.MaxValue; id++)
             {
-                bool exists = false;
-                foreach (Source source in Sources)
-                {
-                    if (source.ID == id)
-                    {
-                        exists = true;
-                        break;
-                    }
-                }
-
-                if (!exists)
+                if (!this.Contains(id))
                     return id;
             }
 
@@ -113,17 +125,16 @@ namespace UXLib.Models
 
         public SourceCollection ForRoom(Room room)
         {
-            return new SourceCollection(this.Sources.Where(s => s.Room == room).ToList());
+            return new SourceCollection(InternalDictionary.Values.Where(s => s.Room == room));
         }
 
-        public IEnumerator<Source> GetEnumerator()
+        #region IEnumerable Members
+
+        public new IEnumerator GetEnumerator()
         {
-            return Sources.GetEnumerator();
+            return base.GetEnumerator();
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        #endregion
     }
 }
