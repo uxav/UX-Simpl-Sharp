@@ -134,6 +134,8 @@ namespace UXLib.Devices.VC.Cisco
 
         public event CodecIncomingCallEventHandler IncomingCallEvent;
 
+        public event CodecUserInterfaceWidgetActionEventHandler WidgetActionEvent;
+
         void OnReceivedData(object sender, OnHttpRequestArgs args)
         {
             try
@@ -172,30 +174,58 @@ namespace UXLib.Devices.VC.Cisco
 
                     if (element.XName.LocalName == "Event" && element.HasElements)
                     {
-                        switch (element.Elements().First().XName.LocalName)
+                        foreach (XElement eventElement in element.Elements())
                         {
-                            case "IncomingCallIndication":
-                                CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
-                                foreach (XElement e in element.Elements().First().Elements())
-                                {
-                                    switch (e.XName.LocalName)
+                            switch (eventElement.XName.LocalName)
+                            {
+                                case "IncomingCallIndication":
+                                    CodecIncomingCallEventArgs incomingCallArgs = new CodecIncomingCallEventArgs();
+                                    foreach (XElement e in eventElement.Elements())
                                     {
-                                        case "RemoteURI":
-                                            incomingCallArgs.RemoteURI = e.Value;
-                                            break;
-                                        case "DisplayNameValue":
-                                            incomingCallArgs.DisplayNameValue = e.Value;
-                                            break;
-                                        case "CallId":
-                                            incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
-                                            break;
+                                        switch (e.XName.LocalName)
+                                        {
+                                            case "RemoteURI":
+                                                incomingCallArgs.RemoteURI = e.Value;
+                                                break;
+                                            case "DisplayNameValue":
+                                                incomingCallArgs.DisplayNameValue = e.Value;
+                                                break;
+                                            case "CallId":
+                                                incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
+                                                break;
+                                        }
                                     }
-                                }
 
-                                if (IncomingCallEvent != null)
-                                    IncomingCallEvent(Codec, incomingCallArgs);
+                                    if (IncomingCallEvent != null)
+                                        IncomingCallEvent(Codec, incomingCallArgs);
 
-                                break;
+                                    break;
+                                case "UserInterface":
+                                    try
+                                    {
+                                        foreach (XElement widget in eventElement.Element("Extensions").Elements("Widget"))
+                                        {
+                                            foreach (XElement action in widget.Elements("Action"))
+                                            {
+#if DEBUG
+                                                CrestronConsole.PrintLine(action.ToString());
+#endif
+                                                if (WidgetActionEvent != null)
+                                                    WidgetActionEvent(this.Codec,
+                                                        new CodecUserInterfaceWidgetActionEventArgs(
+                                                            action.Element("WidgetId").Value,
+                                                            action.Element("Value").Value,
+                                                            (UserInterfaceActionType)Enum.Parse(typeof(UserInterfaceActionType),
+                                                            action.Element("Type").Value, true)));
+                                            }
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        ErrorLog.Exception("Error in codec event handler for UserInterface Widgets", e);
+                                    }
+                                    break;
+                            }
                         }
                     }
                     else
@@ -271,5 +301,21 @@ namespace UXLib.Devices.VC.Cisco
         public string RemoteURI { get; internal set; }
         public string DisplayNameValue { get; internal set; }
         public Call Call { get; internal set; }
+    }
+
+    public delegate void CodecUserInterfaceWidgetActionEventHandler(CiscoCodec codec, CodecUserInterfaceWidgetActionEventArgs args);
+
+    public class CodecUserInterfaceWidgetActionEventArgs : EventArgs
+    {
+        public CodecUserInterfaceWidgetActionEventArgs(string id, string value, UserInterfaceActionType action)
+        {
+            WidgetID = id;
+            Value = value;
+            Action = action;
+        }
+
+        public string WidgetID { get; private set; }
+        public string Value { get; private set; }
+        public UserInterfaceActionType Action { get; private set; }
     }
 }

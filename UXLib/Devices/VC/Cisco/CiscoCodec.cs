@@ -48,6 +48,9 @@ namespace UXLib.Devices.VC.Cisco
 
         CodecHTTPClient HttpClient { get; set; }
 
+        /// <summary>
+        /// Returns true if the HttpClient for the codec is busy running a process
+        /// </summary>
         public bool HttpClientBusy { get { return this.HttpClient.Busy; } }
 
         internal CodecFeedbackServer FeedbackServer { get; set; }
@@ -126,10 +129,10 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Video/Input",
                 "/Status/Video/Selfview",
                 "/Status/Cameras/SpeakerTrack",
-                "/Event/IncomingCallIndication",
                 "/Status/Call",
                 "/Status/Conference",
-                "/Status/UserInterface"
+                "/Event/IncomingCallIndication",
+                "/Event/UserInterface/Extensions/Widget"
             }, deregisterFirst);
         }
 
@@ -380,6 +383,34 @@ namespace UXLib.Devices.VC.Cisco
             if (IncomingCall != null)
                 IncomingCall(this, args);
         }
+
+        public event CodecUserInterfaceWidgetActionEventHandler WidgetActionEvent;
+
+        void FeedbackServer_WidgetActionEvent(CiscoCodec codec, CodecUserInterfaceWidgetActionEventArgs args)
+        {
+            if (this.WidgetActionEvent != null)
+                this.WidgetActionEvent(codec, args);
+        }
+
+        public void WidgetSetValue(string widgetID, string value)
+        {
+            this.SendCommand("UserInterface/Extensions/Widget/SetValue", new CommandArgs()
+                .Add("WidgetId", widgetID)
+                .Add("Value", value));
+        }
+
+        public void WidgetSetValue(string widgetID, int value)
+        {
+            this.SendCommand("UserInterface/Extensions/Widget/SetValue", new CommandArgs()
+                .Add("WidgetId", widgetID)
+                .Add("Value", value));
+        }
+
+        public void WidgetUnsetValue(string widgetID)
+        {
+            this.SendCommand("UserInterface/Extensions/Widget/UnsetValue",
+                new CommandArgs("WidgetId", widgetID));
+        }
     }
 
     /// <summary>
@@ -396,5 +427,13 @@ namespace UXLib.Devices.VC.Cisco
         Off,
         LocalRemote,
         LocalOnly
+    }
+
+    public enum UserInterfaceActionType
+    {
+        Pressed,
+        Changed,
+        Released,
+        Clicked
     }
 }

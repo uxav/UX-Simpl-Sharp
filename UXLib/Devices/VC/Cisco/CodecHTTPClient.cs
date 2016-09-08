@@ -390,24 +390,28 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        public void Add(string name, string value)
+        public CommandArgs Add(string name, string value)
         {
             commands.Add(new CommandArg(name, value));
+            return this;
         }
 
-        public void Add(string name, int value)
+        public CommandArgs Add(string name, int value)
         {
             commands.Add(new CommandArg(name, value));
+            return this;
         }
 
-        public void Add(string name, int itemIndex, string value)
+        public CommandArgs Add(string name, int itemIndex, string value)
         {
             commands.Add(new CommandArg(name, itemIndex, value));
+            return this;
         }
 
-        public void Add(CommandArg arg)
+        public CommandArgs Add(CommandArg arg)
         {
             commands.Add(arg);
+            return this;
         }
 
         public bool ContainsArg(string name)

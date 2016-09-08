@@ -5,10 +5,11 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using UXLib.Models;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class Cameras : IEnumerable<Camera>
+    public class Cameras : UXCollection<Camera>
     {
         internal Cameras(CiscoCodec codec)
         {
@@ -18,13 +19,24 @@ namespace UXLib.Devices.VC.Cisco
         }
 
         CiscoCodec Codec;
-        Dictionary<int, Camera> _Cameras = new Dictionary<int, Camera>();
 
-        public Camera this[int cameraID]
+        public override Camera this[uint cameraID]
         {
             get
             {
-                return _Cameras[cameraID];
+                return base[cameraID];
+            }
+            internal set
+            {
+                base[cameraID] = value;
+            }
+        }
+
+        public IEnumerable<Camera> Connected
+        {
+            get
+            {
+                return InternalDictionary.Values.Where(c => c.Connected);
             }
         }
 
@@ -38,7 +50,7 @@ namespace UXLib.Devices.VC.Cisco
 
                 foreach (XElement element in statusInfo.Elements("Camera"))
                 {
-                    int cameraId = int.Parse(element.Attribute("item").Value);
+                    uint cameraId = uint.Parse(element.Attribute("item").Value);
 #if DEBUG
                     CrestronConsole.PrintLine("Info for Camera {0}:", cameraId);
 
@@ -47,40 +59,35 @@ namespace UXLib.Devices.VC.Cisco
                         CrestronConsole.PrintLine("   Camera.{0} = {1}", innerElement.XName.LocalName, innerElement.Value);
                     }
 #endif
-
-                    Camera newCamera = new Camera(Codec, cameraId,
-                        bool.Parse(element.Element("Connected").Value),
-                        element.Element("MacAddress").Value,
-                        element.Element("Manufacturer").Value,
-                        element.Element("Model").Value,
-                        element.Element("SerialNumber").Value,
-                        element.Element("SoftwareID").Value);
-
-                    _Cameras[cameraId] = newCamera;
+                    if (bool.Parse(element.Element("Connected").Value))
+                    {
+                        if (!this.Contains(cameraId))
+                        {
+                            Camera newCamera = new Camera(Codec, cameraId,
+                                bool.Parse(element.Element("Connected").Value),
+                                element.Element("MacAddress").Value,
+                                element.Element("Manufacturer").Value,
+                                element.Element("Model").Value,
+                                element.Element("SerialNumber").Value,
+                                element.Element("SoftwareID").Value);
+                            this[cameraId] = newCamera;
+                        }
+                        else
+                        {
+                            this[cameraId].Connected = bool.Parse(element.Element("Connected").Value);
+                            this[cameraId].MacAddress = element.Element("MacAddress").Value;
+                            this[cameraId].Manufacturer = element.Element("Manufacturer").Value;
+                            this[cameraId].Model = element.Element("Model").Value;
+                            this[cameraId].SerialNumber = element.Element("SerialNumber").Value;
+                            this[cameraId].SoftwareID = element.Element("SoftwareID").Value;
+                        }
+                    }
                 }
             }
             catch (Exception e)
             {
-                ErrorLog.Exception("Error in Cameras.Codec_HasConnected", e);
+                ErrorLog.Exception("Error parsing camera information for CiscoCodec", e);
             }
         }
-
-        #region IEnumerable<Camera> Members
-
-        public IEnumerator<Camera> GetEnumerator()
-        {
-            return _Cameras.Values.GetEnumerator();
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-
-        #endregion
     }
 }

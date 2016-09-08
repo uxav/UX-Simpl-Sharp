@@ -9,7 +9,7 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Camera : ICamera
     {
-        internal Camera(CiscoCodec codec, int id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
+        internal Camera(CiscoCodec codec, uint id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
         {
             this.Codec = codec;
             this.ID = id;
@@ -23,24 +23,24 @@ namespace UXLib.Devices.VC.Cisco
 
         CiscoCodec Codec { get; set; }
 
-        public int ID { get; protected set; }
-        public bool Connected { get; protected set; }
-        public string MacAddress { get; protected set; }
-        public string Manufacturer { get; protected set; }
-        public string Model { get; protected set; }
-        public string SerialNumber { get; protected set; }
-        public string SoftwareID { get; protected set; }
+        public uint ID { get; internal set; }
+        public bool Connected { get; internal set; }
+        public string MacAddress { get; internal set; }
+        public string Manufacturer { get; internal set; }
+        public string Model { get; internal set; }
+        public string SerialNumber { get; internal set; }
+        public string SoftwareID { get; internal set; }
 
         public void Ramp(CameraPanCommand panCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Pan", panCommand.ToString());
             this.Ramp(args);
         }
 
         public void Ramp(CameraPanCommand panCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Pan", panCommand.ToString());
             args.Add("PanSpeed", speed);
             this.Ramp(args);
@@ -48,14 +48,14 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Ramp(CameraTiltCommand tiltCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Tilt", tiltCommand.ToString());
             this.Ramp(args);
         }
 
         public void Ramp(CameraTiltCommand tiltCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Tilt", tiltCommand.ToString());
             args.Add("TiltSpeed", speed);
             this.Ramp(args);
@@ -63,14 +63,14 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Ramp(CameraZoomCommand zoomCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Zoom", zoomCommand.ToString());
             this.Ramp(args);
         }
 
         public void Ramp(CameraZoomCommand zoomCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Zoom", zoomCommand.ToString());
             args.Add("ZoomSpeed", speed);
             this.Ramp(args);
@@ -78,14 +78,14 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Ramp(CameraFocusCommand focusCommand)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Focus", focusCommand.ToString());
             this.Ramp(args);
         }
 
         public void Ramp(CameraFocusCommand focusCommand, int speed)
         {
-            CommandArgs args = new CommandArgs("CameraId", this.ID);
+            CommandArgs args = new CommandArgs("CameraId", (int)this.ID);
             args.Add("Focus", focusCommand.ToString());
             args.Add("FocusSpeed", speed);
             this.Ramp(args);
@@ -98,7 +98,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public void PresetActivateDefaultPosition()
         {
-            this.Codec.SendCommand("Camera/Preset/ActivateDefaultPosition", new CommandArgs("CameraId", this.ID));
+            this.Codec.SendCommand("Camera/Preset/ActivateDefaultPosition", new CommandArgs("CameraId", (int)this.ID));
         }
 
         public void PresetActivate(int presetId)
