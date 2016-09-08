@@ -189,6 +189,8 @@
     <Compile Include="Models\Fusion.cs" />
     <Compile Include="Models\FusionAssetCollection.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
+    <Compile Include="Models\UXCollection.cs" />
+    <Compile Include="Models\UXReadOnlyCollection.cs" />
     <Compile Include="Models\UXSystem.cs" />
     <Compile Include="Models\VolumeLevel.cs" />
     <Compile Include="Models\VolumeLevelCollection.cs" />
