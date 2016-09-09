@@ -54,8 +54,8 @@ namespace UXLib.Devices.Displays.Samsung
                         values[b - 6] = packet[b];
 #if DEBUG
                     //CrestronConsole.PrintLine("");
-                    //CrestronConsole.Print("Samsung Rx: ");
-                    //Tools.PrintBytes(packet, packet.Length);
+                    CrestronConsole.Print("Samsung Rx: ");
+                    Tools.PrintBytes(packet, packet.Length);
 #endif
                     if (Enum.IsDefined(typeof(CommandType), cmd))
                     {
@@ -172,12 +172,10 @@ namespace UXLib.Devices.Displays.Samsung
             
             if (this.CommunicationType == CommDeviceType.IP && !this.Connected)
                 this.Connect();
-            else if (this.ComPort != null)
-            {
+            else if (this.ComPort != null && !this.ComPort.Initialized)
                 this.ComPort.Initialize();
-                //PollCommand(CommandType.SerialNumber);
-                pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
-            }
+            //PollCommand(CommandType.SerialNumber);
+            pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
         }
 
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
