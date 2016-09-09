@@ -188,6 +188,8 @@
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Models\Fusion.cs" />
     <Compile Include="Models\FusionAssetCollection.cs" />
+    <Compile Include="Models\IFusionAsset.cs" />
+    <Compile Include="Models\IFusionDeviceAsset.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
     <Compile Include="Models\UXCollection.cs" />
     <Compile Include="Models\UXReadOnlyCollection.cs" />

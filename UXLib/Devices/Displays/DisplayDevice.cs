@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.Fusion;
 using UXLib.Devices;
+using UXLib.Models;
 
 namespace UXLib.Devices.Displays
 {
-    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
+    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice, IFusionDeviceAsset
     {
         public virtual string Name { get; set; }
 
@@ -154,6 +156,26 @@ namespace UXLib.Devices.Displays
         public abstract void Initialize();
 
         public abstract CommDeviceType CommunicationType { get; }
+
+        #region IFusionAsset Members
+
+        public void AssignFusionAsset(FusionAssetBase asset)
+        {
+            this.FusionAsset = asset;
+        }
+
+        public FusionAssetBase FusionAsset
+        {
+            get;
+            protected set;
+        }
+
+        public AssetTypeName AssetTypeName
+        {
+            get { return AssetTypeName.Display; }
+        }
+
+        #endregion
     }
 
     public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DevicePowerStatusEventArgs args);
