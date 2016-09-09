@@ -55,7 +55,13 @@ namespace UXLib.Devices.Audio.Polycom
                                 case "voip_call_appearance_state":
                                     try
                                     {
-                                        this.CallAppearanceState = (VoipCallAppearanceState)Enum.Parse(typeof(VoipCallAppearanceState), elements[1], true);
+                                        VoipCallAppearanceState state = (VoipCallAppearanceState)Enum.Parse(typeof(VoipCallAppearanceState), elements[1], true);
+                                        if (this.CallAppearanceState != state)
+                                        {
+                                            this.CallAppearanceState = state;
+                                            if (CallAppearanceState == VoipCallAppearanceState.Connected)
+                                                _CallConnectedTime = DateTime.Now;
+                                        }
                                         if (CallAppearanceStateChanged != null)
                                             CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
                                     }
@@ -91,6 +97,17 @@ namespace UXLib.Devices.Audio.Polycom
         public uint CallAppearance { get; protected set; }
 
         public string Label { get; protected set; }
+
+        private DateTime _CallConnectedTime;
+        public TimeSpan CallTimer
+        {
+            get
+            {
+                if (_CallConnectedTime != null)
+                    return DateTime.Now - _CallConnectedTime;
+                else return TimeSpan.FromSeconds(0);
+            }
+        }
 
         public VoipCallAppearanceState CallAppearanceState { get; protected set; }
 
