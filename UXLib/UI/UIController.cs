@@ -145,22 +145,21 @@ namespace UXLib.UI
 
         }
 
-        /// <summary>
-        /// Debug some stuff about the panel's behaviour
-        /// </summary>
-        /// <param name="message">A string to send to the console</param>
-        public void Debug(string message)
+        public void Debug(DateTime startTime, string message, params object[] args)
         {
-            CrestronConsole.PrintLine("UI 0x{00:X} {1}", this.Device.ID, message);
+            string formattedMessage = string.Format(message, args);
+            TimeSpan ts = DateTime.Now - startTime;
+            CrestronConsole.PrintLine("{0} - {1}",
+                string.Format("{0} ({1}) {2:00}:{3:0000}", this.GetType().Name, this.ID, ts.Seconds, ts.Milliseconds),
+                formattedMessage);
         }
 
-        /// <summary>
-        /// Debug some stuff about the panel's behaviour
-        /// </summary>
-        /// <param name="message">A string to send to the notice log</param>
-        public void WriteLog(string message)
+        public void Debug(string message, params object[] args)
         {
-            ErrorLog.Notice("UI 0x{00:X} : {1}", this.Device.ID, message);
+            string formattedMessage = string.Format(message, args);
+            CrestronConsole.PrintLine("{0} - {1}",
+                string.Format("{0} ({1})", this.GetType().Name, this.ID),
+                formattedMessage);
         }
 
         public void Wake()
