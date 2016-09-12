@@ -62,8 +62,15 @@ namespace UXLib.Devices.Audio.Polycom
                                             if (CallAppearanceState == VoipCallAppearanceState.Connected)
                                                 _CallConnectedTime = DateTime.Now;
                                         }
-                                        if (CallAppearanceStateChanged != null)
-                                            CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
+                                        try
+                                        {
+                                            if (CallAppearanceStateChanged != null)
+                                                CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            ErrorLog.Exception(string.Format("Error calling event {0}.CallAppearanceStateChanged", this.GetType().Name), e);
+                                        }
                                     }
                                     catch(Exception e)
                                     {
