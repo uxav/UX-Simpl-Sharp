@@ -71,7 +71,10 @@ namespace UXLib.Models
             for (uint key = 0; key <= uint.MaxValue; key++)
             {
                 if (!this.Contains(key))
+                {
                     this[key] = newLevel;
+                    break;
+                }
             }
         }
     }
