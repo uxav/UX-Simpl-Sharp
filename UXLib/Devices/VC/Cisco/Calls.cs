@@ -147,22 +147,36 @@ namespace UXLib.Devices.VC.Cisco
 
         void OnCallStatusChange(Call call)
         {
-            if (CallStatusChange != null)
-                CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call));
+            try
+            {
+                if (CallStatusChange != null)
+                    CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call));
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error calling event in {0}.CallStatusChange", this.GetType());
+            }
         }
 
         void OnCallStatusChange(Call call, bool hasDisconnected)
         {
-            if (CallStatusChange != null)
+            try
             {
-                if (hasDisconnected)
+                if (CallStatusChange != null)
                 {
-                    CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, true));
+                    if (hasDisconnected)
+                    {
+                        CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, true));
+                    }
+                    else
+                    {
+                        OnCallStatusChange(call);
+                    }
                 }
-                else
-                {
-                    OnCallStatusChange(call);
-                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error calling event in {0}.OnCallStatusChange", this.GetType());
             }
         }
 
@@ -193,6 +207,13 @@ namespace UXLib.Devices.VC.Cisco
                             CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Call ID = {0}", callID);
                             CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Elements().count = {0}", args.Data.Elements().Count());
 #endif
+                            if (call.Status == CallStatus.Connecting && !args.Data.Elements().Any(e => e.XName.LocalName == "Status"))
+                            {
+                                CrestronConsole.PrintLine("Received call status with no status value for call {0} which is currently shown as connecting... Requesting full update",
+                                    call.ID);
+                                this.Update();
+                            }
+
                             foreach (XElement e in args.Data.Elements())
                             {
 #if DEBUG
@@ -247,7 +268,7 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        private void GetCalls()
+        public void Update()
         {
 
 #if DEBUG
@@ -323,7 +344,7 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            this.GetCalls();
+            this.Update();
         }
 
         #region IEnumerable<Call> Members
