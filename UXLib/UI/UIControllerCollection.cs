@@ -10,9 +10,9 @@ namespace UXLib.UI
 {
     public class UIControllerCollection : UXCollection<UIController>
     {
-        internal UIControllerCollection() { }
+        public UIControllerCollection() { }
 
-        internal UIControllerCollection(IEnumerable<UIController> uiControllers)
+        public UIControllerCollection(IEnumerable<UIController> uiControllers)
         {
             foreach (UIController ui in uiControllers)
             {
