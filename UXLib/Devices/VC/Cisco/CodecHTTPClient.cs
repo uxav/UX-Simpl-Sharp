@@ -234,6 +234,18 @@ namespace UXLib.Devices.VC.Cisco
             return this.PutXML(BuildCommand(pathToSend, args));
         }
 
+        public XDocument SendConfiguration(string path, CommandArgs args)
+        {
+            string pathToSend = "Configuration";
+            foreach (string pathElement in path.Split('/'))
+            {
+                if (pathElement.Length > 0 && pathElement != pathToSend)
+                    pathToSend = pathToSend + "/" + pathElement;
+            }
+
+            return this.PutXML(BuildCommand(pathToSend, args));
+        }
+
         public IEnumerable<XElement> RequestPath(string path)
         {
             string pathToSend = "";

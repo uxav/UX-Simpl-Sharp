@@ -266,10 +266,20 @@ namespace UXLib.Devices.VC.Cisco
         /// <param name="path">The XPath of the command</param>
         /// <param name="args">The arguments in the form of a built CommandArgs instance</param>
         /// <returns>XDocument containing the XML response</returns>
-        /// <remarks>This will by default use the SSHClient</remarks>
         public XDocument SendCommand(string path, CommandArgs args)
         {
             return HttpClient.SendCommand(path, args);
+        }
+
+        /// <summary>
+        /// Send a xConfiguation command
+        /// </summary>
+        /// <param name="path">Xpath of the config</param>
+        /// <param name="args">config arguments</param>
+        /// <returns>XDocument containing the XML response</returns>
+        public XDocument SendConfiguration(string path, CommandArgs args)
+        {
+            return HttpClient.SendConfiguration(path, args);
         }
 
         /// <summary>
@@ -331,10 +341,33 @@ namespace UXLib.Devices.VC.Cisco
         {
             SendCommand("Presentation/Stop");
         }
+
+        PresentationSendingMode _PresentationSendingMode;
+
         /// <summary>
         /// Get the current Sending Mode for Presentation
         /// </summary>
-        public PresentationSendingMode PresentationSendingMode { get; private set; }
+        public PresentationSendingMode PresentationSendingMode
+        {
+            get
+            {
+                return _PresentationSendingMode;
+            }
+            private set
+            {
+                if (_PresentationSendingMode != value)
+                {
+                    _PresentationSendingMode = value;
+                    if (PresentationSendingModeChanged != null)
+                        PresentationSendingModeChanged(this);
+                }
+            }
+        }
+
+        /// <summary>
+        /// PresentationSendingMode has changed
+        /// </summary>
+        public event PresentationModeChangedEventHandler PresentationSendingModeChanged;
 
         /// <summary>
         /// Get the current presentation source 
@@ -418,6 +451,8 @@ namespace UXLib.Devices.VC.Cisco
     /// </summary>
     /// <param name="codec">The instance of the Codec</param>
     public delegate void CodecConnectedEventHandler(CiscoCodec codec);
+
+    public delegate void PresentationModeChangedEventHandler(CiscoCodec codec);
 
     /// <summary>
     /// Mode to use in presentations

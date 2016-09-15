@@ -238,6 +238,8 @@ namespace UXLib.Devices.VC.Cisco
 
                             if (path == @"Status/Conference/Site")
                                 break;
+                            if (path == @"Status/Call")
+                                break;
                         }
 
                         if (element == xml.Root && element.Elements().FirstOrDefault() != null)

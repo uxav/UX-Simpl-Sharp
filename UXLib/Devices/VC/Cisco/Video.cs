@@ -40,6 +40,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 _SelfViewMode = value;
                 SelfViewSet(value);
+                if (SelfViewChanged != null) SelfViewChanged(this);
             }
         }
 
@@ -52,6 +53,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 _SelfViewFullscreenMode = value;
                 SelfViewSet(value);
+                if (SelfViewChanged != null) SelfViewChanged(this);
             }
         }
 
@@ -95,21 +97,18 @@ namespace UXLib.Devices.VC.Cisco
 
             switch (args.Path)
             {
-                case "Status/Video/SeflView":
+                case "Status/Video/Seflview":
                     foreach (XElement e in args.Data.Elements())
                     {
                         switch (e.XName.LocalName)
                         {
                             case "Mode": _SelfViewMode = (SelfViewMode)Enum.Parse(typeof(SelfViewMode), e.Value, false);
+                                if (SelfViewChanged != null) SelfViewChanged(this);
                                 break;
                             case "FullscreenMode": _SelfViewFullscreenMode = (SelfViewFullscreenMode)Enum.Parse(typeof(SelfViewFullscreenMode), e.Value, false);
+                                if (SelfViewChanged != null) SelfViewChanged(this);
                                 break;
                         }
-                    }
-
-                    if (SelfViewChanged != null)
-                    {
-                        SelfViewChanged(this);
                     }
                     break;
             }
