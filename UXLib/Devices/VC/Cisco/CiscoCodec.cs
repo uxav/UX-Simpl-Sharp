@@ -9,13 +9,14 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
 using Crestron.SimplSharpPro.CrestronThread;
+using UXLib.Models;
 
 namespace UXLib.Devices.VC.Cisco
 {
     /// <summary>
     /// Class for controlling a Cisco VC Codec
     /// </summary>
-    public class CiscoCodec
+    public class CiscoCodec : IDevice, ICommDevice, IFusionDeviceAsset
     {
         /// <summary>
         /// Create an instance of a Cisco VC Codec
@@ -167,10 +168,13 @@ namespace UXLib.Devices.VC.Cisco
                             this.HttpClient.StartSession();
 
                         this.Registerfeedback(this.FeedbackServer.Registered);
+
+                        this.DeviceCommunicating = true;
                     }
                     catch (Exception e)
                     {
                         ErrorLog.Error("Could not connect to CiscoCodec", e.Message);
+                        this.DeviceCommunicating = false;
                     }
 
                     try
@@ -226,6 +230,8 @@ namespace UXLib.Devices.VC.Cisco
                             this.Registerfeedback();
                         }
 
+                        this.DeviceCommunicating = true;
+
                         Thread.Sleep(60000);
                     }
                     else
@@ -236,7 +242,10 @@ namespace UXLib.Devices.VC.Cisco
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
+                    {
                         ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
+                        this.DeviceCommunicating = false;
+                    }
                 }
             }
         }
@@ -444,6 +453,82 @@ namespace UXLib.Devices.VC.Cisco
             this.SendCommand("UserInterface/Extensions/Widget/UnsetValue",
                 new CommandArgs("WidgetId", widgetID));
         }
+
+        #region IDevice Members
+
+        public string Name
+        {
+            get
+            {
+                return this.SystemUnit.ProductId;
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string DeviceManufacturer
+        {
+            get { return "Cisco"; }
+        }
+
+        public string DeviceModel
+        {
+            get { return SystemUnit.ProductPlatform; }
+        }
+
+        public string DeviceSerialNumber
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
+
+        #region ICommDevice Members
+
+        public bool DeviceCommunicating
+        {
+            get;
+            protected set;
+        }
+
+        public void Send(string stringToSend)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnReceive(string receivedString)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
+
+        #endregion
+
+        #region IFusionAsset Members
+
+        public void AssignFusionAsset(Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        {
+            this.FusionAsset = asset;
+        }
+
+        public Crestron.SimplSharpPro.Fusion.FusionAssetBase FusionAsset
+        {
+            get;
+            protected set;
+        }
+
+        public AssetTypeName AssetTypeName
+        {
+            get { return AssetTypeName.VideoConferenceCodec; }
+        }
+
+        #endregion
     }
 
     /// <summary>

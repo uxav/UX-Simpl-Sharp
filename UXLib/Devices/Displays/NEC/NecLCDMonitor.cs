@@ -344,6 +344,22 @@ namespace UXLib.Devices.Displays.NEC
                 this.ComPort.Send(address, MessageType.GetParameter, str);
         }
 
+        public override string DeviceManufacturer
+        {
+            get
+            {
+                return "NEC";
+            }
+        }
+
+        public override string DeviceModel
+        {
+            get
+            {
+                return "LCD Monitor";
+            }
+        }
+
         #region ISocketDevice Members
 
         public string HostAddress
