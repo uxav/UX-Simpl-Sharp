@@ -74,7 +74,10 @@ namespace UXLib.Devices.Displays.Samsung
                     CrestronConsole.Print("Samsung Tx: ");
                     Tools.PrintBytes(packet, packet.Length);
 #endif
-                    this.ComPort.Send(packet, packet.Length);
+                    if (programStopping)
+                        return null;
+                    else
+                        this.ComPort.Send(packet, packet.Length);
 
                     Thread.Sleep(50);
                 }
@@ -99,6 +102,9 @@ namespace UXLib.Devices.Displays.Samsung
                 try
                 {
                     byte b = RxQueue.Dequeue();
+
+                    if (programStopping)
+                        return null;
 
                     if (b == 0xAA)
                     {
@@ -143,10 +149,12 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
+        bool programStopping = false;
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
             if (programEventType == eProgramStatusEventType.Stopping)
             {
+                programStopping = true;
                 TxThread.Abort();
                 RxThread.Abort();
             }
