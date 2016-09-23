@@ -124,6 +124,7 @@ namespace UXLib.Models
                     }
 #endif
                     OnSourceChange(oldSource, _Source);
+                    FusionUpdate();
                 }
             }
             get
@@ -251,6 +252,24 @@ namespace UXLib.Models
         public virtual void Initialize()
         {
             
+        }
+
+        public virtual void FusionUpdate()
+        {
+            if (this.Fusion != null)
+            {
+                this.Fusion.SetSystemPowerStatus((this.Source != null) ? true : false);
+            }
+        }
+
+        public virtual void FusionSystemPowerRequest(bool powerRequested)
+        {
+            ErrorLog.Notice("Fusion requested power {0} in room \"{1}\"", (powerRequested) ? "on" : "off", this.Name);
+        }
+
+        public virtual void FusionDisplayPowerRequest(bool powerRequested)
+        {
+            ErrorLog.Notice("Fusion requested displays power {0} in room \"{1}\"", (powerRequested) ? "on" : "off", this.Name);
         }
     }
 

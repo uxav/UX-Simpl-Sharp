@@ -4,11 +4,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.Fusion;
 using UXLib.Models;
 
 namespace UXLib.Devices.VC.Cisco
@@ -460,7 +461,9 @@ namespace UXLib.Devices.VC.Cisco
         {
             get
             {
-                return this.SystemUnit.ProductId;
+                if (this.SystemUnit.ProductId != null && this.SystemUnit.ProductId.Length > 0)
+                    return this.SystemUnit.ProductId;
+                return "Video Conference Codec";
             }
             set
             {
@@ -487,10 +490,18 @@ namespace UXLib.Devices.VC.Cisco
 
         #region ICommDevice Members
 
+        bool _DeviceCommunicating;
         public bool DeviceCommunicating
         {
-            get;
-            protected set;
+            get { return _DeviceCommunicating; }
+            protected set
+            {
+                if (_DeviceCommunicating != value)
+                {
+                    _DeviceCommunicating = value;
+                    FusionUpdate();
+                }
+            }
         }
 
         public void Send(string stringToSend)
@@ -512,12 +523,35 @@ namespace UXLib.Devices.VC.Cisco
 
         #region IFusionAsset Members
 
-        public void AssignFusionAsset(Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        public void AssignFusionAsset(Fusion fusionInstance, FusionStaticAsset asset)
         {
             this.FusionAsset = asset;
+
+            fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+            fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+
+            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 1, "Out of Standby", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 2, "In Call", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 3, "Mic Muted", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
         }
 
-        public Crestron.SimplSharpPro.Fusion.FusionAssetBase FusionAsset
+        void FusionRoom_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+                this.FusionUpdate();
+        }
+
+        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        {
+            if (args.UserConfigurableAssetDetailIndex == this.FusionAsset.ParamAssetNumber)
+            {
+                CrestronConsole.PrintLine("{0}.FusionRoom_FusionAssetStateChange", this.GetType());
+                CrestronConsole.PrintLine("  args.EventId = {0}", args.EventId);
+                CrestronConsole.PrintLine("  args.UserConfiguredSigDetail = {0}", args.UserConfiguredSigDetail.GetType());
+            }
+        }
+
+        public FusionStaticAsset FusionAsset
         {
             get;
             protected set;
@@ -526,6 +560,33 @@ namespace UXLib.Devices.VC.Cisco
         public AssetTypeName AssetTypeName
         {
             get { return AssetTypeName.VideoConferenceCodec; }
+        }
+
+        public virtual void FusionUpdate()
+        {
+            try
+            {
+                if (this.FusionAsset != null)
+                {
+                    this.FusionAsset.PowerOn.InputSig.BoolValue = this.DeviceCommunicating;
+                    this.FusionAsset.Connected.InputSig.BoolValue = this.DeviceCommunicating;
+                    this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[1].BoolValue = (this.Standby.StandbyState != StandbyState.Standby);
+                    this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[2].BoolValue = (this.Calls.Count > 0);
+                    this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[3].BoolValue = this.Audio.Microphones.Mute;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.FusionUpdate(), {1}", this.GetType(), e.Message);
+            }
+        }
+
+        public virtual void FusionError(string errorDetails)
+        {
+            if (this.FusionAsset != null)
+            {
+                this.FusionAsset.AssetError.InputSig.StringValue = errorDetails;
+            }
         }
 
         #endregion

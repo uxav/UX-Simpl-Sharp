@@ -9,10 +9,12 @@ namespace UXLib.Models
 {
     public interface IFusionAsset
     {
-        void AssignFusionAsset(FusionAssetBase asset);
-        FusionAssetBase FusionAsset { get; }
+        void AssignFusionAsset(Fusion fusionInstance, FusionStaticAsset asset);
+        FusionStaticAsset FusionAsset { get; }
         AssetTypeName AssetTypeName { get; }
         string Name { get; }
+        void FusionUpdate();
+        void FusionError(string errorDetails);
     }
 
     public enum AssetTypeName

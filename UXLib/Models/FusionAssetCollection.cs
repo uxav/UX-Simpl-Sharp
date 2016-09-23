@@ -8,16 +8,16 @@ using UXLib.Extensions;
 
 namespace UXLib.Models
 {
-    public class FusionAssetCollection : IEnumerable<FusionAssetBase>
+    public class FusionAssetCollection : IEnumerable<FusionStaticAsset>
     {
         public FusionAssetCollection(Fusion fusionInstance)
         {
             Fusion = fusionInstance;
-            Assets = new Dictionary<uint, FusionAssetBase>();
+            Assets = new Dictionary<uint, FusionStaticAsset>();
         }
 
         public Fusion Fusion { get; private set; }
-        private Dictionary<uint, FusionAssetBase> Assets;
+        private Dictionary<uint, FusionStaticAsset> Assets;
 
         public FusionAssetBase this[uint id]
         {
@@ -40,8 +40,8 @@ namespace UXLib.Models
             {
                 this.Fusion.Room.Fusion.FusionRoom.AddAsset(eAssetType.StaticAsset, newId, asset.Name,
                     asset.AssetTypeName.ToString().SplitCamelCase(), Guid.NewGuid().ToString());
-                Assets[newId] = this.Fusion.Room.Fusion.FusionRoom.UserConfigurableAssetDetails[newId].Asset;
-                asset.AssignFusionAsset(Assets[newId]);
+                Assets[newId] = this.Fusion.Room.Fusion.FusionRoom.UserConfigurableAssetDetails[newId].Asset as FusionStaticAsset;
+                asset.AssignFusionAsset(this.Fusion, Assets[newId]);
 
                 if (asset is IFusionDeviceAsset)
                 {
@@ -54,9 +54,9 @@ namespace UXLib.Models
             return null;
         }
 
-        #region IEnumerable<FusionAssetBase> Members
+        #region IEnumerable<FusionStaticAsset> Members
 
-        public IEnumerator<FusionAssetBase> GetEnumerator()
+        public IEnumerator<FusionStaticAsset> GetEnumerator()
         {
             return this.Assets.Values.GetEnumerator();
         }

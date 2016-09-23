@@ -156,6 +156,8 @@ namespace UXLib.Devices.VC.Cisco
             {
                 ErrorLog.Error("Error calling event in {0}.CallStatusChange", this.GetType());
             }
+
+            this.Codec.FusionUpdate();
         }
 
         void OnCallStatusChange(Call call, bool hasDisconnected)
@@ -178,6 +180,8 @@ namespace UXLib.Devices.VC.Cisco
             {
                 ErrorLog.Error("Error calling event in {0}.OnCallStatusChange", this.GetType());
             }
+
+            this.Codec.FusionUpdate();
         }
 
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
