@@ -178,6 +178,7 @@
     <Compile Include="Devices\VC\Cisco\SpeakerTrackCamera.cs" />
     <Compile Include="Devices\VC\Cisco\Standby.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
+    <Compile Include="Devices\VC\Cisco\SystemUnitHardware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
     <Compile Include="Devices\VC\Cisco\Video.cs" />
@@ -190,7 +191,8 @@
     <Compile Include="Models\Fusion.cs" />
     <Compile Include="Models\FusionAssetCollection.cs" />
     <Compile Include="Models\IFusionAsset.cs" />
-    <Compile Include="Models\IFusionDeviceAsset.cs" />
+    <Compile Include="Models\IFusionDynamicAsset.cs" />
+    <Compile Include="Models\IFusionStaticAsset.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
     <Compile Include="Models\UXCollection.cs" />
     <Compile Include="Models\UXReadOnlyCollection.cs" />

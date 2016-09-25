@@ -9,7 +9,7 @@ using UXLib.Models;
 
 namespace UXLib.Devices.Displays
 {
-    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice, IFusionDeviceAsset
+    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice, IFusionStaticAsset
     {
         public virtual string Name { get; set; }
 
@@ -155,14 +155,17 @@ namespace UXLib.Devices.Displays
 
         #region IFusionAsset Members
 
-        public void AssignFusionAsset(Fusion fusionInstance, FusionStaticAsset asset)
+        public void AssignFusionAsset(Fusion fusionInstance, FusionAssetBase asset)
         {
-            this.FusionAsset = asset;
+            if (asset is FusionStaticAsset)
+            {
+                this.FusionAsset = asset as FusionStaticAsset;
 
-            fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
-            fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+                fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+                fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
 
-            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.String, 1, "Input", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.String, 1, "Input", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+            }
         }
 
         void FusionRoom_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)

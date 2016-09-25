@@ -17,7 +17,7 @@ namespace UXLib.Devices.VC.Cisco
     /// <summary>
     /// Class for controlling a Cisco VC Codec
     /// </summary>
-    public class CiscoCodec : IDevice, ICommDevice, IFusionDeviceAsset
+    public class CiscoCodec : IDevice, ICommDevice, IFusionStaticAsset
     {
         /// <summary>
         /// Create an instance of a Cisco VC Codec
@@ -463,7 +463,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 if (this.SystemUnit.ProductId != null && this.SystemUnit.ProductId.Length > 0)
                     return this.SystemUnit.ProductId;
-                return "Video Conference Codec";
+                return "Cisco Codec";
             }
             set
             {
@@ -478,7 +478,7 @@ namespace UXLib.Devices.VC.Cisco
 
         public string DeviceModel
         {
-            get { return SystemUnit.ProductPlatform; }
+            get { return "SX80"; }
         }
 
         public string DeviceSerialNumber
@@ -523,16 +523,20 @@ namespace UXLib.Devices.VC.Cisco
 
         #region IFusionAsset Members
 
-        public void AssignFusionAsset(Fusion fusionInstance, FusionStaticAsset asset)
+        public void AssignFusionAsset(Fusion fusionInstance, FusionAssetBase asset)
         {
-            this.FusionAsset = asset;
+            if (asset is FusionStaticAsset)
+            {
+                this.FusionAsset = asset as FusionStaticAsset;
 
-            fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
-            fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+                fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+                fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
 
-            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 1, "Out of Standby", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
-            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 2, "In Call", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
-            this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 3, "Mic Muted", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 1, "Out of Standby", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 2, "In Call", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 3, "Mic Muted", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.String, 1, "Serial Number", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+            }
         }
 
         void FusionRoom_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
@@ -573,6 +577,7 @@ namespace UXLib.Devices.VC.Cisco
                     this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[1].BoolValue = (this.Standby.StandbyState != StandbyState.Standby);
                     this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[2].BoolValue = (this.Calls.Count > 0);
                     this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[3].BoolValue = this.Audio.Microphones.Mute;
+                    this.FusionAsset.FusionGenericAssetSerialsAsset3.StringInput[1].StringValue = this.SystemUnit.Hardware.ModuleSerialNumber;
                 }
             }
             catch (Exception e)

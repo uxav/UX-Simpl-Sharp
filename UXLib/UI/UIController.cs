@@ -6,11 +6,12 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharpPro.DeviceSupport;
+using UXLib.Devices;
 using UXLib.Models;
 
 namespace UXLib.UI
 {
-    public class UIController
+    public class UIController : IFusionStaticAsset, IDevice
     {
         public UIController(uint id, BasicTriList device)
         {
@@ -173,6 +174,62 @@ namespace UXLib.UI
             if (this.SystemReservedSigs != null)
                 this.SystemReservedSigs.BacklightOff();
         }
+
+        #region IFusionStaticAsset Members
+
+        public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
+
+        #region IFusionAsset Members
+
+        public AssetTypeName AssetTypeName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void AssignFusionAsset(Fusion fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FusionUpdate()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FusionError(string errorDetails)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IDevice Members
+
+
+        public string DeviceManufacturer
+        {
+            get;
+            protected set;
+        }
+
+        public string DeviceModel
+        {
+            get;
+            protected set;
+        }
+
+        public string DeviceSerialNumber
+        {
+            get;
+            protected set;
+        }
+
+        #endregion
     }
 
     public delegate void RoomChangeEventHandler(UIController uiController, RoomChangeEventArgs args);
