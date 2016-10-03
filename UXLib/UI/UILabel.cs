@@ -36,5 +36,40 @@ namespace UXLib.UI
 
         private new UShortInputSig AnalogFeedbackJoin { get; set; }
         private new UShortOutputSig AnalogTouchJoin { get; set; }
+
+        bool _AllCaps = false;
+        public bool AllCaps
+        {
+            set
+            {
+                if (_AllCaps != value)
+                {
+                    _AllCaps = value;
+
+                    this.Text = _Text;
+                }
+            }
+            get
+            {
+                return _AllCaps;
+            }
+        }
+
+        string _Text = string.Empty;
+        public override string Text
+        {
+            get
+            {
+                return _Text;
+            }
+            set
+            {
+                _Text = value;
+                if (this.AllCaps)
+                    base.Text = _Text.ToUpper();
+                else
+                    base.Text = _Text;
+            }
+        }
     }
 }
