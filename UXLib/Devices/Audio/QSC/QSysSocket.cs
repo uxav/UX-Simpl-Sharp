@@ -23,7 +23,7 @@ namespace UXLib.Devices.Audio.QSC
             {
                 PollTimer = new CTimer(GetStatus, null, 10, 10000);
             }
-            else
+            else if (PollTimer != null)
             {
                 PollTimer.Stop();
                 PollTimer.Dispose();

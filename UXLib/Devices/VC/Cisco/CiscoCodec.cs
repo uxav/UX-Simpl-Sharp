@@ -114,7 +114,14 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public void Initialize()
         {
-            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            try
+            {
+                new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error launching {0}.GetStatusThread", this.GetType().Name);
+            }
         }
 
         /// <summary>
@@ -389,7 +396,14 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
             CrestronConsole.PrintLine("Codec State.{0}", State.ToString());
 #endif
-            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            try
+            {
+                new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error launching {0}.GetStatusThread", this.GetType().Name);
+            }
         }
         
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
