@@ -181,6 +181,9 @@
     <Compile Include="Devices\VC\Cisco\SystemUnitHardware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
+    <Compile Include="Devices\VC\Cisco\UserInterface.cs" />
+    <Compile Include="Devices\VC\Cisco\UserInterfaceContactInfo.cs" />
+    <Compile Include="Devices\VC\Cisco\UserInterfaceContactInfoMethod.cs" />
     <Compile Include="Devices\VC\Cisco\Video.cs" />
     <Compile Include="Extensions\ComPortExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />

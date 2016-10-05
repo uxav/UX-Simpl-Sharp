@@ -46,6 +46,7 @@ namespace UXLib.Devices.VC.Cisco
             Video = new Video(this);
             Capabilities = new Capabilities(this);
             Standby = new Standby(this);
+            UserInterface = new UserInterface(this);
         }
 
         CodecHTTPClient HttpClient { get; set; }
@@ -107,6 +108,11 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public Standby Standby { get; private set; }
 
+        /// <summary>
+        /// The UserInterface functions of the codec
+        /// </summary>
+        public UserInterface UserInterface { get; private set; }
+
         Thread CheckStatus { get; set; }
 
         /// <summary>
@@ -140,6 +146,7 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Cameras/SpeakerTrack",
                 "/Status/Call",
                 "/Status/Conference",
+                "/Status/UserInterface",
                 "/Event/IncomingCallIndication",
                 "/Event/UserInterface/Extensions/Widget"
             }, deregisterFirst);
