@@ -266,7 +266,7 @@ namespace UXLib.UI
             get
             {
                 if (!holdTimeSet)
-                    return 200;
+                    return 500;
                 else
                     return _holdTime;
             }

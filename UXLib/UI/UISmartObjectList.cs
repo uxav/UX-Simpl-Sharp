@@ -81,7 +81,7 @@ namespace UXLib.UI
             if (args.EventType == eListDataChangeEventType.IsStartingToLoad)
             {
                 this.Buttons[1].Title = "Loading...";
-                this.Buttons[1].Icon = UIMediaIcons.Info;
+                this.Buttons[1].Icon = UIMediaIcons.Blank;
                 this.NumberOfItems = 1;
                 if (LoadingSubPageOverlay != null)
                     LoadingSubPageOverlay.BoolValue = true;
