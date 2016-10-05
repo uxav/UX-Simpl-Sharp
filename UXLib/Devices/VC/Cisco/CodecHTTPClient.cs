@@ -101,7 +101,7 @@ namespace UXLib.Devices.VC.Cisco
             }
             catch (Exception e)
             {
-                ErrorLog.Error("Error dispatching request to Cisco Codec. Exception: {0}", e.Message);
+                ErrorLog.Error("{0}.Request(HttpClientRequest request) Error: {1}", this.GetType().Name, e.Message);
             }
 
             return null;

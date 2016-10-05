@@ -178,36 +178,33 @@ namespace UXLib.Devices.VC.Cisco
                         this.Registerfeedback(this.FeedbackServer.Registered);
 
                         this.DeviceCommunicating = true;
-                    }
-                    catch (Exception e)
-                    {
-                        ErrorLog.Error("Could not connect to CiscoCodec", e.Message);
-                        this.DeviceCommunicating = false;
-                    }
-
-                    try
-                    {
-                        if (HasConnected != null && !hasConnectedOnce)
+                        
+                        try
                         {
-                            hasConnectedOnce = true;
-                            HasConnected(this);
+                            if (HasConnected != null && !hasConnectedOnce)
+                            {
+                                hasConnectedOnce = true;
+                                HasConnected(this);
+                            }
                         }
+                        catch (Exception e)
+                        {
+                            ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
+                        }
+
+                        CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
+
+                        return null;
                     }
                     catch (Exception e)
                     {
-                        ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
+                        Thread.Sleep(10000);
                     }
-
-                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
-
-                    return null;
                 }
                 catch (Exception e)
                 {
                     if (count >= 5)
                         ErrorLog.Exception("Error in CiscoCodec.GetStatusThread", e);
-
-                    Thread.Sleep(10000);
                 }
             }
         }
