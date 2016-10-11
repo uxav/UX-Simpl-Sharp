@@ -125,6 +125,11 @@
     <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSoftPhone.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabMic.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabMicCollection.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabMicGroupCollection.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabsComHandler.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabsExecutiveElite.cs" />
     <Compile Include="Devices\Audio\Shure\ShureCeilingMic.cs" />
     <Compile Include="Devices\Audio\Shure\ShureCeilingMicCollection.cs" />
     <Compile Include="Devices\Audio\Shure\ShureSocket.cs" />
