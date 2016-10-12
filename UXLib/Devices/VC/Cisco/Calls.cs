@@ -190,6 +190,15 @@ namespace UXLib.Devices.VC.Cisco
             {
                 switch (args.Path)
                 {
+                    case @"Status/Conference/Call":
+                        int confCallID = int.Parse(args.Data.Attribute("item").Value);
+                        if (_Calls.ContainsKey(confCallID) && _Calls[confCallID].Status == CallStatus.Connecting)
+                        {
+                            CrestronConsole.PrintLine("Received conference status for call {0} which is currently shown as connecting... Requesting full update",
+                                    confCallID);
+                            this.Update();
+                        }
+                        break;
                     case @"Status/Call":
                         int callID = int.Parse(args.Data.Attribute("item").Value);
                         bool ghost = args.Data.Attribute("ghost") != null ? bool.Parse(args.Data.Attribute("ghost").Value) : false;

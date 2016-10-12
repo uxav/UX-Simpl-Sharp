@@ -24,6 +24,7 @@ namespace UXLib.Devices.VC.Cisco
             server.Port = feedbackListenerPort;
             server.ServerName = "Cisco Codec Feedback Listener";
             server.Active = true;
+            server.KeepAlive = true;
 #if DEBUG
             CrestronConsole.PrintLine("Created Codec Feedback HttpServer");
             CrestronConsole.PrintLine("  {0,50} = {1}", "server.EthernetAdapterToBindTo", server.EthernetAdapterToBindTo);
@@ -140,13 +141,13 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
+                args.Response.KeepAlive = true;
 #if DEBUG
                 CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
                 if (args.Request.Header.RequestType == "POST")
                 {
                     XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
-
 #if DEBUG
                     CrestronConsole.PrintLine(xml.ToString());
 #endif
@@ -196,8 +197,15 @@ namespace UXLib.Devices.VC.Cisco
                                         }
                                     }
 
-                                    if (IncomingCallEvent != null)
-                                        IncomingCallEvent(Codec, incomingCallArgs);
+                                    try
+                                    {
+                                        if (IncomingCallEvent != null)
+                                            IncomingCallEvent(Codec, incomingCallArgs);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        ErrorLog.Exception("Error calling IncomingCallEvent in codec", e);
+                                    }
 
                                     break;
                                 case "UserInterface":
@@ -238,6 +246,8 @@ namespace UXLib.Devices.VC.Cisco
 
                             if (path == @"Status/Conference/Site")
                                 break;
+                            if (path == @"Status/Conference/Call")
+                                break;
                             if (path == @"Status/Call")
                                 break;
                         }
@@ -247,14 +257,21 @@ namespace UXLib.Devices.VC.Cisco
                             element = element.Elements().FirstOrDefault();
                             path = string.Format("{0}/{1}", path, element.XName.LocalName);
                         }
-
+                            
 #if DEBUG
                         CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
                         CrestronConsole.PrintLine("{0}\r\n", element.ToString());
 #endif
                         if (ReceivedData != null)
                         {
-                            ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                            try
+                            {
+                                ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                            }
+                            catch (Exception e)
+                            {
+                                ErrorLog.Exception("Error calling ReceivedData event in CodecFeedbackServer", e);
+                            }
                         }
                     }
                 }
