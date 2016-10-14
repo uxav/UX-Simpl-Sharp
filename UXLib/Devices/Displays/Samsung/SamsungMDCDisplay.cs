@@ -508,6 +508,22 @@ namespace UXLib.Devices.Displays.Samsung
                     return CommDeviceType.Serial;
             }
         }
+
+        public void WatchOfflineStatus(GenericDevice device)
+        {
+            device.OnlineStatusChange += new OnlineStatusChangeEventHandler(device_OnlineStatusChange);
+        }
+
+        void device_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            if (!args.DeviceOnLine && this.ComPort != null)
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("{0} ComPort Host device is offline!", this.GetType().Name);
+#endif
+                this.ComPort.StopComms();
+            }
+        }
     }
 
     public delegate void SamsungMDCDisplayVideoSyncEventHandler(SamsungMDCDisplay display, bool value);

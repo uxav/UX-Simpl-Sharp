@@ -71,10 +71,10 @@ namespace UXLib.Devices.Displays.Samsung
                 {
                     Byte[] packet = TxQueue.Dequeue();
 #if DEBUG
-                    CrestronConsole.Print("Samsung Tx: ");
-                    Tools.PrintBytes(packet, packet.Length);
+                    //CrestronConsole.Print("Samsung Tx: ");
+                    //Tools.PrintBytes(packet, packet.Length);
 #endif
-                    if (programStopping)
+                    if (programStopping || hostDeviceIsOffline)
                         return null;
                     else
                         this.ComPort.Send(packet, packet.Length);
@@ -103,7 +103,7 @@ namespace UXLib.Devices.Displays.Samsung
                 {
                     byte b = RxQueue.Dequeue();
 
-                    if (programStopping)
+                    if (programStopping || hostDeviceIsOffline)
                         return null;
 
                     if (b == 0xAA)
@@ -130,6 +130,10 @@ namespace UXLib.Devices.Displays.Samsung
                         {
                             byte[] copiedBytes = new byte[byteIndex];
                             Array.Copy(bytes, copiedBytes, byteIndex);
+#if DEBUG
+                            //CrestronConsole.Print("Samsung Rx: ");
+                            //Tools.PrintBytes(copiedBytes, copiedBytes.Length);
+#endif
                             if (ReceivedPacket != null)
                                 ReceivedPacket(this, copiedBytes);
                         }
@@ -154,6 +158,9 @@ namespace UXLib.Devices.Displays.Samsung
         {
             if (programEventType == eProgramStatusEventType.Stopping)
             {
+#if DEBUG
+                CrestronConsole.PrintLine("Samsung com port handler - Program Stopping!");
+#endif
                 programStopping = true;
                 TxThread.Abort();
                 RxThread.Abort();
@@ -177,6 +184,26 @@ namespace UXLib.Devices.Displays.Samsung
             else
             {
                 throw new FormatException("Packet did not begin with correct value");
+            }
+        }
+
+        bool hostDeviceIsOffline = false;
+        public void StopComms()
+        {
+            hostDeviceIsOffline = true;
+            if (TxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
+            {
+                TxThread.Abort();
+#if DEBUG
+                CrestronConsole.PrintLine("Samsung TxThread.Abort due to host device offline!");
+#endif
+            }
+            if (RxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
+            {
+                RxThread.Abort();
+#if DEBUG
+                CrestronConsole.PrintLine("Samsung RxThread.Abort due to host device offline!");
+#endif
             }
         }
     }

@@ -47,6 +47,36 @@ namespace UXLib.Models
         {
             this.Room = room;
         }
+
+        public bool IsPresentationSource
+        {
+            get
+            {
+                switch (this.SourceType)
+                {
+                    case SourceType.AirMedia:
+                    case SourceType.ClickShare:
+                    case SourceType.Laptop:
+                    case SourceType.PC:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool IsWirelessPresentationSource
+        {
+            get
+            {
+                switch (this.SourceType)
+                {
+                    case SourceType.AirMedia:
+                    case SourceType.ClickShare:
+                        return true;
+                }
+                return false;
+            }
+        }
     }
 
     public enum SourceType

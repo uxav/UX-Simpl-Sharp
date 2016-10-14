@@ -257,5 +257,20 @@ namespace UXLib.Devices.Displays.Samsung
         {
             get { return CommDeviceType.OneWayIRSerial; }
         }
+
+        public void WatchOfflineStatus(GenericDevice device)
+        {
+            device.OnlineStatusChange += new OnlineStatusChangeEventHandler(device_OnlineStatusChange);
+        }
+
+        void device_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            if (!args.DeviceOnLine && this.IRPort != null)
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("{0} IRPort Host device is offline!", this.GetType().Name);
+#endif
+            }
+        }
     }
 }

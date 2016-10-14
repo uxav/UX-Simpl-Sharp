@@ -31,6 +31,7 @@ namespace UXLib.UI
                 }
 
                 this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(Device_OnlineStatusChange);
 
                 if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
                 {
@@ -41,6 +42,14 @@ namespace UXLib.UI
             {
                 ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
             }
+        }
+
+        void Device_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            if (!args.DeviceOnLine)
+                ErrorLog.Error("UI Device {0} with ID {1} went offline!", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"));
+            else
+                ErrorLog.Notice("UI Device {0} with ID {1} is online", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"));
         }
 
         public UIController(uint id, BasicTriList device, Room defaultRoom)
@@ -109,7 +118,12 @@ namespace UXLib.UI
 
         void Device_IpInformationChange(GenericBase currentDevice, ConnectedIpEventArgs args)
         {
-            
+            if (args.Connected)
+                ErrorLog.Notice("UI Device {0} with ID {1} is online with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
+                    args.DeviceIpAddress);
+            else
+                ErrorLog.Notice("UI Device {0} with ID {1} is offline with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
+                    args.DeviceIpAddress);
         }
 
         void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
