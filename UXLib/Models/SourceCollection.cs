@@ -86,6 +86,14 @@ namespace UXLib.Models
             return new SourceCollection(InternalDictionary.Values.Where(s => s.SourceType == sourceType));
         }
 
+        public SourceCollection PresentationSources
+        {
+            get
+            {
+                return new SourceCollection(InternalDictionary.Values.Where(s => s.IsPresentationSource));
+            }
+        }
+
         public override int IndexOf(Source source)
         {
             return base.IndexOf(source);
