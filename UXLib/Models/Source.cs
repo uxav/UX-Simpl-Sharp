@@ -77,6 +77,21 @@ namespace UXLib.Models
                 return false;
             }
         }
+
+        public bool IsTelevisionSource
+        {
+            get
+            {
+                switch (this.SourceType)
+                {
+                    case SourceType.TV:
+                    case SourceType.Satellite:
+                    case SourceType.IPTV:
+                        return true;
+                }
+                return false;
+            }
+        }
     }
 
     public enum SourceType

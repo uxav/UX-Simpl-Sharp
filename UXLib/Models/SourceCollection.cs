@@ -94,6 +94,14 @@ namespace UXLib.Models
             }
         }
 
+        public SourceCollection TelevisionSources
+        {
+            get
+            {
+                return new SourceCollection(InternalDictionary.Values.Where(s => s.IsTelevisionSource));
+            }
+        }
+
         public override int IndexOf(Source source)
         {
             return base.IndexOf(source);
