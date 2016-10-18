@@ -82,5 +82,25 @@ namespace UXLib
                 return double.NaN;
             }
         }
+
+        public static void CreateFileFromResourceStream(Crestron.SimplSharp.CrestronIO.Stream input, string filePath)
+        {
+            using (Crestron.SimplSharp.CrestronIO.Stream output = Crestron.SimplSharp.CrestronIO.File.Create(filePath))
+            {
+                CopyStream(input, output);
+            }
+        }
+
+        public static void CopyStream(Crestron.SimplSharp.CrestronIO.Stream input, Crestron.SimplSharp.CrestronIO.Stream output)
+        {
+            // Insert null checking here for production
+            byte[] buffer = new byte[8192];
+
+            int bytesRead;
+            while ((bytesRead = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, bytesRead);
+            }
+        }
     }
 }
