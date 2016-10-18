@@ -179,6 +179,9 @@ namespace UXLib.Devices.VC.Cisco
                 {
                     try
                     {
+                        if (programStopping)
+                            return null;
+
                         if (!this.HttpClient.HasSessionKey)
                             this.HttpClient.StartSession();
 
@@ -262,8 +265,11 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
+        bool programStopping = false;
+
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
+            programStopping = true;
             if (CheckStatus != null)
                 CheckStatus.Abort();
             if (FeedbackServer != null && FeedbackServer.Active)
@@ -363,26 +369,13 @@ namespace UXLib.Devices.VC.Cisco
             SendCommand("Presentation/Stop");
         }
 
-        PresentationSendingMode _PresentationSendingMode;
-
         /// <summary>
         /// Get the current Sending Mode for Presentation
         /// </summary>
         public PresentationSendingMode PresentationSendingMode
         {
-            get
-            {
-                return _PresentationSendingMode;
-            }
-            private set
-            {
-                if (_PresentationSendingMode != value)
-                {
-                    _PresentationSendingMode = value;
-                    if (PresentationSendingModeChanged != null)
-                        PresentationSendingModeChanged(this);
-                }
-            }
+            get;
+            private set;
         }
 
         /// <summary>
@@ -427,6 +420,9 @@ namespace UXLib.Devices.VC.Cisco
                                 PresentationSendingMode = (PresentationSendingMode)Enum.Parse(typeof(PresentationSendingMode), args.Data.Element("LocalSendingMode").Value, true);
                             if (args.Data.Element("LocalSource") != null)
                                 PresentationSource = int.Parse(args.Data.Element("LocalSource").Value);
+
+                            if (PresentationSendingModeChanged != null)
+                                PresentationSendingModeChanged(this);
                         }
                         break;
                 }

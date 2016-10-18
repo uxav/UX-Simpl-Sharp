@@ -101,7 +101,7 @@ namespace UXLib.Devices.VC.Cisco
             }
             catch (Exception e)
             {
-                ErrorLog.Error("{0}.Request(HttpClientRequest request) Error: {1}", this.GetType().Name, e.Message);
+                ErrorLog.Exception(string.Format("{0}.Request(HttpClientRequest request)", this.GetType().Name), e);
             }
 
             return null;

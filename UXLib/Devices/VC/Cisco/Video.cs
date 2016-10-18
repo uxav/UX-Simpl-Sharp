@@ -57,6 +57,11 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
+        public void SetMainVideoSource(int source)
+        {
+            Codec.SendCommand("Video/Input/SetMainVideoSource", new CommandArgs("SourceId", source));
+        }
+
         void Codec_HasConnected(CiscoCodec codec)
         {
             try
