@@ -146,6 +146,8 @@ namespace UXLib.Devices.Audio.Shure
             get { throw new NotImplementedException(); }
         }
 
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
+
         public void OnReceive(string receivedString)
         {
 #if DEBUG

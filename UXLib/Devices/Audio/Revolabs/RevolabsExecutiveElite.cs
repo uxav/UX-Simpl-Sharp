@@ -40,6 +40,8 @@ namespace UXLib.Devices.Audio.Revolabs
             get { throw new NotImplementedException(); }
         }
 
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
+
         public void Send(string stringToSend)
         {
             this.ComHandler.Send(stringToSend);

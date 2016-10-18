@@ -518,9 +518,13 @@ namespace UXLib.Devices.VC.Cisco
                 {
                     _DeviceCommunicating = value;
                     FusionUpdate();
+                    if (this.DeviceCommunicatingChanged != null)
+                        this.DeviceCommunicatingChanged(this, value);
                 }
             }
         }
+
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
 
         public void Send(string stringToSend)
         {

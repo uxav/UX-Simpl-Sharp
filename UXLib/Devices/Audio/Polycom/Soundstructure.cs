@@ -63,6 +63,8 @@ namespace UXLib.Devices.Audio.Polycom
             {
                 this.DeviceCommunicating = false;
                 this.FusionUpdate();
+                if (this.DeviceCommunicatingChanged != null)
+                    this.DeviceCommunicatingChanged(this, false);
             }
         }
 
@@ -91,6 +93,8 @@ namespace UXLib.Devices.Audio.Polycom
         #endregion
 
         public bool DeviceCommunicating { get; protected set; }
+
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
 
         public void Send(string stringToSend)
         {
@@ -143,6 +147,8 @@ namespace UXLib.Devices.Audio.Polycom
             {
                 this.DeviceCommunicating = true;
                 this.FusionUpdate();
+                if (this.DeviceCommunicatingChanged != null)
+                    this.DeviceCommunicatingChanged(this, true);
             }
 
             if (receivedString.Contains(' '))

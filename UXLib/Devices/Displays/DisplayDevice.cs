@@ -77,10 +77,17 @@ namespace UXLib.Devices.Displays
             }
             protected set
             {
-                _deviceCommunicating = value;
-                FusionUpdate();
+                if (_deviceCommunicating != value)
+                {
+                    _deviceCommunicating = value;
+                    FusionUpdate();
+                    if (DeviceCommunicatingChanged != null)
+                        DeviceCommunicatingChanged(this, value);
+                }
             }
         }
+
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
 
         public virtual DevicePowerStatus PowerStatus
         {

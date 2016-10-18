@@ -106,6 +106,8 @@ namespace UXLib.Devices.Audio.QSC
             get { throw new NotImplementedException(); }
         }
 
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
+
         public void OnReceive(string receivedString)
         {
 #if DEBUG

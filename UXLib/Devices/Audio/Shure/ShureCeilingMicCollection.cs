@@ -188,6 +188,8 @@ namespace UXLib.Devices.Audio.Shure
             get { throw new NotImplementedException(); }
         }
 
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
+
         public void Send(string stringToSend)
         {
             throw new NotImplementedException();

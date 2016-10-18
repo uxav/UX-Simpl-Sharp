@@ -13,6 +13,7 @@ namespace UXLib.Devices
         void OnReceive(string receivedString);
         void Initialize();
         CommDeviceType CommunicationType { get; }
+        event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
     }
 
     public enum CommDeviceType
@@ -21,4 +22,6 @@ namespace UXLib.Devices
         IP,
         OneWayIRSerial
     }
+
+    public delegate void ICommDeviceDeviceCommunicatingChangeEventHandler(ICommDevice device, bool communicating);
 }
