@@ -12,12 +12,11 @@ namespace UXLib.UI
         public UISmartObjectList(SmartObject smartObject, ListData listData, BoolInputSig enableJoin, BoolInputSig visibleJoin)
             : base(smartObject, enableJoin, visibleJoin)
         {
-            uint item = 1;
             this.Data = listData;
             this.Data.DataChange += new ListDataChangeEventHandler(Data_DataChange);
             try
             {
-                while (smartObject.BooleanOutput.Contains(string.Format("Item {0} Pressed", item)))
+                for (uint item = 1; item <= this.MaxNumberOfItems; item++)
                 {
                     UISmartObjectButton listButton = new UISmartObjectButton(this,
                         item, this.DeviceSmartObject,
@@ -29,11 +28,8 @@ namespace UXLib.UI
                         string.Format("Item {0} Visible", item)
                         );
                     this.AddButton(listButton);
-
-                    item++;
                 }
 
-                this.MaxNumberOfItems = (ushort)(item - 1);
                 this.NumberOfItems = 0;
             }
             catch (Exception e)
@@ -43,23 +39,7 @@ namespace UXLib.UI
         }
 
         protected ListData Data { get; set; }
-        public ushort MaxNumberOfItems { get; protected set; }
         protected BoolInputSig LoadingSubPageOverlay;
-
-        public ushort NumberOfItems
-        {
-            set
-            {
-                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
-                    this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
-            }
-            get
-            {
-                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
-                    return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
-                return this.MaxNumberOfItems;
-            }
-        }
 
         public void ScrollToItem(ushort item)
         {
