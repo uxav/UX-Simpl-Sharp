@@ -154,7 +154,7 @@ namespace UXLib.Devices.VC.Cisco
             }
             catch (Exception e)
             {
-                ErrorLog.Error("Error calling event in {0}.CallStatusChange", this.GetType());
+                ErrorLog.Error("Error calling event in {0}.OnCallStatusChange", this.GetType());
             }
 
             this.Codec.FusionUpdate();
@@ -192,7 +192,8 @@ namespace UXLib.Devices.VC.Cisco
                 {
                     case @"Status/Conference/Call":
                         int confCallID = int.Parse(args.Data.Attribute("item").Value);
-                        if (_Calls.ContainsKey(confCallID) && _Calls[confCallID].Status == CallStatus.Connecting)
+                        if (_Calls.ContainsKey(confCallID) &&
+                            (_Calls[confCallID].Status == CallStatus.Connecting || _Calls[confCallID].Status == CallStatus.Ringing))
                         {
                             CrestronConsole.PrintLine("Received conference status for call {0} which is currently shown as connecting... Requesting full update",
                                     confCallID);
