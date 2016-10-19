@@ -9,16 +9,16 @@ namespace UXLib.Devices.VC.Cisco
 {
     public class Camera : ICamera
     {
-        internal Camera(CiscoCodec codec, uint id, bool connected, string macAddress, string manufacturer, string model, string serialNumber, string softwareID)
+        internal Camera(CiscoCodec codec, uint id, bool connected, string manufacturer, string model)
         {
             this.Codec = codec;
             this.ID = id;
             this.Connected = connected;
-            this.MacAddress = macAddress;
+            //this.MacAddress = macAddress;
             this.Manufacturer = manufacturer;
             this.Model = model;
-            this.SerialNumber = serialNumber;
-            this.SoftwareID = softwareID;
+            //this.SerialNumber = serialNumber;
+            //this.SoftwareID = softwareID;
         }
 
         CiscoCodec Codec { get; set; }

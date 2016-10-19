@@ -65,21 +65,33 @@ namespace UXLib.Devices.VC.Cisco
                         {
                             Camera newCamera = new Camera(Codec, cameraId,
                                 bool.Parse(element.Element("Connected").Value),
-                                element.Element("MacAddress").Value,
                                 element.Element("Manufacturer").Value,
-                                element.Element("Model").Value,
-                                element.Element("SerialNumber").Value,
-                                element.Element("SoftwareID").Value);
+                                element.Element("Model").Value);
+                            foreach (XElement property in element.Elements())
+                            {
+                                switch (property.XName.LocalName)
+                                {
+                                    case "MacAddress": newCamera.MacAddress = property.Value; break;
+                                    case "SerialNumber": newCamera.SerialNumber = property.Value; break;
+                                    case "SoftwareID": newCamera.SoftwareID = property.Value; break;
+                                }
+                            }
                             this[cameraId] = newCamera;
                         }
                         else
                         {
-                            this[cameraId].Connected = bool.Parse(element.Element("Connected").Value);
-                            this[cameraId].MacAddress = element.Element("MacAddress").Value;
-                            this[cameraId].Manufacturer = element.Element("Manufacturer").Value;
-                            this[cameraId].Model = element.Element("Model").Value;
-                            this[cameraId].SerialNumber = element.Element("SerialNumber").Value;
-                            this[cameraId].SoftwareID = element.Element("SoftwareID").Value;
+                            foreach (XElement property in element.Elements())
+                            {
+                                switch (property.XName.LocalName)
+                                {
+                                    case "Connected": bool.Parse(property.Value); break;
+                                    case "MacAddress": this[cameraId].MacAddress = property.Value; break;
+                                    case "Manufacturer": this[cameraId].Manufacturer = property.Value; break;
+                                    case "Model": this[cameraId].Model = property.Value; break;
+                                    case "SerialNumber": this[cameraId].SerialNumber = property.Value; break;
+                                    case "SoftwareID": this[cameraId].SoftwareID = property.Value; break;
+                                }
+                            }
                         }
                     }
                 }

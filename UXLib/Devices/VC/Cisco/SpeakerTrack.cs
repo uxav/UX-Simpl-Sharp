@@ -39,37 +39,47 @@ namespace UXLib.Devices.VC.Cisco
 
         void Codec_HasConnected(CiscoCodec codec)
         {
-            IEnumerable<XElement> status = Codec.RequestPath("Status/Cameras/SpeakerTrack");
-            
-            foreach (XElement element in status.FirstOrDefault().Elements())
+            try
             {
-                if (element.HasElements)
+                IEnumerable<XElement> status = Codec.RequestPath("Status/Cameras/SpeakerTrack");
+
+                if (status != null)
                 {
-                    if (element.XName.LocalName == "LeftCamera")
-                        LeftCamera = new SpeakerTrackCamera(uint.Parse(element.Element("VideoInputConnector").Value));
-                    else if(element.XName.LocalName == "RightCamera")
-                        RightCamera = new SpeakerTrackCamera(uint.Parse(element.Element("VideoInputConnector").Value));
-                }
-                else
-                {
+                    foreach (XElement element in status.FirstOrDefault().Elements())
+                    {
+                        if (element.HasElements)
+                        {
+                            if (element.XName.LocalName == "LeftCamera")
+                                LeftCamera = new SpeakerTrackCamera(uint.Parse(element.Element("VideoInputConnector").Value));
+                            else if (element.XName.LocalName == "RightCamera")
+                                RightCamera = new SpeakerTrackCamera(uint.Parse(element.Element("VideoInputConnector").Value));
+                        }
+                        else
+                        {
 #if DEBUG
-                    CrestronConsole.PrintLine("Status.Cameras.SpeakerTrack.{0} = {1}", element.XName.LocalName, element.Value);
+                            CrestronConsole.PrintLine("Status.Cameras.SpeakerTrack.{0} = {1}", element.XName.LocalName, element.Value);
 #endif
 
-                    switch (element.XName.LocalName)
-                    {
-                        case "Availability": Availability = (SpeakerTrackAvailability)Enum.Parse(typeof(SpeakerTrackAvailability), element.Value, true); break;
-                        case "Status": if (element.Value.ToLower() == "active") this.Active = true; else this.Active = false; break;
+                            switch (element.XName.LocalName)
+                            {
+                                case "Availability": Availability = (SpeakerTrackAvailability)Enum.Parse(typeof(SpeakerTrackAvailability), element.Value, true); break;
+                                case "Status": if (element.Value.ToLower() == "active") this.Active = true; else this.Active = false; break;
+                            }
+                        }
                     }
+
+#if DEBUG
+                    if (LeftCamera != null)
+                        CrestronConsole.PrintLine("Status.Cameras.SpeakerTrack.LeftCamera.VideoInputConnector = {0}", LeftCamera.VideoInputConnector);
+                    if (RightCamera != null)
+                        CrestronConsole.PrintLine("Status.Cameras.SpeakerTrack.RightCamera.VideoInputConnector = {0}", RightCamera.VideoInputConnector);
+#endif
                 }
             }
-
-#if DEBUG
-            if (LeftCamera != null)
-                CrestronConsole.PrintLine("Status.Cameras.SpeakerTrack.LeftCamera.VideoInputConnector = {0}", LeftCamera.VideoInputConnector);
-            if (RightCamera != null)
-                CrestronConsole.PrintLine("Status.Cameras.SpeakerTrack.RightCamera.VideoInputConnector = {0}", RightCamera.VideoInputConnector);
-#endif
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.Codec_HasConnected, {1}", this.GetType(), e.Message);
+            }
         }
 
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
