@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using UXLib.Models;
 
 namespace UXLib.Devices.VC.Cisco
 {
-    public class Microphones
+    public class Microphones : IVolumeDevice
     {
         internal Microphones(CiscoCodec codec)
         {
@@ -49,6 +50,8 @@ namespace UXLib.Devices.VC.Cisco
         {
             if (MuteChange != null)
                 MuteChange(Codec, Mute);
+            if (VolumeChanged != null)
+                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
         }
 
         void Codec_HasConnected(CiscoCodec codec)
@@ -90,6 +93,51 @@ namespace UXLib.Devices.VC.Cisco
                     break;
             }
         }
+
+        #region IVolumeDevice Members
+
+        public string Name
+        {
+            get { return this.Codec.SystemUnit.ProductId; }
+        }
+
+        public ushort VolumeLevel
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool VolumeMute
+        {
+            get
+            {
+                return this.Mute;
+            }
+            set
+            {
+                this.Mute = value;
+            }
+        }
+
+        public bool SupportsVolumeMute
+        {
+            get { return true; }
+        }
+
+        public bool SupportsVolumeLevel
+        {
+            get { return false; }
+        }
+
+        public event VolumeDeviceChangeEventHandler VolumeChanged;
+
+        #endregion
     }
 
     public delegate void CodecAudioMicrophonesMuteChangeEventHandler(CiscoCodec codec, bool MuteValue);
