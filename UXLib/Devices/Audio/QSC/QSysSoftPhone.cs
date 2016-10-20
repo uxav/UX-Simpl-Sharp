@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 
 namespace UXLib.Devices.Audio.QSC
@@ -158,6 +159,12 @@ namespace UXLib.Devices.Audio.QSC
         public string CallDisplayName { get; protected set; }
 
         /// <summary>
+        /// Get the current caller display number of the connected call
+        /// </summary>
+        [System.ComponentModel.DefaultValue("")]
+        public string CallDisplayNumber { get; protected set; }
+
+        /// <summary>
         /// Set or get the Do Not Disturb state
         /// </summary>
         public bool DND
@@ -242,6 +249,7 @@ namespace UXLib.Devices.Audio.QSC
                 if (control.StringValue == "Disconnected")
                 {
                     this.Connected = false;
+                    this.CallDisplayNumber = string.Empty;
                     this.CallDisplayName = string.Empty;
                     this.IncomingCall = false;
                     CallStatus = QSysPhoneCallState.Disconnected;
@@ -249,7 +257,8 @@ namespace UXLib.Devices.Audio.QSC
 
                 if (control.StringValue.StartsWith("Dialing"))
                 {
-                    this.CallDisplayName = control.StringValue.Split(' ').Last();
+                    this.CallDisplayNumber = control.StringValue.Split(' ').Last();
+                    this.CallDisplayName = this.CallDisplayNumber;
                     CallStatus = QSysPhoneCallState.Dialing;
                 }
 
@@ -264,6 +273,16 @@ namespace UXLib.Devices.Audio.QSC
                 else if (control.StringValue.StartsWith("Incoming call from: "))
                 {
                     this.CallDisplayName = control.StringValue.Remove(0, 20);
+                    this.IncomingCall = true;
+                    CallStatus = QSysPhoneCallState.Incoming;
+                }
+
+                else if (control.StringValue.StartsWith("Incoming Call - "))
+                {
+                    Regex r = new Regex(@"Incoming Call - (\S+) \(([\s\S]*)\)");
+                    Match details = r.Match(control.StringValue);
+                    this.CallDisplayNumber = details.Groups[1].Value;
+                    this.CallDisplayName = details.Groups[2].Value;
                     this.IncomingCall = true;
                     CallStatus = QSysPhoneCallState.Incoming;
                 }
@@ -379,6 +398,14 @@ namespace UXLib.Devices.Audio.QSC
         public string CallDisplayName
         {
             get { return Phone.CallDisplayName; }
+        }
+
+        /// <summary>
+        /// The caller display name or number of the call
+        /// </summary>
+        public string CallDisplayNumber
+        {
+            get { return Phone.CallDisplayNumber; }
         }
 
         /// <summary>
