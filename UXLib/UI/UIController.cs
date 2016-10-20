@@ -55,7 +55,7 @@ namespace UXLib.UI
         public UIController(uint id, BasicTriList device, Room defaultRoom)
             : this(id, device)
         {
-            this.Room = defaultRoom;
+            _room = defaultRoom;
         }
 
         public uint ID { get; protected set; }

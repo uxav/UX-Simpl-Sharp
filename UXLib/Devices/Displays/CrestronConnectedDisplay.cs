@@ -116,7 +116,7 @@ namespace UXLib.Devices.Displays
 
         public override void Initialize()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }
