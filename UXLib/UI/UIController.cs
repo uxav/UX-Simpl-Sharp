@@ -56,6 +56,8 @@ namespace UXLib.UI
             : this(id, device)
         {
             _room = defaultRoom;
+            _room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+            _room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
         }
 
         public uint ID { get; protected set; }
