@@ -21,6 +21,11 @@ namespace UXLib.Models
             this.GroupName = groupName;
         }
 
+        public override string ToString()
+        {
+            return string.Format("Source {0}, {2} Name: \"{1}\"  Group: \"{3}\"", this.ID, this.Name, this.SourceType, this.GroupName);
+        }
+
         public uint ID { get; protected set; }
         public string Name { get; protected set; }
         public string Icon { get; set; }
