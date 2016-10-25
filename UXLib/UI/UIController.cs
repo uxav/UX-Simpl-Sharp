@@ -106,8 +106,16 @@ namespace UXLib.UI
             }
             set
             {
-                this.Room.Source = value;
+                if (this.Room.Source != value)
+                    this.Room.Source = value;
+                else if (value != null)
+                    UIShouldShowSourceControl(value);
             }
+        }
+
+        public virtual void UIShouldShowSourceControl(Source source)
+        {
+
         }
 
         void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
@@ -154,7 +162,8 @@ namespace UXLib.UI
 
         protected virtual void OnSourceChange(Source previousSource, Source newSource)
         {
-
+            if (newSource != null)
+                UIShouldShowSourceControl(newSource);
         }
 
         protected virtual void OnVolumeChange(VolumeLevelType volumeType, ushort volumeLevel)

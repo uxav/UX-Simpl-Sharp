@@ -92,6 +92,11 @@ namespace UXLib.Models
                     case SourceType.TV:
                     case SourceType.Satellite:
                     case SourceType.IPTV:
+                    case SourceType.Sky:
+                    case SourceType.SkyHD:
+                    case SourceType.SkyQ:
+                    case SourceType.FreeView:
+                    case SourceType.FreeSat:
                         return true;
                 }
                 return false;
@@ -132,6 +137,14 @@ namespace UXLib.Models
         AuxInput,
         LiveStream,
         SignagePlayer,
-        GenericWirelessPresentationDevice
+        GenericWirelessPresentationDevice,
+        Sky,
+        SkyHD,
+        SkyQ,
+        FreeView,
+        FreeSat,
+        YouView,
+        YouTube,
+        FireBox
     }
 }
