@@ -271,6 +271,11 @@ namespace UXLib.Models
         {
             ErrorLog.Notice("Fusion requested displays power {0} in room \"{1}\"", (powerRequested) ? "on" : "off", this.Name);
         }
+
+        public virtual void Shutdown()
+        {
+            
+        }
     }
 
     public delegate void RoomDetailsChangeEventHandler(Room room, RoomDetailsChangeEventArgs args);
