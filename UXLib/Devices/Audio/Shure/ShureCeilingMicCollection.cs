@@ -32,6 +32,13 @@ namespace UXLib.Devices.Audio.Shure
 
         void mic_VolumeChanged(IVolumeDevice device, VolumeChangeEventArgs args)
         {
+            // Loop through all mics and check all mics are equal to the calling devices status
+            // If not return so we don't call event for the group
+            foreach (ShureCeilingMic mic in this)
+            {
+                if (device.VolumeMute != mic.VolumeMute)
+                    return;
+            }
             if (VolumeChanged != null)
                 VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
         }
