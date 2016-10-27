@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -195,8 +194,7 @@ namespace UXLib.Devices.VC.Cisco
                         if (_Calls.ContainsKey(confCallID) &&
                             (_Calls[confCallID].Status == CallStatus.Connecting || _Calls[confCallID].Status == CallStatus.Ringing))
                         {
-                            CrestronConsole.PrintLine("Received conference status for call {0} which is currently shown as connecting... Requesting full update",
-                                    confCallID);
+                            CrestronConsole.PrintLine("Received conference status for call {0} which is currently shown as connecting... Requesting full update", confCallID);
                             this.Update();
                         }
                         break;
@@ -264,6 +262,7 @@ namespace UXLib.Devices.VC.Cisco
                                         call.RemoteNumber = e.Value;
                                         break;
                                     case "Status":
+                                        CrestronConsole.PrintLine("Codec RX - Call {0} status = {1}", call.ID, e.Value);
                                         call.Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
                                         break;
                                 }
@@ -284,7 +283,8 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Update()
         {
-
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
 #if DEBUG
             CrestronConsole.Print("Checking for calls...");
 #endif
@@ -347,6 +347,8 @@ namespace UXLib.Devices.VC.Cisco
                     }
                     OnCallStatusChange(call);
                 }
+
+                CrestronConsole.PrintLine("Received Calls from Codec - Process took {0} ms", sw.ElapsedMilliseconds);
             }
             else
             {

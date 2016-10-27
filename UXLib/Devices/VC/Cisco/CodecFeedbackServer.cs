@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
 
@@ -145,11 +146,30 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
+
                 if (args.Request.Header.RequestType == "POST")
                 {
                     XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
 #if DEBUG
                     CrestronConsole.PrintLine(xml.ToString());
+
+                    string logPath = @"NVRAM/Codec Feedback.log";
+                    // This text is added only once to the file.
+                    if (!File.Exists(logPath))
+                    {
+                        // Create a file to write to.
+                        using (StreamWriter sw = File.CreateText(logPath))
+                        {
+                            sw.WriteLine("Codec Feedback Server Log");
+                            sw.WriteLine("");
+                        }
+                    }
+
+                    using (StreamWriter sw = File.AppendText(logPath))
+                    {
+                        sw.WriteLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
+                        sw.WriteLine(xml.ToString());
+                    }
 #endif
                     XElement identification;
                     string productID;
