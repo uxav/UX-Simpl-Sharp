@@ -199,6 +199,23 @@ namespace UXLib.Devices.VC.Cisco
 
                                     try
                                     {
+                                        foreach (XElement e in this.Codec.RequestPath("Configuration/Conference/AutoAnswer").Elements())
+                                        {
+                                            switch (e.XName.LocalName)
+                                            {
+                                                case "Delay": incomingCallArgs.AutoAnswerDelay = int.Parse(e.Value); break;
+                                                case "Mode": incomingCallArgs.AutoAnswerMode = (e.Value == "On"); break;
+                                                case "Mute": incomingCallArgs.AutoAnswerMute = (e.Value == "On"); break;
+                                            }
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        ErrorLog.Error("Error getting auto answer config in Incoming Call event notification handler");
+                                    }
+
+                                    try
+                                    {
                                         if (IncomingCallEvent != null)
                                             IncomingCallEvent(Codec, incomingCallArgs);
                                     }
@@ -314,12 +331,17 @@ namespace UXLib.Devices.VC.Cisco
     {
         internal CodecIncomingCallEventArgs()
         {
-
+            AutoAnswerDelay = 0;
+            AutoAnswerMute = false;
+            AutoAnswerMode = false;
         }
 
         public string RemoteURI { get; internal set; }
         public string DisplayNameValue { get; internal set; }
         public Call Call { get; internal set; }
+        public bool AutoAnswerMode { get; internal set; }
+        public bool AutoAnswerMute { get; internal set; }
+        public int AutoAnswerDelay { get; internal set; }
     }
 
     public delegate void CodecUserInterfaceWidgetActionEventHandler(CiscoCodec codec, CodecUserInterfaceWidgetActionEventArgs args);
