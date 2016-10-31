@@ -14,7 +14,7 @@ namespace UXLib.UI
         {
             get { return this.DeviceSmartObject.ID; }
         }
-        protected SmartObject DeviceSmartObject;
+        public SmartObject DeviceSmartObject { get; protected set; }
         public UISmartObjectButtonCollection Buttons { get; protected set; }
         protected BoolInputSig EnableJoin { get; set; }
         protected BoolInputSig VisibleJoin { get; set; }

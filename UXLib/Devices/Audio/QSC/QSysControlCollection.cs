@@ -41,6 +41,16 @@ namespace UXLib.Devices.Audio.QSC
         }
 
         /// <summary>
+        /// See if a control is contained in this collection
+        /// </summary>
+        /// <param name="id">The ID of the object</param>
+        /// <returns>true if exists in collection</returns>
+        public bool Contains(string id)
+        {
+            return this.Any(c => c.ControlID == id);
+        }
+
+        /// <summary>
         /// Register a named control object
         /// </summary>
         /// <param name="id">The named ID of the control</param>

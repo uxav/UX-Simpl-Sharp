@@ -122,6 +122,10 @@ namespace UXLib.Devices.Audio.QSC
                 this.DesignName = elements[1];
                 this.DesignID = elements[2];
             }
+            else if (elements.First() == "bad_id")
+            {
+                ErrorLog.Error("Received bad_id notification from QSys control \"{0}\"", elements[1]);
+            }
             else if (DataReceived != null)
             {
                 List<string> arguments = new List<string>(elements);

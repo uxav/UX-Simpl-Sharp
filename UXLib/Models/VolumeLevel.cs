@@ -8,6 +8,17 @@ namespace UXLib.Models
 {
     public class VolumeLevel
     {
+        public VolumeLevel(VolumeLevelType levelType, IVolumeDevice volumeDevice)
+        {
+            this.Device = volumeDevice;
+            this.LevelType = levelType;
+            volumeDevice.VolumeChanged += new VolumeDeviceChangeEventHandler(volumeDevice_VolumeChanged);
+
+#if DEBUG
+            CrestronConsole.PrintLine("Created new VolumeLevel {0}, {1}", levelType.ToString(), volumeDevice.Name);
+#endif
+        }
+
         public VolumeLevel(Room room, VolumeLevelType levelType, IVolumeDevice volumeDevice)
         {
             this.Room = room;
