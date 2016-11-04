@@ -25,6 +25,17 @@ namespace UXLib.UI
 
         private new void Hide() { }
 
+        public override void Show()
+        {
+            if (base.Visible)
+            {
+                base.VisibleDigitalJoin.BoolValue = false;
+                base.VisibleDigitalJoin.BoolValue = true;
+            }
+            else
+                base.Show();
+        }
+
         public UIPage(UIController uiController, uint visibleJoinNumber)
             : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber]) { }
 
