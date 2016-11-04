@@ -210,20 +210,27 @@ namespace UXLib.Devices.Audio.QSC
                 CrestronConsole.PrintLine("{0} Value = {1}", args.Arguments[0], args.Arguments[1]);
 #endif
 
+                CrestronConsole.PrintLine("{0} Value = {1}", args.Arguments[0], args.Arguments[1]);
+
                 try
                 {
                     _StringValue = args.Arguments[1];
-                    _Value = float.Parse(args.Arguments[2]);
                     _ControlPosition = float.Parse(args.Arguments[3]);
+                    float newValue = float.Parse(args.Arguments[2]);
 
-                    if (_Value != float.Parse(args.Arguments[2]) && VolumeChanged != null)
+                    if (_Value != newValue)
                     {
-                        if (this.SupportsVolumeLevel)
-                            VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
-                        else if (this.SupportsVolumeMute)
-                            VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                        _Value = newValue;
+
+                        if (VolumeChanged != null)
+                        {
+                            if (this.SupportsVolumeLevel)
+                                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                            else if (this.SupportsVolumeMute)
+                                VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                        }
                     }
-                    
+
                     if (ValueChanged != null)
                         ValueChanged(this);
 
