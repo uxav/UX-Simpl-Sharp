@@ -70,10 +70,23 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         public string DesignName { get; private set; }
 
+        private string _DesignID = "";
         /// <summary>
         /// The unique design ID of the config
         /// </summary>
-        public string DesignID { get; private set; }
+        public string DesignID
+        {
+            get { return _DesignID; }
+            private set
+            {
+                if (_DesignID != value)
+                {
+                    _DesignID = value;
+                    ErrorLog.Notice("New QSys Design ID, \"{0}\" - ID: {1}", this.DesignName, this.DesignID);
+                    CrestronConsole.PrintLine("New QSys Design ID, \"{0}\" - ID: {1}", this.DesignName, this.DesignID);
+                }
+            }
+        }
 
         #region ISocketDevice Members
 
@@ -111,8 +124,7 @@ namespace UXLib.Devices.Audio.QSC
         public void OnReceive(string receivedString)
         {
 #if DEBUG
-            if (!receivedString.StartsWith("sr ") && !receivedString.Contains("cgpa"))
-                CrestronConsole.PrintLine("QSys Rx: {0} ", receivedString);
+            CrestronConsole.PrintLine("QSys Rx: {0} ", receivedString);
 #endif
 
             List<string> elements = QSysSocket.ElementsFromString(receivedString);

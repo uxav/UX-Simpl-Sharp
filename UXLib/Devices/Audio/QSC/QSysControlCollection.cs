@@ -77,7 +77,7 @@ namespace UXLib.Devices.Audio.QSC
                 if (this.QSys.Connected)
                 {
                     this.QSys.Send(string.Format("cgc {0}", changeGroupID));
-                    this.QSys.Send(string.Format("cgs {0} {1}", changeGroupID, 100)); 
+                    this.QSys.Send(string.Format("cgs {0} {1}", changeGroupID, 200)); 
                 }
             }
             this.Controls[id] = new QSysControl(this.QSys, id, controlType, changeGroupID);

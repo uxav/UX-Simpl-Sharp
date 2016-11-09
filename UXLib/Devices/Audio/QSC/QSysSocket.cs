@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using UXLib.Sockets;
 
@@ -32,34 +33,21 @@ namespace UXLib.Devices.Audio.QSC
 
         public static List<string> ElementsFromString(string str)
         {
-            string[] parts = str.Split(' ');
             List<string> elements = new List<string>();
 
-            bool isStringValue = false;
-            foreach (string word in parts)
+            Regex r = new Regex("(['\"])((?:\\\\\\1|.)+?)\\1|([^\\s\"']+)");
+
+            foreach (Match m in r.Matches(str))
             {
-                if (word[0] == '\"')
+                int gCount = 0;
+                foreach (Group g in m.Groups)
                 {
-                    if (word[word.Length - 1] == '\"')
-                        elements.Add(word.Substring(1, word.Length - 2));
-                    else
+                    if (g.Value.Length > 0 && g.Value != "\"" && gCount > 0)
                     {
-                        isStringValue = true;
-                        elements.Add(word.Substring(1, word.Length - 1));
+                        elements.Add(g.Value);
+                        break;
                     }
-                }
-                else if (word[word.Length - 1] == '\"' && isStringValue)
-                {
-                    elements[elements.Count() - 1] = elements.Last() + ' ' + word.Substring(0, word.Length - 1);
-                    isStringValue = false;
-                }
-                else if (isStringValue)
-                {
-                    elements[elements.Count() - 1] = elements.Last() + ' ' + word;
-                }
-                else
-                {
-                    elements.Add(word);
+                    gCount++;
                 }
             }
 
@@ -105,7 +93,8 @@ namespace UXLib.Devices.Audio.QSC
 
                         byteIndex = 0;
 
-                        OnReceivedPacket(copiedBytes);
+                        if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
+                            OnReceivedPacket(copiedBytes);
                     }
                     else if (b > 0 && b <= 127)
                     {
