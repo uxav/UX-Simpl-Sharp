@@ -44,6 +44,23 @@ namespace UXLib.Devices.VC.Cisco
         public DateTime StartTime { get; set; }
         public TimeSpan Duration { get { return DateTime.Now - this.StartTime; } }
 
+        public bool InProgress
+        {
+            get
+            {
+                switch (this.Status)
+                {
+                    case CallStatus.Dialling:
+                    case CallStatus.Ringing:
+                    case CallStatus.Disconnecting:
+                    case CallStatus.Connecting:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
         public void Disconnect()
         {
             SendCommand("Disconnect");

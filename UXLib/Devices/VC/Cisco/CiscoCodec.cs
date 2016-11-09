@@ -194,15 +194,17 @@ namespace UXLib.Devices.VC.Cisco
                             if (HasConnected != null && !hasConnectedOnce)
                             {
                                 hasConnectedOnce = true;
+                                ErrorLog.Notice("{0} has connected successfully.. launching thread to continue status checking", this.GetType().Name);
                                 HasConnected(this);
+
+                                if (CheckStatus == null || CheckStatus.ThreadState != Thread.eThreadStates.ThreadRunning)
+                                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
                             }
                         }
                         catch (Exception e)
                         {
                             ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
                         }
-
-                        CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
 
                         return null;
                     }
@@ -247,7 +249,12 @@ namespace UXLib.Devices.VC.Cisco
 
                         this.DeviceCommunicating = true;
 
-                        Thread.Sleep(60000);
+                        this.Calls.Update();
+
+                        if (this.Calls.Active.Count() > 0)
+                            Thread.Sleep(5000);
+                        else
+                            Thread.Sleep(60000);
                     }
                     else
                     {

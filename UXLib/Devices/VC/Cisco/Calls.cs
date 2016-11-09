@@ -264,6 +264,11 @@ namespace UXLib.Devices.VC.Cisco
                                     case "Status":
                                         CrestronConsole.PrintLine("Codec RX - Call {0} status = {1}", call.ID, e.Value);
                                         call.Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
+
+                                        if (call.InProgress && (checkTimer == null || checkTimer.Disposed))
+                                        {
+                                            checkTimer = new CTimer(CheckConnectingCall, call, 500, 500);
+                                        }
                                         break;
                                 }
                             }
@@ -278,6 +283,29 @@ namespace UXLib.Devices.VC.Cisco
             catch (Exception e)
             {
                 ErrorLog.Exception("Error parsing xml in Calls.FeedbackServer_ReceivedData()", e);
+            }
+        }
+
+        CTimer checkTimer;
+
+        void CheckConnectingCall(object call)
+        {
+            if (this.Any(c => c.InProgress))
+            {
+                CrestronConsole.PrintLine("Calls are in progress ... updating");
+                this.Update();
+                if (!this.Any(c => c.InProgress))
+                {
+                    CrestronConsole.PrintLine("No calls in progress ... disposing timer");
+                    checkTimer.Stop();
+                    checkTimer.Dispose();
+                }
+            }
+            else
+            {
+                CrestronConsole.PrintLine("No calls in progress ... disposing timer");
+                checkTimer.Stop();
+                checkTimer.Dispose();
             }
         }
 
