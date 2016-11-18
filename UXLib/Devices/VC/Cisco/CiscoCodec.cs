@@ -59,6 +59,37 @@ namespace UXLib.Devices.VC.Cisco
         internal CodecFeedbackServer FeedbackServer { get; set; }
 
         /// <summary>
+        /// Get if Logging is enabled or not
+        /// </summary>
+        public bool LoggingEnabled { get; private set; }
+
+        /// <summary>
+        /// Enable logging of Codec events
+        /// </summary>
+        /// <param name="logger">An event logger</param>
+        public void LoggingEnable(Logger logger)
+        {
+            if (logger != null)
+            {
+                this.Logger = logger;
+                LoggingEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// The logger assigned for logging Codec events
+        /// </summary>
+        public Logger Logger { get; private set; }
+
+        /// <summary>
+        /// Stop Logging of codec events
+        /// </summary>
+        public void LoggingStop()
+        {
+            LoggingEnabled = false;
+        }
+
+        /// <summary>
         /// This contains information on the main Codec system unit
         /// </summary>
         public SystemUnit SystemUnit { get; private set; }

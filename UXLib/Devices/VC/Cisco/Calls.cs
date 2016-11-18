@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.Devices.VC.Cisco
 {
@@ -47,7 +48,7 @@ namespace UXLib.Devices.VC.Cisco
         {
             get
             {
-                return this.Where(c => c.Status != CallStatus.Idle);
+                return this.Where(c => c.Status != CallStatus.Idle && !c.Ghost);
             }
         }
 
@@ -101,12 +102,20 @@ namespace UXLib.Devices.VC.Cisco
                         _Calls[callID].RemoteNumber = args["Number"].Value;
                         _Calls[callID].Direction = CallDirection.Outgoing;
                         _Calls[callID].Status = CallStatus.Dialling;
-                        OnCallStatusChange(_Calls[callID]);
+                        OnCallStatusChange(_Calls[callID], CallInfoChangeNotificationSource.DialRequest);
+                    }
+                    if (this.Codec.LoggingEnabled)
+                    {
+                        this.Codec.Logger.Log("Dialed call with API - Result ok - Call ID: {0}", callID);
                     }
                     return new DialResult(callID);
                 }   
                 else if(dialResult.Attribute("status").Value == "Error")
                 {
+                    if (this.Codec.LoggingEnabled)
+                    {
+                        this.Codec.Logger.Log("Dialed call with API - Result error - {0}", dialResult.Element("Description").Value);
+                    }
                     return new DialResult(int.Parse(dialResult.Element("Cause").Value), dialResult.Element("Description").Value);
                 }
             }
@@ -144,36 +153,12 @@ namespace UXLib.Devices.VC.Cisco
 
         public event CodecCallInfoChangeEventHandler CallStatusChange;
 
-        void OnCallStatusChange(Call call)
+        void OnCallStatusChange(Call call, CallInfoChangeNotificationSource source)
         {
             try
             {
-                if (CallStatusChange != null)
-                    CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call));
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Error calling event in {0}.OnCallStatusChange", this.GetType());
-            }
-
-            this.Codec.FusionUpdate();
-        }
-
-        void OnCallStatusChange(Call call, bool hasDisconnected)
-        {
-            try
-            {
-                if (CallStatusChange != null)
-                {
-                    if (hasDisconnected)
-                    {
-                        CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, true));
-                    }
-                    else
-                    {
-                        OnCallStatusChange(call);
-                    }
-                }
+                if (CallStatusChange != null && !call.Ghost)
+                    CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, source));
             }
             catch (Exception e)
             {
@@ -194,8 +179,8 @@ namespace UXLib.Devices.VC.Cisco
                         if (_Calls.ContainsKey(confCallID) &&
                             (_Calls[confCallID].Status == CallStatus.Connecting || _Calls[confCallID].Status == CallStatus.Ringing))
                         {
-                            CrestronConsole.PrintLine("Received conference status for call {0} which is currently shown as connecting... Requesting full update", confCallID);
-                            this.Update();
+                            //CrestronConsole.PrintLine("Received conference status for call {0} which is currently shown as connecting... Requesting full update", confCallID);
+                            //this.Update();
                         }
                         break;
                     case @"Status/Call":
@@ -204,10 +189,13 @@ namespace UXLib.Devices.VC.Cisco
 
                         if (ghost && _Calls.ContainsKey(callID))
                         {
-                            if (_Calls[callID].Status != CallStatus.Idle)
-                                _Calls[callID].Status = CallStatus.Idle;
                             Call disconnectedCall = _Calls[callID];
-                            OnCallStatusChange(disconnectedCall, true);
+                            if (disconnectedCall.Status != CallStatus.Idle)
+                            {
+                                disconnectedCall.Status = CallStatus.Idle;
+                                OnCallStatusChange(disconnectedCall, CallInfoChangeNotificationSource.HttpFeedbackServer);
+                            }
+                            disconnectedCall.Ghost = true;
                         }
                         else if (!ghost)
                         {
@@ -223,7 +211,7 @@ namespace UXLib.Devices.VC.Cisco
                             {
                                 CrestronConsole.PrintLine("Received call status with no status value for call {0} which is currently shown as connecting... Requesting full update",
                                     call.ID);
-                                this.Update();
+                                //this.Update();
                             }
 
                             foreach (XElement e in args.Data.Elements())
@@ -262,12 +250,28 @@ namespace UXLib.Devices.VC.Cisco
                                         call.RemoteNumber = e.Value;
                                         break;
                                     case "Status":
-                                        CrestronConsole.PrintLine("Codec RX - Call {0} status = {1}", call.ID, e.Value);
-                                        call.Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
+                                        //CrestronConsole.PrintLine("Codec RX - Call {0} status = {1}", call.ID, e.Value);
+                                        if (Codec.LoggingEnabled)
+                                        {
+                                            Codec.Logger.Log("Codec received call Status for Call {0} - Status: {1}", call.ID, e.Value);
+                                        }
+
+                                        try
+                                        {
+                                            CallStatus _Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
+                                            if (_Status != call.Status && !(_Status == CallStatus.Disconnecting && call.Status == CallStatus.Idle))
+                                            {
+                                                call.Status = _Status;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ErrorLog.Error("Could not parse Enum CallStatus from value {0}, {1}", e.Value, ex.Message);
+                                        }
 
                                         if (call.InProgress && (checkTimer == null || checkTimer.Disposed))
                                         {
-                                            checkTimer = new CTimer(CheckConnectingCall, call, 500, 500);
+                                            //checkTimer = new CTimer(CheckConnectingCall, call, 500, 500);
                                         }
                                         break;
                                 }
@@ -275,7 +279,7 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                             CrestronConsole.PrintLine("OnCallStatusChange(call)");
 #endif
-                            OnCallStatusChange(call);
+                            OnCallStatusChange(call, CallInfoChangeNotificationSource.HttpFeedbackServer);
                         }
                         break;
                 }
@@ -311,6 +315,11 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Update()
         {
+            new Thread(UpdateCallsThread, null, Thread.eThreadStartOptions.Running);
+        }
+
+        object UpdateCallsThread(object obj)
+        {
             Stopwatch sw = new Stopwatch();
             sw.Start();
 #if DEBUG
@@ -323,8 +332,11 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                 CrestronConsole.PrintLine(" Call count = {0}", xCalls.Count());
 #endif
+                Dictionary<int, Call> receivedCalls = new Dictionary<int, Call>();
+
                 foreach (XElement xCall in xCalls)
                 {
+                    bool statusChanged = false;
                     int callID = int.Parse(xCall.Attribute("item").Value);
                     Call call;
 
@@ -336,24 +348,51 @@ namespace UXLib.Devices.VC.Cisco
                         _Calls.Add(callID, call);
                     }
 
+                    receivedCalls.Add(call.ID, call);
+
                     foreach (XElement e in xCall.Elements())
                     {
                         switch (e.XName.LocalName)
                         {
                             case "AnswerState":
-                                call.AnswerState = (CallAnswerState)Enum.Parse(typeof(CallAnswerState), e.Value, false);
+                                CallAnswerState _AnswerState = (CallAnswerState)Enum.Parse(typeof(CallAnswerState), e.Value, false);
+                                if (_AnswerState != call.AnswerState)
+                                {
+                                    call.AnswerState = _AnswerState;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "CallType":
-                                call.Type = (CallType)Enum.Parse(typeof(CallType), e.Value, false);
+                                CallType _Type = (CallType)Enum.Parse(typeof(CallType), e.Value, false);
+                                if (_Type != call.Type)
+                                {
+                                    call.Type = _Type;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "CallbackNumber":
                                 call.CallbackNumber = e.Value;
+                                if (call.CallbackNumber != e.Value)
+                                {
+                                    call.CallbackNumber = e.Value;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "DeviceType":
-                                call.DeviceType = (CallDeviceType)Enum.Parse(typeof(CallDeviceType), e.Value, false);
+                                CallDeviceType _DeviceType = (CallDeviceType)Enum.Parse(typeof(CallDeviceType), e.Value, false);
+                                if (call.DeviceType != _DeviceType)
+                                {
+                                    call.DeviceType = _DeviceType;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "Direction":
-                                call.Direction = (CallDirection)Enum.Parse(typeof(CallDirection), e.Value, false);
+                                CallDirection _Direction = (CallDirection)Enum.Parse(typeof(CallDirection), e.Value, false);
+                                if (call.Direction != _Direction)
+                                {
+                                    call.Direction = _Direction;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "Duration":
                                 TimeSpan duration = TimeSpan.Parse(e.Value);
@@ -361,22 +400,56 @@ namespace UXLib.Devices.VC.Cisco
                                 break;
                             case "DisplayName":
                                 call.DisplayName = e.Value;
+                                if (call.DisplayName != e.Value)
+                                {
+                                    call.DisplayName = e.Value;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "Protocol":
                                 call.Protocol = e.Value;
+                                if (call.Protocol != e.Value)
+                                {
+                                    call.Protocol = e.Value;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "RemoteNumber":
                                 call.RemoteNumber = e.Value;
+                                if (call.RemoteNumber != e.Value)
+                                {
+                                    call.RemoteNumber = e.Value;
+                                    statusChanged = true;
+                                }
                                 break;
                             case "Status":
-                                call.Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
+                                CallStatus _Status = (CallStatus)Enum.Parse(typeof(CallStatus), e.Value, false);
+                                if (_Status != call.Status && !(_Status == CallStatus.Disconnecting && call.Status == CallStatus.Idle))
+                                {
+                                    call.Status = _Status;
+                                    statusChanged = true;
+                                }
                                 break;
                         }
                     }
-                    OnCallStatusChange(call);
+                    if (statusChanged)
+                        OnCallStatusChange(call, CallInfoChangeNotificationSource.UpdateRequest);
                 }
 
-                CrestronConsole.PrintLine("Received Calls from Codec - Process took {0} ms", sw.ElapsedMilliseconds);
+                foreach (Call call in this.Active)
+                {
+                    if (!receivedCalls.ContainsKey(call.ID))
+                    {
+                        call.Status = CallStatus.Idle;
+                        OnCallStatusChange(call, CallInfoChangeNotificationSource.UpdateRequest);
+                        call.Ghost = true;
+
+                        if (this.Codec.LoggingEnabled)
+                        {
+                            this.Codec.Logger.Log("Call id {0} was found in Codec.Calls but not present in an Update Request, Call was removed and notified as idle", call.ID);
+                        }
+                    }
+                }
             }
             else
             {
@@ -384,6 +457,8 @@ namespace UXLib.Devices.VC.Cisco
                 CrestronConsole.PrintLine(" No Calls");
 #endif
             }
+
+            return null;
         }
 
         void Codec_HasConnected(CiscoCodec codec)
@@ -412,19 +487,21 @@ namespace UXLib.Devices.VC.Cisco
 
     public class CodecCallInfoChangeEventArgs : EventArgs
     {
-        internal CodecCallInfoChangeEventArgs(Call call)
+        internal CodecCallInfoChangeEventArgs(Call call, CallInfoChangeNotificationSource source)
         {
             this.Call = call;
-        }
-
-        internal CodecCallInfoChangeEventArgs(Call call, bool disconnected)
-        {
-            this.Call = call;
-            this.HasDisconnected = true;
+            this.NotificationSource = source;
         }
 
         public Call Call;
-        public bool HasDisconnected = false;
+        CallInfoChangeNotificationSource NotificationSource;
+    }
+
+    public enum CallInfoChangeNotificationSource
+    {
+        HttpFeedbackServer,
+        UpdateRequest,
+        DialRequest
     }
 
     public delegate void CodecCallInfoChangeEventHandler(CiscoCodec codec, CodecCallInfoChangeEventArgs args);

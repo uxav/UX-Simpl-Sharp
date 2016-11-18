@@ -26,6 +26,7 @@ namespace UXLib.Devices.VC.Cisco
             server.ServerName = "Cisco Codec Feedback Listener";
             server.Active = true;
             server.KeepAlive = true;
+            server.EnableNagle = true;
 #if DEBUG
             CrestronConsole.PrintLine("Created Codec Feedback HttpServer");
             CrestronConsole.PrintLine("  {0,50} = {1}", "server.EthernetAdapterToBindTo", server.EthernetAdapterToBindTo);
@@ -150,27 +151,7 @@ namespace UXLib.Devices.VC.Cisco
                 if (args.Request.Header.RequestType == "POST")
                 {
                     XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
-#if DEBUG
-                    CrestronConsole.PrintLine(xml.ToString());
 
-                    string logPath = @"NVRAM/Codec Feedback.log";
-                    // This text is added only once to the file.
-                    if (!File.Exists(logPath))
-                    {
-                        // Create a file to write to.
-                        using (StreamWriter sw = File.CreateText(logPath))
-                        {
-                            sw.WriteLine("Codec Feedback Server Log");
-                            sw.WriteLine("");
-                        }
-                    }
-
-                    using (StreamWriter sw = File.AppendText(logPath))
-                    {
-                        sw.WriteLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
-                        sw.WriteLine(xml.ToString());
-                    }
-#endif
                     XElement identification;
                     string productID;
 
@@ -192,6 +173,12 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                     //CrestronConsole.PrintLine(element.ToString());
 #endif
+
+                    if (Codec.LoggingEnabled)
+                    {
+                        Codec.Logger.Log("New Post from {0} at {1}{2}{3}", productID, args.Connection.RemoteEndPointAddress,
+                            CrestronEnvironment.NewLine, element.ToString());
+                    }
 
                     if (element.XName.LocalName == "Event" && element.HasElements)
                     {

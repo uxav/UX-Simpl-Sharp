@@ -13,16 +13,18 @@ namespace UXLib.Devices.VC.Cisco
             this.Codec = codec;
             this.ID = id;
             this.StartTime = DateTime.Now;
+            this.Ghost = false;
         }
 
         public CiscoCodec Codec;
 
         public int ID { get; protected set; }
-        public CallStatus Status { get; set; }
-        public CallDirection Direction { get; set; }
-        public CallType Type { get; set; }
-        public string RemoteNumber { get; set; }
-        public string CallbackNumber { get; set; }
+        public bool Ghost { get; internal set; }
+        public CallStatus Status { get; internal set; }
+        public CallDirection Direction { get; internal set; }
+        public CallType Type { get; internal set; }
+        public string RemoteNumber { get; internal set; }
+        public string CallbackNumber { get; internal set; }
         string _DisplayName = string.Empty;
         public string DisplayName
         {
@@ -33,15 +35,15 @@ namespace UXLib.Devices.VC.Cisco
                 else
                     return RemoteNumber;
             }
-            set
+            internal set
             {
                 _DisplayName = value;
             }
         }
-        public CallDeviceType DeviceType { get; set; }
-        public string Protocol { get; set; }
-        public CallAnswerState AnswerState { get; set; }
-        public DateTime StartTime { get; set; }
+        public CallDeviceType DeviceType { get; internal set; }
+        public string Protocol { get; internal set; }
+        public CallAnswerState AnswerState { get; internal set; }
+        public DateTime StartTime { get; internal set; }
         public TimeSpan Duration { get { return DateTime.Now - this.StartTime; } }
 
         public bool InProgress
