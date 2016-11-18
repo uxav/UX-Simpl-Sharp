@@ -198,6 +198,7 @@
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Models\Fusion.cs" />
     <Compile Include="Models\FusionAssetCollection.cs" />
     <Compile Include="Models\IFusionAsset.cs" />
