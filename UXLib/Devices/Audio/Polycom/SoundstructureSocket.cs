@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using UXLib.Sockets;
 
@@ -17,6 +18,14 @@ namespace UXLib.Devices.Audio.Polycom
 
         Soundstructure Device;
 
+        protected override string Name
+        {
+            get
+            {
+                return "Soundstructure Socket Handler";
+            }
+        }
+
         public override Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(string str)
         {
             str = str + "\x0d";
@@ -29,35 +38,16 @@ namespace UXLib.Devices.Audio.Polycom
 
         public static List<string> ElementsFromString(string str)
         {
-            string[] parts = str.Split(' ');
             List<string> elements = new List<string>();
 
-            bool isStringValue = false;
-            foreach (string word in parts)
+            Regex r = new Regex("(['\"])((?:\\\\\\1|.)*?)\\1|([^\\s\"']+)");
+
+            foreach (Match m in r.Matches(str))
             {
-                if (word[0] == '\"')
-                {
-                    if (word[word.Length - 1] == '\"')
-                        elements.Add(word.Substring(1, word.Length - 2));
-                    else
-                    {
-                        isStringValue = true;
-                        elements.Add(word.Substring(1, word.Length - 1));
-                    }
-                }
-                else if (word[word.Length - 1] == '\"' && isStringValue)
-                {
-                    elements[elements.Count() - 1] = elements.Last() + ' ' + word.Substring(0, word.Length - 1);
-                    isStringValue = false;
-                }
-                else if (isStringValue)
-                {
-                    elements[elements.Count() - 1] = elements.Last() + ' ' + word;
-                }
+                if (m.Groups[1].Length > 0)
+                    elements.Add(m.Groups[2].Value);
                 else
-                {
-                    elements.Add(word);
-                }
+                    elements.Add(m.Groups[3].Value);
             }
 
             return elements;

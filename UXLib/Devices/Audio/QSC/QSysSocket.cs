@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.QSC
@@ -35,20 +36,14 @@ namespace UXLib.Devices.Audio.QSC
         {
             List<string> elements = new List<string>();
 
-            Regex r = new Regex("(['\"])((?:\\\\\\1|.)+?)\\1|([^\\s\"']+)");
+            Regex r = new Regex("(['\"])((?:\\\\\\1|.)*?)\\1|([^\\s\"']+)");
 
             foreach (Match m in r.Matches(str))
             {
-                int gCount = 0;
-                foreach (Group g in m.Groups)
-                {
-                    if (g.Value.Length > 0 && g.Value != "\"" && gCount > 0)
-                    {
-                        elements.Add(g.Value);
-                        break;
-                    }
-                    gCount++;
-                }
+                if (m.Groups[1].Length > 0)
+                    elements.Add(m.Groups[2].Value);
+                else
+                    elements.Add(m.Groups[3].Value);
             }
 
             return elements;
@@ -82,6 +77,15 @@ namespace UXLib.Devices.Audio.QSC
                 {
                     byte b = rxQueue.Dequeue();
 
+                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+                    {
+#if DEBUG
+                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
+                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
+#endif
+                        return null;
+                    }
+
                     // skip any CR chars
                     if (b == 13) { }
                     // If find byte = LF
@@ -95,6 +99,8 @@ namespace UXLib.Devices.Audio.QSC
 
                         if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
                             OnReceivedPacket(copiedBytes);
+
+                        CrestronEnvironment.AllowOtherAppsToRun();
                     }
                     else if (b > 0 && b <= 127)
                     {

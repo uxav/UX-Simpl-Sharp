@@ -14,7 +14,7 @@ namespace UXLib.Devices.Displays.Samsung
         public SamsungMDCComPortHandler(ComPort comPort)
         {
             ComPort = comPort;
-            RxQueue = new CrestronQueue<byte>();
+            RxQueue = new CrestronQueue<byte>(1000);
 
             if (!ComPort.Registered)
             {
@@ -33,7 +33,7 @@ namespace UXLib.Devices.Displays.Samsung
                 ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
                 false);
 
-            TxQueue = new CrestronQueue<byte[]>();
+            TxQueue = new CrestronQueue<byte[]>(10);
         }
 
         ComPort ComPort;
@@ -47,9 +47,15 @@ namespace UXLib.Devices.Displays.Samsung
         {
             if (!Initialized)
             {
-                TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.Running);
                 CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-                RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
+                TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                TxThread.Priority = Thread.eThreadPriority.UberPriority;
+                TxThread.Name = string.Format("Samsung Display ComPort - Tx Handler");
+                TxThread.Start();
+                RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                RxThread.Priority = Thread.eThreadPriority.UberPriority;
+                RxThread.Name = string.Format("Samsung Display ComPort - Rx Handler");
+                RxThread.Start();
                 ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
                 Initialized = true;
             }
@@ -74,12 +80,15 @@ namespace UXLib.Devices.Displays.Samsung
                     //CrestronConsole.Print("Samsung Tx: ");
                     //Tools.PrintBytes(packet, packet.Length);
 #endif
-                    if (programStopping || hostDeviceIsOffline)
+                    if (programStopping)
+                    {
+                        TxQueue.Clear();
                         return null;
+                    }
                     else
+                    {
                         this.ComPort.Send(packet, packet.Length);
-
-                    Thread.Sleep(50);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -103,7 +112,7 @@ namespace UXLib.Devices.Displays.Samsung
                 {
                     byte b = RxQueue.Dequeue();
 
-                    if (programStopping || hostDeviceIsOffline)
+                    if (programStopping)
                         return null;
 
                     if (b == 0xAA)
@@ -136,6 +145,8 @@ namespace UXLib.Devices.Displays.Samsung
 #endif
                             if (ReceivedPacket != null)
                                 ReceivedPacket(this, copiedBytes);
+
+                            CrestronEnvironment.AllowOtherAppsToRun();
                         }
                     }
                 }
@@ -162,8 +173,12 @@ namespace UXLib.Devices.Displays.Samsung
                 CrestronConsole.PrintLine("Samsung com port handler - Program Stopping!");
 #endif
                 programStopping = true;
-                TxThread.Abort();
-                RxThread.Abort();
+
+                if (RxThread != null && RxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
+                {
+                    if (RxQueue.IsEmpty)
+                        RxQueue.Enqueue(0x00);
+                }
             }
         }
 
@@ -179,31 +194,15 @@ namespace UXLib.Devices.Displays.Samsung
                 for (int i = 1; i < bytes.Length; i++)
                     chk = chk + bytes[i];
                 packet[packet.Length - 1] = (byte)chk;
-                TxQueue.Enqueue(packet);
+
+                if (!TxQueue.TryToEnqueue(packet))
+                {
+                    ErrorLog.Error("Error in {0}, could not Enqueue packet to send", this.GetType().Name);
+                }
             }
             else
             {
                 throw new FormatException("Packet did not begin with correct value");
-            }
-        }
-
-        bool hostDeviceIsOffline = false;
-        public void StopComms()
-        {
-            hostDeviceIsOffline = true;
-            if (TxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
-            {
-                TxThread.Abort();
-#if DEBUG
-                CrestronConsole.PrintLine("Samsung TxThread.Abort due to host device offline!");
-#endif
-            }
-            if (RxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
-            {
-                RxThread.Abort();
-#if DEBUG
-                CrestronConsole.PrintLine("Samsung RxThread.Abort due to host device offline!");
-#endif
             }
         }
     }

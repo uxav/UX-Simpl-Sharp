@@ -210,8 +210,6 @@ namespace UXLib.Devices.Audio.QSC
                 CrestronConsole.PrintLine("{0} Value = {1}", args.Arguments[0], args.Arguments[1]);
 #endif
 
-                CrestronConsole.PrintLine("{0} Value = {1}", args.Arguments[0], args.Arguments[1]);
-
                 try
                 {
                     _StringValue = args.Arguments[1];
@@ -244,7 +242,7 @@ namespace UXLib.Devices.Audio.QSC
                 }
                 catch (Exception e)
                 {
-                    ErrorLog.Exception(string.Format("Error in QSysControl Rx: \"{0}\"", args.DataString), e);
+                    ErrorLog.Error("Error in QSysControl Rx: \"{0}\", args Count = {1}", args.DataString, args.Arguments.Count);
                 }
             }
         }

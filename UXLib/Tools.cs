@@ -54,7 +54,7 @@ namespace UXLib
 
             for (int i = 0; i < length; i++)
             {
-                if (showReadable && bytes[i] > 32 && bytes[i] < 127)
+                if (showReadable && bytes[i] >= 32 && bytes[i] < 127)
                 {
                     result = result + string.Format("{0}", (char)bytes[i]);
                 }

@@ -43,7 +43,8 @@ namespace UXLib.Devices.Audio.Polycom
                                     }
                                     catch (Exception e)
                                     {
-                                        ErrorLog.Error("Could not parse VoipLineState for Line {0}, {1}", lineNumber, e.Message);
+                                        ErrorLog.Error("Could not parse VoipLineState \"{2}\" for Line {0}, {1}",
+                                            lineNumber, e.Message, elements[1]);
                                     }
                                     break;
                                 case "voip_line_label":
@@ -78,10 +79,13 @@ namespace UXLib.Devices.Audio.Polycom
                                     }
                                     break;
                                 case "voip_call_appearance_info":
-                                    uint lineIndex = uint.Parse(elements[1]);
-                                    _CallInfoLine[lineIndex] = elements[2];
-                                    if (CallInfoLineChanged != null)
-                                        CallInfoLineChanged(this, new VoipLineCallInfoLineEventArgs(lineIndex, elements[2]));
+                                    if (elements.Count > 3)
+                                    {
+                                        uint lineIndex = uint.Parse(elements[1]);
+                                        _CallInfoLine[lineIndex] = elements[2];
+                                        if (CallInfoLineChanged != null)
+                                            CallInfoLineChanged(this, new VoipLineCallInfoLineEventArgs(lineIndex, elements[2]));
+                                    }
                                     break;
                             }
                         }
@@ -194,6 +198,7 @@ namespace UXLib.Devices.Audio.Polycom
         Offering,
         Call_Active,
         Conference,
-        Call_On_Hold
+        Call_On_Hold,
+        Secure_RTP
     }
 }

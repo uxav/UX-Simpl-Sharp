@@ -14,7 +14,7 @@ namespace UXLib.Devices.Audio.Revolabs
         internal RevolabsComHandler(ComPort comPort)
         {
             ComPort = comPort;
-            RxQueue = new CrestronQueue<byte>();
+            RxQueue = new CrestronQueue<byte>(1000);
 
             if (!ComPort.Registered)
             {
@@ -33,7 +33,7 @@ namespace UXLib.Devices.Audio.Revolabs
                 ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
                 false);
 
-            TxQueue = new CrestronQueue<string>();
+            TxQueue = new CrestronQueue<string>(10);
         }
 
         ComPort ComPort { get; set; }
@@ -47,9 +47,15 @@ namespace UXLib.Devices.Audio.Revolabs
         {
             if (!Initialized)
             {
-                TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.Running);
+                TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                TxThread.Priority = Thread.eThreadPriority.UberPriority;
+                TxThread.Name = "Revolabs ComPort - Tx Handler";
+                TxThread.Start();
                 CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-                RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
+                RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                RxThread.Priority = Thread.eThreadPriority.UberPriority;
+                RxThread.Name = "Revolabs ComPort - Rx Handler";
+                RxThread.Start();
                 ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
                 Initialized = true;
             }
@@ -122,6 +128,7 @@ namespace UXLib.Devices.Audio.Revolabs
 #endif
                         if (ReceivedData != null)
                             ReceivedData(this, Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length));
+                        CrestronEnvironment.AllowOtherAppsToRun();
                     }
                     else
                     {

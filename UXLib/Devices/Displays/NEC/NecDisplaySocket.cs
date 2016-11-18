@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Displays.NEC
@@ -104,6 +105,15 @@ namespace UXLib.Devices.Displays.NEC
                 {
                     byte b = rxQueue.Dequeue();
 
+                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+                    {
+#if DEBUG
+                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
+                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
+#endif
+                        return null;
+                    }
+
                     // If find byte = CR
                     if (b == 13)
                     {
@@ -149,6 +159,8 @@ namespace UXLib.Devices.Displays.NEC
                             CrestronConsole.PrintLine("rxQueue.Peek() = {0}", rxQueue.Peek());
 #endif
                         }
+
+                        CrestronEnvironment.AllowOtherAppsToRun();
                     }
                     else
                     {

@@ -9,6 +9,6 @@ namespace UXLib.Devices
 {
     public interface ISerialDevice : ICommDevice
     {
-        void WatchOfflineStatus(GenericDevice device);
+        
     }
 }
