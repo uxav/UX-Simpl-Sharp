@@ -141,6 +141,8 @@
     <Compile Include="Devices\Displays\Samsung\SamsungMDCDisplayOneWaySerial.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\Cameras\ICamera.cs" />
+    <Compile Include="Devices\Displays\Smart\SmartBoard.cs" />
+    <Compile Include="Devices\Displays\Sony\SonyBravia.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
     <Compile Include="Devices\IDevice.cs" />
