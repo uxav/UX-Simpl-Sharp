@@ -31,7 +31,7 @@ namespace UXLib.UI
                 }
 
                 this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
-                this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(Device_OnlineStatusChange);
+                this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(DeviceOnlineStatusChanged);
 
                 if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
                 {
@@ -44,12 +44,9 @@ namespace UXLib.UI
             }
         }
 
-        void Device_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        public virtual void DeviceOnlineStatusChanged(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
-            if (!args.DeviceOnLine)
-                ErrorLog.Error("UI Device {0} with ID {1} went offline!", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"));
-            else
-                ErrorLog.Notice("UI Device {0} with ID {1} is online", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"));
+            
         }
 
         public UIController(uint id, BasicTriList device, Room defaultRoom)

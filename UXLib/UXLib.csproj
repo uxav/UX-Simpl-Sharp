@@ -220,6 +220,8 @@
     <Compile Include="Models\Source.cs" />
     <Compile Include="Models\SourceCollection.cs" />
     <Compile Include="Tools.cs" />
+    <Compile Include="UI\UIDynamicIcon.cs" />
+    <Compile Include="UI\IUIVisibleObject.cs" />
     <Compile Include="UI\UIActionSheet.cs" />
     <Compile Include="UI\UIActionSheetButton.cs" />
     <Compile Include="UI\UIButton.cs" />

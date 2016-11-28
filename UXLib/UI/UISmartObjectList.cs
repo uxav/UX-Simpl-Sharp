@@ -96,6 +96,7 @@ namespace UXLib.UI
                     this.Buttons[item].Icon = listData[listDataIndex].Icon;
                     this.Buttons[item].LinkedObject = listData[listDataIndex].DataObject;
                     this.Buttons[item].Enabled = listData[listDataIndex].Enabled;
+                    this.Buttons[item].Feedback = listData[listDataIndex].IsSelected;
                 }
 
                 if (LoadingSubPageOverlay != null)

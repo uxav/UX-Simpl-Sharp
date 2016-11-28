@@ -9,7 +9,7 @@ using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.UI
 {
-    public abstract class UIObject : IDisposable
+    public abstract class UIObject : IDisposable, IUIVisibleObject
     {
         /// <summary>
         /// The Digital output join which comes from a press
