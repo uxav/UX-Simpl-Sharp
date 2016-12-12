@@ -310,6 +310,12 @@ namespace UXLib.Devices.VC.Cisco
             {
                 ErrorLog.Exception("Exception on codec http feedback server", e);
 
+                if (Codec.LoggingEnabled)
+                {
+                    Codec.Logger.Log("ERROR processing post from {0}{1}Content:{1}{2}{1}StackTrace:{1}{3}", args.Connection.RemoteEndPointAddress,
+                        CrestronEnvironment.NewLine, args.Request.ContentString, e.StackTrace);
+                }
+
                 args.Response.SendError(500, "Internal server error");
                 return;
             }

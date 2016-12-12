@@ -219,6 +219,9 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                                 CrestronConsole.PrintLine("  e.XName.LocalName = {0}", e.XName.LocalName);
 #endif
+                                if (!e.HasElements)
+                                    CrestronConsole.PrintLine("Codec.Calls[{0}].{1} = {2}", call.ID, e.XName.LocalName, e.Value);
+
                                 switch (e.XName.LocalName)
                                 {
                                     case "AnswerState":

@@ -165,7 +165,7 @@ namespace UXLib.Devices.VC.Cisco
         /// Register the feedback server and information required
         /// </summary>
         /// <param name="deregisterFirst">set as true if you want to deregister the slot first</param>
-        public void Registerfeedback(bool deregisterFirst)
+        public void Registerfeedback()
         {
             this.FeedbackServer.Register(1, new string[] {
                 "/Configuration",
@@ -180,15 +180,7 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/UserInterface",
                 "/Event/IncomingCallIndication",
                 "/Event/UserInterface/Extensions/Widget"
-            }, deregisterFirst);
-        }
-
-        /// <summary>
-        /// Register the feedback server and information required
-        /// </summary>
-        public void Registerfeedback()
-        {
-            this.Registerfeedback(false);
+            });
         }
 
         bool hasConnectedOnce = false;
@@ -216,7 +208,8 @@ namespace UXLib.Devices.VC.Cisco
                         if (!this.HttpClient.HasSessionKey)
                             this.HttpClient.StartSession();
 
-                        this.Registerfeedback(this.FeedbackServer.Registered);
+                        if (!this.FeedbackServer.Registered)
+                            this.Registerfeedback();
 
                         this.DeviceCommunicating = true;
                         
