@@ -64,11 +64,17 @@ namespace UXLib.Devices.Audio.Polycom
 
         public bool Set(ISoundstructureItem channel, SoundstructureCommandType type, bool value)
         {
-            int b;
-            if (value) b = 1;
-            else b = 0;
             string str = string.Format("set {0} \"{1}\" {2}", type.ToString().ToLower(),
-                channel.Name, b);
+                channel.Name, value ? 1 : 0);
+            if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
+                return true;
+            return false;
+        }
+
+        public bool Set(ISoundstructureItem rowChannel, ISoundstructureItem colChannel, SoundstructureCommandType type, bool value)
+        {
+            string str = string.Format("set {0} \"{1}\" \"{2}\" {3}", type.ToString().ToLower(),
+                rowChannel.Name, colChannel.Name, value ? 1 : 0);
             if (this.Send(str) == Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
                 return true;
             return false;

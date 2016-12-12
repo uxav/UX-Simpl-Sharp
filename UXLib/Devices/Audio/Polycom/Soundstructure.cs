@@ -157,6 +157,11 @@ namespace UXLib.Devices.Audio.Polycom
 
                 switch (elements[0])
                 {
+                    case "error":
+                        {
+                            ErrorLog.Error("Soundtructure received Error: {0}", elements[1]);
+                        }
+                        break;
                     case "ran":
                         if (PresetRan != null)
                         {
@@ -389,6 +394,11 @@ namespace UXLib.Devices.Audio.Polycom
         public void RunPreset(string presetName)
         {
             this.Socket.Send(string.Format("run \"{0}\"", presetName));
+        }
+
+        public void SetMatrixMute(ISoundstructureItem rowChannel, ISoundstructureItem colChannel, bool muteValue)
+        {
+            this.Socket.Set(rowChannel, colChannel, SoundstructureCommandType.MATRIX_MUTE, muteValue);
         }
 
         public static double ScaleRange(double Value,
