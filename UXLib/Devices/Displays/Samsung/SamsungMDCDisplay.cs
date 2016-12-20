@@ -43,93 +43,105 @@ namespace UXLib.Devices.Displays.Samsung
         {
             this.DeviceCommunicating = true;
 
-            if (packet[1] == 0xff)
+            try
             {
-                if (packet[4] == 'A') // Packet contains 'Ack'
+                if (packet[1] == 0xff)
                 {
-                    byte cmd = packet[5];
-                    int dataLength = packet[3];
-                    byte[] values = new byte[dataLength - 2];
-                    for (int b = 6; b < (dataLength + 4); b++)
-                        values[b - 6] = packet[b];
+                    if (packet[4] == 'A') // Packet contains 'Ack'
+                    {
+                        byte cmd = packet[5];
+                        int dataLength = packet[3];
+                        byte[] values = new byte[dataLength - 2];
+                        for (int b = 6; b < (dataLength + 4); b++)
+                            values[b - 6] = packet[b];
 #if DEBUG
                     //CrestronConsole.PrintLine("");
                     CrestronConsole.Print("Samsung Rx: ");
                     Tools.PrintBytes(packet, packet.Length);
 #endif
-                    if (Enum.IsDefined(typeof(CommandType), cmd))
-                    {
-                        CommandType cmdType = (CommandType)cmd;
+                        if (Enum.IsDefined(typeof(CommandType), cmd))
+                        {
+                            CommandType cmdType = (CommandType)cmd;
 #if DEBUG
                         //CrestronConsole.Print("  Command Type = {0}, dataLength = {1}, data = ", cmdType.ToString(), dataLength);
                         //Tools.PrintBytes(values, values.Length);
 #endif
-                        switch (cmdType)
-                        {
-                            case CommandType.PanelPower:
-                                //CrestronConsole.PrintLine("  Panel Power = {0} ({1})", values[0], !Convert.ToBoolean(values[0]));
-                                if (values[0] == 0 && this.PowerStatus == DevicePowerStatus.PowerOff)
-                                {
-                                    SetPowerStatus(DevicePowerStatus.PowerWarming);
-                                    new CTimer(SetPowerStatus, DevicePowerStatus.PowerOn, 2000);
-                                }
-                                else if (values[0] > 0 && this.Power)
-                                {
-                                    SetPowerStatus(DevicePowerStatus.PowerCooling);
-                                    new CTimer(SetPowerStatus, DevicePowerStatus.PowerOff, 2000);
-                                }
-                                break;
-                            case CommandType.Status:
-                                standbyState = !Convert.ToBoolean(values[0]);
-                                OnVolumeChange(values[1]);
-                                OnMuteChange(Convert.ToBoolean(values[2]));
-                                base.Input = GetInputForCommandValue(values[3]);
-                                CheckInputValue(values[3]);
+                            switch (cmdType)
+                            {
+                                case CommandType.PanelPower:
+                                    //CrestronConsole.PrintLine("  Panel Power = {0} ({1})", values[0], !Convert.ToBoolean(values[0]));
+                                    if (values[0] == 0 && this.PowerStatus == DevicePowerStatus.PowerOff)
+                                    {
+                                        SetPowerStatus(DevicePowerStatus.PowerWarming);
+                                        new CTimer(SetPowerStatus, DevicePowerStatus.PowerOn, 2000);
+                                    }
+                                    else if (values[0] > 0 && this.Power)
+                                    {
+                                        SetPowerStatus(DevicePowerStatus.PowerCooling);
+                                        new CTimer(SetPowerStatus, DevicePowerStatus.PowerOff, 2000);
+                                    }
+                                    break;
+                                case CommandType.Status:
+                                    standbyState = !Convert.ToBoolean(values[0]);
+                                    OnVolumeChange(values[1]);
+                                    OnMuteChange(Convert.ToBoolean(values[2]));
+                                    base.Input = GetInputForCommandValue(values[3]);
+                                    CheckInputValue(values[3]);
 #if DEBUG
                                 //CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
 #endif
-                                break;
-                            case CommandType.DisplayStatus:
-                                OnVideoSyncChange(!Convert.ToBoolean(values[3]));
+                                    break;
+                                case CommandType.DisplayStatus:
+                                    OnVideoSyncChange(!Convert.ToBoolean(values[3]));
 #if DEBUG
                                 //CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
 #endif
-                                break;
-                            case CommandType.SerialNumber:
-                                if (values.Length >= 14)
-                                {
-                                    _DeviceSerialNumber = Encoding.Default.GetString(values, 0, 14);
-                                    //CrestronConsole.PrintLine("  Serial number: {0}", _DeviceSerialNumber);
-                                }
-                                break;
-                            case CommandType.Volume:
-                                OnVolumeChange(values[0]);
-                                break;
-                            case CommandType.Mute:
-                                OnMuteChange(Convert.ToBoolean(values[0]));
-                                break;
-                            case CommandType.InputSource:
-                                base.Input = GetInputForCommandValue(values[0]);
-                                CheckInputValue(values[0]);
-                                break;
-                            case CommandType.OSD:
-                                _OSD = Convert.ToBoolean(values[0]);
-                                break;
-                            default:
+                                    break;
+                                case CommandType.SerialNumber:
+                                    if (values.Length >= 14)
+                                    {
+                                        _DeviceSerialNumber = Encoding.Default.GetString(values, 0, 14);
+                                        //CrestronConsole.PrintLine("  Serial number: {0}", _DeviceSerialNumber);
+                                    }
+                                    break;
+                                case CommandType.Volume:
+                                    OnVolumeChange(values[0]);
+                                    break;
+                                case CommandType.Mute:
+                                    OnMuteChange(Convert.ToBoolean(values[0]));
+                                    break;
+                                case CommandType.InputSource:
+                                    base.Input = GetInputForCommandValue(values[0]);
+                                    CheckInputValue(values[0]);
+                                    break;
+                                case CommandType.OSD:
+                                    _OSD = Convert.ToBoolean(values[0]);
+                                    break;
+                                default:
 #if DEBUG
                                 //CrestronConsole.Print("Other Command \x22{0}\x22, Data: ", cmd.ToString("X2"));
                                 Tools.PrintBytes(values, values.Length);
 # endif
-                                break;
+                                    break;
+                            }
                         }
                     }
-                }
-                else if (packet[4] == 'N') // Packet contains 'Nak'
-                {
+                    else if (packet[4] == 'N') // Packet contains 'Nak'
+                    {
 #if DEBUG
                     ErrorLog.Error("Samsung MDC Received Error with command type 0x{0}", packet[5].ToString("X2"));
 #endif
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                string packetString = string.Empty;
+                for (int b = 0; b < packet.Length; b++)
+                {
+                    packetString = string.Format("{0}\\x{1}", packetString, packet[b]);
+                }
+                ErrorLog.Error("Could not parse packet from {0}, Packet ({1} bytes) = \"{2}\", {3}", this.GetType().Name, packet.Length, packetString, e.Message);
             }
         }
 

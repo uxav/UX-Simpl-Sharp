@@ -45,6 +45,11 @@ namespace UXLib.Models
         {
             this[source.ID] = source;
         }
+
+        public void Remove(Source source)
+        {
+            this.InternalDictionary.Remove(source.ID);
+        }
         
         public override bool Contains(uint sourceID)
         {
@@ -141,6 +146,13 @@ namespace UXLib.Models
 
         public SourceCollection ForRoom(Room room)
         {
+            return this.ForRoom(room, false);
+        }
+
+        public SourceCollection ForRoom(Room room, bool includeGlobalSources)
+        {
+            if (includeGlobalSources)
+                return new SourceCollection(InternalDictionary.Values.Where(s => s.Room == room || s.Room == null));
             return new SourceCollection(InternalDictionary.Values.Where(s => s.Room == room));
         }
 

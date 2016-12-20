@@ -54,7 +54,9 @@ namespace UXLib.Models
         {
             get
             {
-                return this._Name;
+                if (_Name.Length == 0)
+                    return string.Format("{0} {1}", this.GetType().Name, this.ID);
+                return _Name;
             }
             set
             {
@@ -133,7 +135,7 @@ namespace UXLib.Models
             }
         }
 
-        public SourceCollection Sources
+        public virtual SourceCollection Sources
         {
             get
             {
