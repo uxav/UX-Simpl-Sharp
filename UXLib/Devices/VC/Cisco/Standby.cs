@@ -58,6 +58,8 @@ namespace UXLib.Devices.VC.Cisco
             {
                 ErrorLog.Exception("Exception thrown in CiscoCodec.StandbyChanged event handler", e);
             }
+
+            this.Codec.FusionUpdate();
         }
 
         void Codec_HasConnected(CiscoCodec codec)

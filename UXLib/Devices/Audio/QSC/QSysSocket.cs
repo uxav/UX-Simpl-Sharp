@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.QSC
@@ -23,7 +25,7 @@ namespace UXLib.Devices.Audio.QSC
             {
                 PollTimer = new CTimer(GetStatus, null, 10, 10000);
             }
-            else
+            else if (PollTimer != null)
             {
                 PollTimer.Stop();
                 PollTimer.Dispose();
@@ -32,35 +34,16 @@ namespace UXLib.Devices.Audio.QSC
 
         public static List<string> ElementsFromString(string str)
         {
-            string[] parts = str.Split(' ');
             List<string> elements = new List<string>();
 
-            bool isStringValue = false;
-            foreach (string word in parts)
+            Regex r = new Regex("(['\"])((?:\\\\\\1|.)*?)\\1|([^\\s\"']+)");
+
+            foreach (Match m in r.Matches(str))
             {
-                if (word[0] == '\"')
-                {
-                    if (word[word.Length - 1] == '\"')
-                        elements.Add(word.Substring(1, word.Length - 2));
-                    else
-                    {
-                        isStringValue = true;
-                        elements.Add(word.Substring(1, word.Length - 1));
-                    }
-                }
-                else if (word[word.Length - 1] == '\"' && isStringValue)
-                {
-                    elements[elements.Count() - 1] = elements.Last() + ' ' + word.Substring(0, word.Length - 1);
-                    isStringValue = false;
-                }
-                else if (isStringValue)
-                {
-                    elements[elements.Count() - 1] = elements.Last() + ' ' + word;
-                }
+                if (m.Groups[1].Length > 0)
+                    elements.Add(m.Groups[2].Value);
                 else
-                {
-                    elements.Add(word);
-                }
+                    elements.Add(m.Groups[3].Value);
             }
 
             return elements;
@@ -94,6 +77,15 @@ namespace UXLib.Devices.Audio.QSC
                 {
                     byte b = rxQueue.Dequeue();
 
+                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+                    {
+#if DEBUG
+                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
+                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
+#endif
+                        return null;
+                    }
+
                     // skip any CR chars
                     if (b == 13) { }
                     // If find byte = LF
@@ -105,7 +97,10 @@ namespace UXLib.Devices.Audio.QSC
 
                         byteIndex = 0;
 
-                        OnReceivedPacket(copiedBytes);
+                        if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
+                            OnReceivedPacket(copiedBytes);
+
+                        CrestronEnvironment.AllowOtherAppsToRun();
                     }
                     else if (b > 0 && b <= 127)
                     {

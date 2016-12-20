@@ -96,6 +96,11 @@ namespace UXLib.UI
             this.PressDigitalJoin = this.Device.BooleanOutput[digitalJoinNumber];
         }
 
+        public void OverridePressDigitalJoinNumber(BoolOutputSig digitalJoinSig)
+        {
+            this.PressDigitalJoin = digitalJoinSig;
+        }
+
         public static double ScaleRange(double Value,
            double FromMinValue, double FromMaxValue,
            double ToMinValue, double ToMaxValue)

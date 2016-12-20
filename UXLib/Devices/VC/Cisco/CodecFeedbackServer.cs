@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
 
@@ -24,6 +25,8 @@ namespace UXLib.Devices.VC.Cisco
             server.Port = feedbackListenerPort;
             server.ServerName = "Cisco Codec Feedback Listener";
             server.Active = true;
+            server.KeepAlive = true;
+            server.EnableNagle = true;
 #if DEBUG
             CrestronConsole.PrintLine("Created Codec Feedback HttpServer");
             CrestronConsole.PrintLine("  {0,50} = {1}", "server.EthernetAdapterToBindTo", server.EthernetAdapterToBindTo);
@@ -140,16 +143,15 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
+                args.Response.KeepAlive = true;
 #if DEBUG
                 CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
+
                 if (args.Request.Header.RequestType == "POST")
                 {
                     XDocument xml = XDocument.Load(new XmlReader(args.Request.ContentString));
 
-#if DEBUG
-                    CrestronConsole.PrintLine(xml.ToString());
-#endif
                     XElement identification;
                     string productID;
 
@@ -171,6 +173,12 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
                     //CrestronConsole.PrintLine(element.ToString());
 #endif
+
+                    if (Codec.LoggingEnabled)
+                    {
+                        Codec.Logger.Log("New Post from {0} at {1}{2}{3}", productID, args.Connection.RemoteEndPointAddress,
+                            CrestronEnvironment.NewLine, element.ToString());
+                    }
 
                     if (element.XName.LocalName == "Event" && element.HasElements)
                     {
@@ -196,8 +204,32 @@ namespace UXLib.Devices.VC.Cisco
                                         }
                                     }
 
-                                    if (IncomingCallEvent != null)
-                                        IncomingCallEvent(Codec, incomingCallArgs);
+                                    try
+                                    {
+                                        foreach (XElement e in this.Codec.RequestPath("Configuration/Conference/AutoAnswer").Elements())
+                                        {
+                                            switch (e.XName.LocalName)
+                                            {
+                                                case "Delay": incomingCallArgs.AutoAnswerDelay = int.Parse(e.Value); break;
+                                                case "Mode": incomingCallArgs.AutoAnswerMode = (e.Value == "On"); break;
+                                                case "Mute": incomingCallArgs.AutoAnswerMute = (e.Value == "On"); break;
+                                            }
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        ErrorLog.Error("Error getting auto answer config in Incoming Call event notification handler");
+                                    }
+
+                                    try
+                                    {
+                                        if (IncomingCallEvent != null)
+                                            IncomingCallEvent(Codec, incomingCallArgs);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        ErrorLog.Exception("Error calling IncomingCallEvent in codec", e);
+                                    }
 
                                     break;
                                 case "UserInterface":
@@ -238,6 +270,10 @@ namespace UXLib.Devices.VC.Cisco
 
                             if (path == @"Status/Conference/Site")
                                 break;
+                            if (path == @"Status/Conference/Call")
+                                break;
+                            if (path == @"Status/Call")
+                                break;
                         }
 
                         if (element == xml.Root && element.Elements().FirstOrDefault() != null)
@@ -245,14 +281,21 @@ namespace UXLib.Devices.VC.Cisco
                             element = element.Elements().FirstOrDefault();
                             path = string.Format("{0}/{1}", path, element.XName.LocalName);
                         }
-
+                            
 #if DEBUG
                         CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
                         CrestronConsole.PrintLine("{0}\r\n", element.ToString());
 #endif
                         if (ReceivedData != null)
                         {
-                            ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                            try
+                            {
+                                ReceivedData(this, new CodecFeedbackServerReceiveEventArgs(path, element));
+                            }
+                            catch (Exception e)
+                            {
+                                ErrorLog.Exception("Error calling ReceivedData event in CodecFeedbackServer", e);
+                            }
                         }
                     }
                 }
@@ -266,6 +309,12 @@ namespace UXLib.Devices.VC.Cisco
             catch (Exception e)
             {
                 ErrorLog.Exception("Exception on codec http feedback server", e);
+
+                if (Codec.LoggingEnabled)
+                {
+                    Codec.Logger.Log("ERROR processing post from {0}{1}Content:{1}{2}{1}StackTrace:{1}{3}", args.Connection.RemoteEndPointAddress,
+                        CrestronEnvironment.NewLine, args.Request.ContentString, e.StackTrace);
+                }
 
                 args.Response.SendError(500, "Internal server error");
                 return;
@@ -295,12 +344,17 @@ namespace UXLib.Devices.VC.Cisco
     {
         internal CodecIncomingCallEventArgs()
         {
-
+            AutoAnswerDelay = 0;
+            AutoAnswerMute = false;
+            AutoAnswerMode = false;
         }
 
         public string RemoteURI { get; internal set; }
         public string DisplayNameValue { get; internal set; }
         public Call Call { get; internal set; }
+        public bool AutoAnswerMode { get; internal set; }
+        public bool AutoAnswerMute { get; internal set; }
+        public int AutoAnswerDelay { get; internal set; }
     }
 
     public delegate void CodecUserInterfaceWidgetActionEventHandler(CiscoCodec codec, CodecUserInterfaceWidgetActionEventArgs args);

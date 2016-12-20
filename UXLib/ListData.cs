@@ -72,8 +72,11 @@ namespace UXLib
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.HasCleared));
         }
 
+        public bool Loading { get; protected set; }
+
         public void OnDataLoadStart()
         {
+            Loading = true;
             if (this.DataChange != null)
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.IsStartingToLoad));
         }
@@ -82,6 +85,7 @@ namespace UXLib
         {
             if (this.DataChange != null)
                 this.DataChange(this, new ListDataChangeEventArgs(eListDataChangeEventType.HasLoaded));
+            Loading = false;
         }
 
         public void SelectSingleItem(int index)

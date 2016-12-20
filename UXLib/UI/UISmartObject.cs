@@ -14,10 +14,43 @@ namespace UXLib.UI
         {
             get { return this.DeviceSmartObject.ID; }
         }
-        protected SmartObject DeviceSmartObject;
+        public SmartObject DeviceSmartObject { get; protected set; }
         public UISmartObjectButtonCollection Buttons { get; protected set; }
         protected BoolInputSig EnableJoin { get; set; }
         protected BoolInputSig VisibleJoin { get; set; }
+        private bool countedItems = false;
+        private ushort _MaxNumberOfItems = 0;
+        public virtual ushort MaxNumberOfItems
+        {
+            get
+            {
+                if (!countedItems)
+                {
+                    ushort item = 1;
+                    while (this.DeviceSmartObject.BooleanInput.Any(s => s.Name.Contains(string.Format("Item {0} ", item))))
+                        item++;
+                    item--;
+                    _MaxNumberOfItems = item;
+                    countedItems = true;
+                }
+                return _MaxNumberOfItems;
+            }
+        }
+
+        public virtual ushort NumberOfItems
+        {
+            set
+            {
+                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
+                    this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
+            }
+            get
+            {
+                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
+                    return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
+                return this.MaxNumberOfItems;
+            }
+        }
 
         public UISmartObject(SmartObject smartObject)
         {

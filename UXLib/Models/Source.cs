@@ -21,6 +21,11 @@ namespace UXLib.Models
             this.GroupName = groupName;
         }
 
+        public override string ToString()
+        {
+            return string.Format("Source {0}, {2} Name: \"{1}\"  Group: \"{3}\"", this.ID, this.Name, this.SourceType, this.GroupName);
+        }
+
         public uint ID { get; protected set; }
         public string Name { get; protected set; }
         public string Icon { get; set; }
@@ -46,6 +51,56 @@ namespace UXLib.Models
         public void AssignToRoom(Room room)
         {
             this.Room = room;
+        }
+
+        public bool IsPresentationSource
+        {
+            get
+            {
+                switch (this.SourceType)
+                {
+                    case SourceType.AirMedia:
+                    case SourceType.ClickShare:
+                    case SourceType.Laptop:
+                    case SourceType.PC:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool IsWirelessPresentationSource
+        {
+            get
+            {
+                switch (this.SourceType)
+                {
+                    case SourceType.AirMedia:
+                    case SourceType.ClickShare:
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public bool IsTelevisionSource
+        {
+            get
+            {
+                switch (this.SourceType)
+                {
+                    case SourceType.TV:
+                    case SourceType.Satellite:
+                    case SourceType.IPTV:
+                    case SourceType.Sky:
+                    case SourceType.SkyHD:
+                    case SourceType.SkyQ:
+                    case SourceType.FreeView:
+                    case SourceType.FreeSat:
+                        return true;
+                }
+                return false;
+            }
         }
     }
 
@@ -82,6 +137,14 @@ namespace UXLib.Models
         AuxInput,
         LiveStream,
         SignagePlayer,
-        GenericWirelessPresentationDevice
+        GenericWirelessPresentationDevice,
+        Sky,
+        SkyHD,
+        SkyQ,
+        FreeView,
+        FreeSat,
+        YouView,
+        YouTube,
+        FireBox
     }
 }

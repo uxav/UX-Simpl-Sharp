@@ -43,7 +43,8 @@ namespace UXLib.Devices.Audio.Polycom
                                     }
                                     catch (Exception e)
                                     {
-                                        ErrorLog.Error("Could not parse VoipLineState for Line {0}, {1}", lineNumber, e.Message);
+                                        ErrorLog.Error("Could not parse VoipLineState \"{2}\" for Line {0}, {1}",
+                                            lineNumber, e.Message, elements[1]);
                                     }
                                     break;
                                 case "voip_line_label":
@@ -55,9 +56,22 @@ namespace UXLib.Devices.Audio.Polycom
                                 case "voip_call_appearance_state":
                                     try
                                     {
-                                        this.CallAppearanceState = (VoipCallAppearanceState)Enum.Parse(typeof(VoipCallAppearanceState), elements[1], true);
-                                        if (CallAppearanceStateChanged != null)
-                                            CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
+                                        VoipCallAppearanceState state = (VoipCallAppearanceState)Enum.Parse(typeof(VoipCallAppearanceState), elements[1], true);
+                                        if (this.CallAppearanceState != state)
+                                        {
+                                            this.CallAppearanceState = state;
+                                            if (CallAppearanceState == VoipCallAppearanceState.Connected)
+                                                _CallConnectedTime = DateTime.Now;
+                                        }
+                                        try
+                                        {
+                                            if (CallAppearanceStateChanged != null)
+                                                CallAppearanceStateChanged(this, new VoipLineCallAppearanceStateEventArgs(this.CallAppearance, this.CallAppearanceState));
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            ErrorLog.Exception(string.Format("Error calling event {0}.CallAppearanceStateChanged", this.GetType().Name), e);
+                                        }
                                     }
                                     catch(Exception e)
                                     {
@@ -65,10 +79,13 @@ namespace UXLib.Devices.Audio.Polycom
                                     }
                                     break;
                                 case "voip_call_appearance_info":
-                                    uint lineIndex = uint.Parse(elements[1]);
-                                    _CallInfoLine[lineIndex] = elements[2];
-                                    if (CallInfoLineChanged != null)
-                                        CallInfoLineChanged(this, new VoipLineCallInfoLineEventArgs(lineIndex, elements[2]));
+                                    if (elements.Count > 3)
+                                    {
+                                        uint lineIndex = uint.Parse(elements[1]);
+                                        _CallInfoLine[lineIndex] = elements[2];
+                                        if (CallInfoLineChanged != null)
+                                            CallInfoLineChanged(this, new VoipLineCallInfoLineEventArgs(lineIndex, elements[2]));
+                                    }
                                     break;
                             }
                         }
@@ -91,6 +108,17 @@ namespace UXLib.Devices.Audio.Polycom
         public uint CallAppearance { get; protected set; }
 
         public string Label { get; protected set; }
+
+        private DateTime _CallConnectedTime;
+        public TimeSpan CallTimer
+        {
+            get
+            {
+                if (_CallConnectedTime != null)
+                    return DateTime.Now - _CallConnectedTime;
+                else return TimeSpan.FromSeconds(0);
+            }
+        }
 
         public VoipCallAppearanceState CallAppearanceState { get; protected set; }
 
@@ -170,6 +198,7 @@ namespace UXLib.Devices.Audio.Polycom
         Offering,
         Call_Active,
         Conference,
-        Call_On_Hold
+        Call_On_Hold,
+        Secure_RTP
     }
 }

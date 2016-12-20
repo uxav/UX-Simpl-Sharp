@@ -15,9 +15,11 @@ namespace UXLib.Devices.VC.Cisco
         {
             Codec = codec;
             Sites = new Sites(Codec);
+            DoNotDisturb = new DoNotDisturb(this);
         }
 
-        CiscoCodec Codec { get; set; }
+        internal CiscoCodec Codec { get; set; }
         public Sites Sites { get; protected set; }
+        public DoNotDisturb DoNotDisturb { get; protected set; }
     }
 }

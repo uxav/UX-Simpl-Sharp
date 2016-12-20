@@ -54,7 +54,9 @@ namespace UXLib.Models
         {
             get
             {
-                return this._Name;
+                if (_Name.Length == 0)
+                    return string.Format("{0} {1}", this.GetType().Name, this.ID);
+                return _Name;
             }
             set
             {
@@ -124,6 +126,7 @@ namespace UXLib.Models
                     }
 #endif
                     OnSourceChange(oldSource, _Source);
+                    FusionUpdate();
                 }
             }
             get
@@ -132,7 +135,7 @@ namespace UXLib.Models
             }
         }
 
-        public SourceCollection Sources
+        public virtual SourceCollection Sources
         {
             get
             {
@@ -249,6 +252,29 @@ namespace UXLib.Models
         public event RoomSourceChangeEventHandler SourceChange;
 
         public virtual void Initialize()
+        {
+            
+        }
+
+        public virtual void FusionUpdate()
+        {
+            if (this.Fusion != null)
+            {
+                this.Fusion.SetSystemPowerStatus((this.Source != null) ? true : false);
+            }
+        }
+
+        public virtual void FusionSystemPowerRequest(bool powerRequested)
+        {
+            ErrorLog.Notice("Fusion requested power {0} in room \"{1}\"", (powerRequested) ? "on" : "off", this.Name);
+        }
+
+        public virtual void FusionDisplayPowerRequest(bool powerRequested)
+        {
+            ErrorLog.Notice("Fusion requested displays power {0} in room \"{1}\"", (powerRequested) ? "on" : "off", this.Name);
+        }
+
+        public virtual void Shutdown()
         {
             
         }

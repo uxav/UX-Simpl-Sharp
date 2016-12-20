@@ -125,6 +125,11 @@
     <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSoftPhone.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabMic.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabMicCollection.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabMicGroupCollection.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabsComHandler.cs" />
+    <Compile Include="Devices\Audio\Revolabs\RevolabsExecutiveElite.cs" />
     <Compile Include="Devices\Audio\Shure\ShureCeilingMic.cs" />
     <Compile Include="Devices\Audio\Shure\ShureCeilingMicCollection.cs" />
     <Compile Include="Devices\Audio\Shure\ShureSocket.cs" />
@@ -136,6 +141,8 @@
     <Compile Include="Devices\Displays\Samsung\SamsungMDCDisplayOneWaySerial.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCSocket.cs" />
     <Compile Include="Devices\Cameras\ICamera.cs" />
+    <Compile Include="Devices\Displays\Smart\SmartBoard.cs" />
+    <Compile Include="Devices\Displays\Sony\SonyBravia.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
     <Compile Include="Devices\IDevice.cs" />
@@ -162,6 +169,7 @@
     <Compile Include="Devices\VC\Cisco\Conference.cs" />
     <Compile Include="Devices\VC\Cisco\CapabilitiesConference.cs" />
     <Compile Include="Devices\VC\Cisco\DialResult.cs" />
+    <Compile Include="Devices\VC\Cisco\DoNotDisturb.cs" />
     <Compile Include="Devices\VC\Cisco\IPhonebookItem.cs" />
     <Compile Include="Devices\VC\Cisco\Microphones.cs" />
     <Compile Include="Devices\VC\Cisco\Network.cs" />
@@ -177,8 +185,12 @@
     <Compile Include="Devices\VC\Cisco\SpeakerTrackCamera.cs" />
     <Compile Include="Devices\VC\Cisco\Standby.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnit.cs" />
+    <Compile Include="Devices\VC\Cisco\SystemUnitHardware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitSoftware.cs" />
     <Compile Include="Devices\VC\Cisco\SystemUnitState.cs" />
+    <Compile Include="Devices\VC\Cisco\UserInterface.cs" />
+    <Compile Include="Devices\VC\Cisco\UserInterfaceContactInfo.cs" />
+    <Compile Include="Devices\VC\Cisco\UserInterfaceContactInfoMethod.cs" />
     <Compile Include="Devices\VC\Cisco\Video.cs" />
     <Compile Include="Extensions\ComPortExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -186,8 +198,12 @@
     <Compile Include="ListData.cs" />
     <Compile Include="ListDataObject.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Models\Fusion.cs" />
     <Compile Include="Models\FusionAssetCollection.cs" />
+    <Compile Include="Models\IFusionAsset.cs" />
+    <Compile Include="Models\IFusionDynamicAsset.cs" />
+    <Compile Include="Models\IFusionStaticAsset.cs" />
     <Compile Include="Models\IVolumeDevice.cs" />
     <Compile Include="Models\UXCollection.cs" />
     <Compile Include="Models\UXReadOnlyCollection.cs" />
@@ -204,6 +220,8 @@
     <Compile Include="Models\Source.cs" />
     <Compile Include="Models\SourceCollection.cs" />
     <Compile Include="Tools.cs" />
+    <Compile Include="UI\UIDynamicIcon.cs" />
+    <Compile Include="UI\IUIVisibleObject.cs" />
     <Compile Include="UI\UIActionSheet.cs" />
     <Compile Include="UI\UIActionSheetButton.cs" />
     <Compile Include="UI\UIButton.cs" />

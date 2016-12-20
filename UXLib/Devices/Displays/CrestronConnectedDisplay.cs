@@ -25,18 +25,6 @@ namespace UXLib.Devices.Displays
 
         public RoomViewConnectedDisplay Display { get; protected set; }
 
-        public override string Name
-        {
-            get
-            {
-                return Display.ProjectorNameFeedback.StringValue;
-            }
-            set
-            {
-                Display.ProjectorName.StringValue = value;
-            }
-        }
-
         public override bool Power
         {
             get
@@ -128,7 +116,7 @@ namespace UXLib.Devices.Displays
 
         public override void Initialize()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

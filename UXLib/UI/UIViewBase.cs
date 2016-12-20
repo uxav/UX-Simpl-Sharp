@@ -30,7 +30,19 @@ namespace UXLib.UI
 
         public UILabel TitleLabel { get; protected set; }
         public UILabel SubTitleLabel { get; protected set; }
-        
+        public UIDynamicIcon TitleIcon { get; protected set; }
+
+        public void SetTitleIcon(UIDynamicIcon icon)
+        {
+            this.TitleIcon = icon;
+        }
+
+        public void SetTitleIcon(UIDynamicIcon icon, string defaultValue)
+        {
+            this.TitleIcon = icon;
+            this.TitleIconName = defaultValue;
+        }
+
         string _title;
         public string Title
         {
@@ -77,6 +89,29 @@ namespace UXLib.UI
             }
         }
 
+        string _titleIconName;
+        public string TitleIconName
+        {
+            set
+            {
+                // Set the value
+                this._titleIconName = value;
+
+                // if the page has a serial join sig assigned for the Name:
+                if (this.TitleIcon != null)
+                {
+                    // set the string value of the serial join only if the page is showing
+                    // this allows for you to use the same serial join number as it sends updates the name when a page is shown
+                    if (this.Visible)
+                        this.TitleIcon.Icon = this._titleIconName;
+                }
+            }
+            get
+            {
+                return this._titleIconName;
+            }
+        }
+
         public uint VisibleJoinNumber
         {
             get
@@ -118,6 +153,8 @@ namespace UXLib.UI
                 this.TitleLabel.Text = this.Title;
             if (this.SubTitleLabel != null)
                 this.SubTitleLabel.Text = this.SubTitle;
+            if (this.TitleIcon != null)
+                this.TitleIcon.Icon = this.TitleIconName;
 
             if (this.VisibilityChange != null)
                 this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));

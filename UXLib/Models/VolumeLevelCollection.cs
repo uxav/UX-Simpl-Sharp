@@ -61,9 +61,18 @@ namespace UXLib.Models
             return new VolumeLevelCollection(InternalDictionary.Values.Where(l => l.LevelType == type).ToList());
         }
 
-        public void Add(Room room, VolumeLevelType type, IVolumeDevice volumeDevice)
+        public VolumeLevel Add(VolumeLevelType type, IVolumeDevice volumeDevice)
         {
-            this.Add(new VolumeLevel(room, type, volumeDevice));
+            VolumeLevel level = new VolumeLevel(type, volumeDevice);
+            this.Add(level);
+            return level;
+        }
+
+        public VolumeLevel Add(Room room, VolumeLevelType type, IVolumeDevice volumeDevice)
+        {
+            VolumeLevel level = new VolumeLevel(room, type, volumeDevice);
+            this.Add(level);
+            return level;
         }
 
         public void Add(VolumeLevel newLevel)
@@ -71,7 +80,10 @@ namespace UXLib.Models
             for (uint key = 0; key <= uint.MaxValue; key++)
             {
                 if (!this.Contains(key))
+                {
                     this[key] = newLevel;
+                    break;
+                }
             }
         }
     }

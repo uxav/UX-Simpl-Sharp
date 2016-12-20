@@ -8,78 +8,55 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UIKeypad : UIObject
+    public class UIKeypad
     {
         public UIKeypad(BoolOutputSig digitalStartJoin)
         {
-            this.PressDigitalJoin = digitalStartJoin;
-        }
+            this.Buttons = new UIButtonCollection();
 
-        protected override void OnSigChange(GenericBase currentDevice, SigEventArgs args)
-        {
-            if (args.Event == eSigEvent.BoolChange
-                && args.Sig.BoolValue == true
-                && args.Sig.Number >= this.PressDigitalJoin.Number
-                && args.Sig.Number <= (this.PressDigitalJoin.Number + 11))
+            for (uint join = digitalStartJoin.Number; join <= digitalStartJoin.Number + 11; join++)
             {
-                if (_ButtonPressed != null)
-                {
-                    uint index = args.Sig.Number - this.PressDigitalJoin.Number;
-
-                    UIKeypadButton button;
-
-                    switch (index)
-                    {
-                        case 0: button = UIKeypadButton.Digit0; break;
-                        case 1: button = UIKeypadButton.Digit1; break;
-                        case 2: button = UIKeypadButton.Digit2; break;
-                        case 3: button = UIKeypadButton.Digit3; break;
-                        case 4: button = UIKeypadButton.Digit4; break;
-                        case 5: button = UIKeypadButton.Digit5; break;
-                        case 6: button = UIKeypadButton.Digit6; break;
-                        case 7: button = UIKeypadButton.Digit7; break;
-                        case 8: button = UIKeypadButton.Digit8; break;
-                        case 9: button = UIKeypadButton.Digit9; break;
-                        case 10: button = UIKeypadButton.Misc1; break;
-                        case 11: button = UIKeypadButton.Misc2; break;
-                        default: button = UIKeypadButton.Digit0; break;
-                    }
-
-                    _ButtonPressed(this, new UIKeypadEventArgs(
-                        index,
-                        args.Sig.Number,
-                        this.Device,
-                        button));
-                }
+                UIButton newButton = new UIButton(((BasicTriList)digitalStartJoin.Owner).BooleanOutput[join]);
+                this.Buttons.Add(newButton);
             }
-
-            base.OnSigChange(currentDevice, args);
         }
 
-        private event UIKeypadEventHandler _ButtonPressed;
+        public UIButtonCollection Buttons { get; protected set; }
+
+        private event UIKeypadEventHandler _ButtonEvent;
 
         int subscribeCount = 0;
 
-        public event UIKeypadEventHandler ButtonPressed
+        public event UIKeypadEventHandler ButtonEvent
         {
             add
             {
                 if (subscribeCount == 0)
-                    this.SubscribeToSigChanges();
+                    this.Buttons.ButtonEvent += new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
 
                 subscribeCount++;
 
-                _ButtonPressed += value;
+                _ButtonEvent += value;
             }
             remove
             {
                 subscribeCount--;
 
                 if (subscribeCount == 0)
-                    this.UnSubscribeToSigChanges();
+                    this.Buttons.ButtonEvent -= new UIButtonCollectionEventHandler(Buttons_ButtonEvent);
 
-                _ButtonPressed -= value;
+                _ButtonEvent -= value;
             }
+        }
+
+        void Buttons_ButtonEvent(UIButtonCollection buttonCollection, UIButtonCollectionEventArgs args)
+        {
+            _ButtonEvent(this, new UIKeypadEventArgs(
+                args.EventType,
+                args.ButtonIndexInCollection,
+                args.Button.PressDigitalJoin.Number,
+                args.Button.Device,
+                (UIKeypadButton)args.ButtonIndexInCollection));
         }
     }
 
@@ -88,11 +65,13 @@ namespace UXLib.UI
     public class UIKeypadEventArgs : EventArgs
     {
         public BasicTriList Device;
+        public UIButtonEventType EventType;
         public uint SigNumber;
-        public uint Index;
+        public int Index;
         public UIKeypadButton Button;
-        public UIKeypadEventArgs(uint index, uint sigNumber, BasicTriList device, UIKeypadButton button)
+        public UIKeypadEventArgs(UIButtonEventType eventType, int index, uint sigNumber, BasicTriList device, UIKeypadButton button)
         {
+            EventType = eventType;
             Device = device;
             SigNumber = sigNumber;
             Index = index;
@@ -102,17 +81,17 @@ namespace UXLib.UI
 
     public enum UIKeypadButton
     {
-        Digit0,
-        Digit1,
-        Digit2,
-        Digit3,
-        Digit4,
-        Digit5,
-        Digit6,
-        Digit7,
-        Digit8,
-        Digit9,
-        Misc1,
-        Misc2
+        Digit0 = 0,
+        Digit1 = 1,
+        Digit2 = 2,
+        Digit3 = 3,
+        Digit4 = 4,
+        Digit5 = 5,
+        Digit6 = 6,
+        Digit7 = 7,
+        Digit8 = 8,
+        Digit9 = 9,
+        Misc1 = 10,
+        Misc2 = 11
     }
 }

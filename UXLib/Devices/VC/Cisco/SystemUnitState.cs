@@ -47,6 +47,8 @@ namespace UXLib.Devices.VC.Cisco
                 case @"Status/SystemUnit/State":
                     foreach (XElement state in args.Data.Elements())
                     {
+                        if (!state.HasElements)
+                            CrestronConsole.PrintLine("Codec.Status.SystemUnit.State.{0} = {1}", state.XName.LocalName, state.Value);
                         switch (state.XName.LocalName)
                         {
                             case "NumberOfActiveCalls": NumberOfActiveCalls = int.Parse(state.Value); break;

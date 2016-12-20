@@ -41,6 +41,16 @@ namespace UXLib.Devices.Audio.QSC
         }
 
         /// <summary>
+        /// See if a control is contained in this collection
+        /// </summary>
+        /// <param name="id">The ID of the object</param>
+        /// <returns>true if exists in collection</returns>
+        public bool Contains(string id)
+        {
+            return this.Any(c => c.ControlID == id);
+        }
+
+        /// <summary>
         /// Register a named control object
         /// </summary>
         /// <param name="id">The named ID of the control</param>
@@ -67,7 +77,7 @@ namespace UXLib.Devices.Audio.QSC
                 if (this.QSys.Connected)
                 {
                     this.QSys.Send(string.Format("cgc {0}", changeGroupID));
-                    this.QSys.Send(string.Format("cgs {0} {1}", changeGroupID, 100)); 
+                    this.QSys.Send(string.Format("cgs {0} {1}", changeGroupID, 200)); 
                 }
             }
             this.Controls[id] = new QSysControl(this.QSys, id, controlType, changeGroupID);

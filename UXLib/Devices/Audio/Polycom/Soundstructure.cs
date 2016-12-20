@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.Fusion;
 using UXLib.Devices;
+using UXLib.Models;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.Polycom
 {
-    public class Soundstructure : ISocketDevice, IDevice
+    public class Soundstructure : ISocketDevice, IDevice, IFusionStaticAsset
     {
         public Soundstructure(string hostAddress)
         {
@@ -60,6 +62,9 @@ namespace UXLib.Devices.Audio.Polycom
             else
             {
                 this.DeviceCommunicating = false;
+                this.FusionUpdate();
+                if (this.DeviceCommunicatingChanged != null)
+                    this.DeviceCommunicatingChanged(this, false);
             }
         }
 
@@ -88,6 +93,8 @@ namespace UXLib.Devices.Audio.Polycom
         #endregion
 
         public bool DeviceCommunicating { get; protected set; }
+
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
 
         public void Send(string stringToSend)
         {
@@ -137,7 +144,12 @@ namespace UXLib.Devices.Audio.Polycom
             CrestronConsole.PrintLine("Soundstructure Rx: {0}", receivedString);
 #endif
             if (!this.DeviceCommunicating)
+            {
                 this.DeviceCommunicating = true;
+                this.FusionUpdate();
+                if (this.DeviceCommunicatingChanged != null)
+                    this.DeviceCommunicatingChanged(this, true);
+            }
 
             if (receivedString.Contains(' '))
             {
@@ -145,6 +157,11 @@ namespace UXLib.Devices.Audio.Polycom
 
                 switch (elements[0])
                 {
+                    case "error":
+                        {
+                            ErrorLog.Error("Soundtructure received Error: {0}", elements[1]);
+                        }
+                        break;
                     case "ran":
                         if (PresetRan != null)
                         {
@@ -379,6 +396,11 @@ namespace UXLib.Devices.Audio.Polycom
             this.Socket.Send(string.Format("run \"{0}\"", presetName));
         }
 
+        public void SetMatrixMute(ISoundstructureItem rowChannel, ISoundstructureItem colChannel, bool muteValue)
+        {
+            this.Socket.Set(rowChannel, colChannel, SoundstructureCommandType.MATRIX_MUTE, muteValue);
+        }
+
         public static double ScaleRange(double Value,
            double FromMinValue, double FromMaxValue,
            double ToMinValue, double ToMaxValue)
@@ -397,7 +419,18 @@ namespace UXLib.Devices.Audio.Polycom
 
         #region IDevice Members
 
-        public string Name { get; set; }
+        string _Name = "Polycom Sounstructure";
+        public string Name
+        {
+            get
+            {
+                return _Name;
+            }
+            set
+            {
+                _Name = value;
+            }
+        }
 
         public string DeviceManufacturer
         {
@@ -428,6 +461,83 @@ namespace UXLib.Devices.Audio.Polycom
         public CommDeviceType CommunicationType
         {
             get { return CommDeviceType.IP; }
+        }
+
+        #endregion
+
+        #region IFusionStaticAsset Members
+
+        public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset
+        {
+            get;
+            protected set;
+        }
+
+        #endregion
+
+        #region IFusionAsset Members
+
+        public AssetTypeName AssetTypeName
+        {
+            get { return AssetTypeName.DSP; }
+        }
+
+        public void AssignFusionAsset(Fusion fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        {
+            if (asset is FusionStaticAsset)
+            {
+                this.FusionAsset = asset as FusionStaticAsset;
+
+                fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+                fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 1, "Reboot", Crestron.SimplSharpPro.eSigIoMask.OutputSigOnly);
+            }
+        }
+
+        void FusionRoom_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+                this.FusionUpdate();
+        }
+
+        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        {
+            if (args.UserConfigurableAssetDetailIndex == this.FusionAsset.ParamAssetNumber)
+            {
+                switch (args.EventId)
+                {
+                    case FusionAssetEventId.StaticAssetAssetBoolAssetSigEventReceivedEventId:
+                        Crestron.SimplSharpPro.Fusion.BooleanSigDataFixedName sig = (Crestron.SimplSharpPro.Fusion.BooleanSigDataFixedName)args.UserConfiguredSigDetail;
+                        if (sig.Number == 1 && sig.OutputSig.BoolValue)
+                            this.Reboot();
+                        break;
+                }
+            }
+        }
+
+        public void FusionUpdate()
+        {
+            try
+            {
+                if (this.FusionAsset != null)
+                {
+                    this.FusionAsset.PowerOn.InputSig.BoolValue = this.DeviceCommunicating;
+                    this.FusionAsset.Connected.InputSig.BoolValue = this.DeviceCommunicating;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.FusionUpdate(), {1}", this.GetType(), e.Message);
+            }
+        }
+
+        public void FusionError(string errorDetails)
+        {
+            if (this.FusionAsset != null)
+            {
+                this.FusionAsset.AssetError.InputSig.StringValue = errorDetails;
+            }
         }
 
         #endregion

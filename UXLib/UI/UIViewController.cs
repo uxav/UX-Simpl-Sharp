@@ -7,7 +7,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
-    public class UIViewController : IDisposable
+    public class UIViewController : IDisposable, IUIVisibleObject
     {
         public UIViewController(UIController uiController, UIViewBase view)
         {

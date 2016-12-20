@@ -92,6 +92,15 @@ namespace UXLib.Devices.Audio.BSS
                 {
                     Byte b = rxQueue.Dequeue();
 
+                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+                    {
+#if DEBUG
+                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
+                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
+#endif
+                        return null;
+                    }
+
                     if (b == 2)
                     {
                         byteIndex = 0;
@@ -125,6 +134,8 @@ namespace UXLib.Devices.Audio.BSS
 
                         byteIndex = 0;
                         OnReceivedPacket(copiedBytes);
+
+                        CrestronEnvironment.AllowOtherAppsToRun();
                     }
                     else
                     {

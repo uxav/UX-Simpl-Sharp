@@ -27,6 +27,7 @@ namespace UXLib.Devices.VC.Cisco
             this.HttpClient = new HttpClient();
             UserName = username;
             Password = password;
+            this.HttpClient.UseConnectionPooling = true;
             this.HttpClient.KeepAlive = false;
             Cookies = new Dictionary<string, string>();
         }
@@ -101,7 +102,7 @@ namespace UXLib.Devices.VC.Cisco
             }
             catch (Exception e)
             {
-                ErrorLog.Error("Error dispatching request to Cisco Codec. Exception: {0}", e.Message);
+                ErrorLog.Exception(string.Format("{0}.Request(HttpClientRequest request)", this.GetType().Name), e);
             }
 
             return null;
@@ -225,6 +226,18 @@ namespace UXLib.Devices.VC.Cisco
         public XDocument SendCommand(string path, CommandArgs args)
         {
             string pathToSend = "Command";
+            foreach (string pathElement in path.Split('/'))
+            {
+                if (pathElement.Length > 0 && pathElement != pathToSend)
+                    pathToSend = pathToSend + "/" + pathElement;
+            }
+
+            return this.PutXML(BuildCommand(pathToSend, args));
+        }
+
+        public XDocument SendConfiguration(string path, CommandArgs args)
+        {
+            string pathToSend = "Configuration";
             foreach (string pathElement in path.Split('/'))
             {
                 if (pathElement.Length > 0 && pathElement != pathToSend)

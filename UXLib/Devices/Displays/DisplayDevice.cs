@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.Fusion;
 using UXLib.Devices;
+using UXLib.Models;
 
 namespace UXLib.Devices.Displays
 {
-    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice
+    public abstract class DisplayDevice : IDevice, IDeviceWithPower, ICommDevice, IFusionStaticAsset
     {
         public virtual string Name { get; set; }
 
@@ -45,7 +47,10 @@ namespace UXLib.Devices.Displays
                 this.Name, newPowerStatus.ToString(), previousPowerStatus.ToString());
 #endif
             if (PowerStatusChange != null)
+            {
                 PowerStatusChange(this, new DevicePowerStatusEventArgs(newPowerStatus, previousPowerStatus));
+                FusionUpdate();
+            }
         }
 
         public virtual void Send(string stringToSend)
@@ -72,18 +77,17 @@ namespace UXLib.Devices.Displays
             }
             protected set
             {
-                _deviceCommunicating = value;
-                if (value)
+                if (_deviceCommunicating != value)
                 {
-                    new CTimer(CommsTimeout, 10000);
+                    _deviceCommunicating = value;
+                    FusionUpdate();
+                    if (DeviceCommunicatingChanged != null)
+                        DeviceCommunicatingChanged(this, value);
                 }
             }
         }
 
-        void CommsTimeout(object obj)
-        {
-            this.DeviceCommunicating = false;
-        }
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
 
         public virtual DevicePowerStatus PowerStatus
         {
@@ -112,6 +116,7 @@ namespace UXLib.Devices.Displays
             set
             {
                 _input = value;
+                FusionUpdate();
             }
         }
         DisplayDeviceInput _input;
@@ -154,6 +159,83 @@ namespace UXLib.Devices.Displays
         public abstract void Initialize();
 
         public abstract CommDeviceType CommunicationType { get; }
+
+        #region IFusionAsset Members
+
+        public void AssignFusionAsset(Fusion fusionInstance, FusionAssetBase asset)
+        {
+            if (asset is FusionStaticAsset)
+            {
+                this.FusionAsset = asset as FusionStaticAsset;
+
+                fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+                fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.String, 1, "Input", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+            }
+        }
+
+        void FusionRoom_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+                this.FusionUpdate();
+        }
+
+        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        {
+            if (args.UserConfigurableAssetDetailIndex == this.FusionAsset.ParamAssetNumber)
+            {
+                switch (args.EventId)
+                {
+                    case FusionAssetEventId.StaticAssetPowerOnReceivedEventId:
+                        if (((Crestron.SimplSharpPro.Fusion.BooleanSigDataFixedName)args.UserConfiguredSigDetail).OutputSig.BoolValue)
+                            this.Power = true;
+                        break;
+                    case FusionAssetEventId.StaticAssetPowerOffReceivedEventId:
+                        if (((Crestron.SimplSharpPro.Fusion.BooleanSigDataFixedName)args.UserConfiguredSigDetail).OutputSig.BoolValue)
+                            this.Power = false;
+                        break;
+                }
+            }
+        }
+
+        public FusionStaticAsset FusionAsset
+        {
+            get;
+            protected set;
+        }
+
+        public AssetTypeName AssetTypeName
+        {
+            get { return AssetTypeName.Display; }
+        }
+
+        public virtual void FusionUpdate()
+        {
+            try
+            {
+                if (this.FusionAsset != null)
+                {
+                    this.FusionAsset.PowerOn.InputSig.BoolValue = this.Power;
+                    this.FusionAsset.Connected.InputSig.BoolValue = this.DeviceCommunicating;
+                    this.FusionAsset.FusionGenericAssetSerialsAsset3.StringInput[1].StringValue = this.Input.ToString();
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.FusionUpdate(), {1}", this.GetType(), e.Message);
+            }
+        }
+
+        public virtual void FusionError(string errorDetails)
+        {
+            if (this.FusionAsset != null)
+            {
+                this.FusionAsset.AssetError.InputSig.StringValue = errorDetails;
+            }
+        }
+
+        #endregion
     }
 
     public delegate void DisplayDevicePowerStatusChangeEventHandler(DisplayDevice device, DevicePowerStatusEventArgs args);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronSockets;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Displays.Samsung
@@ -13,6 +14,14 @@ namespace UXLib.Devices.Displays.Samsung
             : base(address, 1515, 1000)
         {
 
+        }
+
+        protected override string Name
+        {
+            get
+            {
+                return "Samsung Display Socket Handler";
+            }
         }
 
         public static byte[] BuildCommand(CommandType command, int id, byte[] data)
@@ -88,6 +97,15 @@ namespace UXLib.Devices.Displays.Samsung
                 {
                     byte b = rxQueue.Dequeue();
 
+                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+                    {
+#if DEBUG
+                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
+                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
+#endif
+                        return null;
+                    }
+
                     if (b == 0xAA)
                     {
                         byteIndex = 0;
@@ -113,6 +131,7 @@ namespace UXLib.Devices.Displays.Samsung
                             byte[] copiedBytes = new byte[byteIndex];
                             Array.Copy(bytes, copiedBytes, byteIndex);
                             OnReceivedPacket(copiedBytes);
+                            CrestronEnvironment.AllowOtherAppsToRun();
                         }
                     }
                 }

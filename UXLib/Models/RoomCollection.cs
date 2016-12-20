@@ -14,7 +14,9 @@ namespace UXLib.Models
         {
             get
             {
-                return base[roomID];
+                if (this.Contains(roomID))
+                    return base[roomID];
+                return null;
             }
             internal set
             {

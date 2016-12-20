@@ -4,18 +4,20 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.Fusion;
+using UXLib.Models;
 
 namespace UXLib.Devices.VC.Cisco
 {
     /// <summary>
     /// Class for controlling a Cisco VC Codec
     /// </summary>
-    public class CiscoCodec
+    public class CiscoCodec : IDevice, ICommDevice, IFusionStaticAsset
     {
         /// <summary>
         /// Create an instance of a Cisco VC Codec
@@ -44,6 +46,7 @@ namespace UXLib.Devices.VC.Cisco
             Video = new Video(this);
             Capabilities = new Capabilities(this);
             Standby = new Standby(this);
+            UserInterface = new UserInterface(this);
         }
 
         CodecHTTPClient HttpClient { get; set; }
@@ -54,6 +57,37 @@ namespace UXLib.Devices.VC.Cisco
         public bool HttpClientBusy { get { return this.HttpClient.Busy; } }
 
         internal CodecFeedbackServer FeedbackServer { get; set; }
+
+        /// <summary>
+        /// Get if Logging is enabled or not
+        /// </summary>
+        public bool LoggingEnabled { get; private set; }
+
+        /// <summary>
+        /// Enable logging of Codec events
+        /// </summary>
+        /// <param name="logger">An event logger</param>
+        public void LoggingEnable(Logger logger)
+        {
+            if (logger != null)
+            {
+                this.Logger = logger;
+                LoggingEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// The logger assigned for logging Codec events
+        /// </summary>
+        public Logger Logger { get; private set; }
+
+        /// <summary>
+        /// Stop Logging of codec events
+        /// </summary>
+        public void LoggingStop()
+        {
+            LoggingEnabled = false;
+        }
 
         /// <summary>
         /// This contains information on the main Codec system unit
@@ -105,6 +139,11 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public Standby Standby { get; private set; }
 
+        /// <summary>
+        /// The UserInterface functions of the codec
+        /// </summary>
+        public UserInterface UserInterface { get; private set; }
+
         Thread CheckStatus { get; set; }
 
         /// <summary>
@@ -112,14 +151,21 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public void Initialize()
         {
-            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            try
+            {
+                new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error launching {0}.GetStatusThread", this.GetType().Name);
+            }
         }
 
         /// <summary>
         /// Register the feedback server and information required
         /// </summary>
         /// <param name="deregisterFirst">set as true if you want to deregister the slot first</param>
-        public void Registerfeedback(bool deregisterFirst)
+        public void Registerfeedback()
         {
             this.FeedbackServer.Register(1, new string[] {
                 "/Configuration",
@@ -131,17 +177,10 @@ namespace UXLib.Devices.VC.Cisco
                 "/Status/Cameras/SpeakerTrack",
                 "/Status/Call",
                 "/Status/Conference",
+                "/Status/UserInterface",
                 "/Event/IncomingCallIndication",
                 "/Event/UserInterface/Extensions/Widget"
-            }, deregisterFirst);
-        }
-
-        /// <summary>
-        /// Register the feedback server and information required
-        /// </summary>
-        public void Registerfeedback()
-        {
-            this.Registerfeedback(false);
+            });
         }
 
         bool hasConnectedOnce = false;
@@ -163,39 +202,45 @@ namespace UXLib.Devices.VC.Cisco
                 {
                     try
                     {
+                        if (programStopping)
+                            return null;
+
                         if (!this.HttpClient.HasSessionKey)
                             this.HttpClient.StartSession();
 
-                        this.Registerfeedback(this.FeedbackServer.Registered);
-                    }
-                    catch (Exception e)
-                    {
-                        ErrorLog.Error("Could not connect to CiscoCodec", e.Message);
-                    }
+                        if (!this.FeedbackServer.Registered)
+                            this.Registerfeedback();
 
-                    try
-                    {
-                        if (HasConnected != null && !hasConnectedOnce)
+                        this.DeviceCommunicating = true;
+                        
+                        try
                         {
-                            hasConnectedOnce = true;
-                            HasConnected(this);
+                            if (HasConnected != null && !hasConnectedOnce)
+                            {
+                                hasConnectedOnce = true;
+                                ErrorLog.Notice("{0} has connected successfully.. launching thread to continue status checking", this.GetType().Name);
+                                HasConnected(this);
+
+                                if (CheckStatus == null || CheckStatus.ThreadState != Thread.eThreadStates.ThreadRunning)
+                                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
+                            }
                         }
+                        catch (Exception e)
+                        {
+                            ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
+                        }
+
+                        return null;
                     }
                     catch (Exception e)
                     {
-                        ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
+                        Thread.Sleep(10000);
                     }
-
-                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
-
-                    return null;
                 }
                 catch (Exception e)
                 {
                     if (count >= 5)
                         ErrorLog.Exception("Error in CiscoCodec.GetStatusThread", e);
-
-                    Thread.Sleep(10000);
                 }
             }
         }
@@ -226,7 +271,14 @@ namespace UXLib.Devices.VC.Cisco
                             this.Registerfeedback();
                         }
 
-                        Thread.Sleep(60000);
+                        this.DeviceCommunicating = true;
+
+                        this.Calls.Update();
+
+                        if (this.Calls.Active.Count() > 0)
+                            Thread.Sleep(5000);
+                        else
+                            Thread.Sleep(60000);
                     }
                     else
                     {
@@ -236,13 +288,19 @@ namespace UXLib.Devices.VC.Cisco
                 catch (Exception e)
                 {
                     if (e.Message != "ThreadAbortException")
+                    {
                         ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
+                        this.DeviceCommunicating = false;
+                    }
                 }
             }
         }
 
+        bool programStopping = false;
+
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
+            programStopping = true;
             if (CheckStatus != null)
                 CheckStatus.Abort();
             if (FeedbackServer != null && FeedbackServer.Active)
@@ -266,10 +324,20 @@ namespace UXLib.Devices.VC.Cisco
         /// <param name="path">The XPath of the command</param>
         /// <param name="args">The arguments in the form of a built CommandArgs instance</param>
         /// <returns>XDocument containing the XML response</returns>
-        /// <remarks>This will by default use the SSHClient</remarks>
         public XDocument SendCommand(string path, CommandArgs args)
         {
             return HttpClient.SendCommand(path, args);
+        }
+
+        /// <summary>
+        /// Send a xConfiguation command
+        /// </summary>
+        /// <param name="path">Xpath of the config</param>
+        /// <param name="args">config arguments</param>
+        /// <returns>XDocument containing the XML response</returns>
+        public XDocument SendConfiguration(string path, CommandArgs args)
+        {
+            return HttpClient.SendConfiguration(path, args);
         }
 
         /// <summary>
@@ -331,10 +399,20 @@ namespace UXLib.Devices.VC.Cisco
         {
             SendCommand("Presentation/Stop");
         }
+
         /// <summary>
         /// Get the current Sending Mode for Presentation
         /// </summary>
-        public PresentationSendingMode PresentationSendingMode { get; private set; }
+        public PresentationSendingMode PresentationSendingMode
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// PresentationSendingMode has changed
+        /// </summary>
+        public event PresentationModeChangedEventHandler PresentationSendingModeChanged;
 
         /// <summary>
         /// Get the current presentation source 
@@ -346,7 +424,14 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
             CrestronConsole.PrintLine("Codec State.{0}", State.ToString());
 #endif
-            new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            try
+            {
+                new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error launching {0}.GetStatusThread", this.GetType().Name);
+            }
         }
         
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)
@@ -366,6 +451,9 @@ namespace UXLib.Devices.VC.Cisco
                                 PresentationSendingMode = (PresentationSendingMode)Enum.Parse(typeof(PresentationSendingMode), args.Data.Element("LocalSendingMode").Value, true);
                             if (args.Data.Element("LocalSource") != null)
                                 PresentationSource = int.Parse(args.Data.Element("LocalSource").Value);
+
+                            if (PresentationSendingModeChanged != null)
+                                PresentationSendingModeChanged(this);
                         }
                         break;
                 }
@@ -411,6 +499,151 @@ namespace UXLib.Devices.VC.Cisco
             this.SendCommand("UserInterface/Extensions/Widget/UnsetValue",
                 new CommandArgs("WidgetId", widgetID));
         }
+
+        #region IDevice Members
+
+        public string Name
+        {
+            get
+            {
+                if (this.SystemUnit.ProductId != null && this.SystemUnit.ProductId.Length > 0)
+                    return this.SystemUnit.ProductId;
+                return "Cisco Codec";
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string DeviceManufacturer
+        {
+            get { return "Cisco"; }
+        }
+
+        public string DeviceModel
+        {
+            get { return "SX80"; }
+        }
+
+        public string DeviceSerialNumber
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
+
+        #region ICommDevice Members
+
+        bool _DeviceCommunicating;
+        public bool DeviceCommunicating
+        {
+            get { return _DeviceCommunicating; }
+            protected set
+            {
+                if (_DeviceCommunicating != value)
+                {
+                    _DeviceCommunicating = value;
+                    FusionUpdate();
+                    if (this.DeviceCommunicatingChanged != null)
+                        this.DeviceCommunicatingChanged(this, value);
+                }
+            }
+        }
+
+        public event ICommDeviceDeviceCommunicatingChangeEventHandler DeviceCommunicatingChanged;
+
+        public void Send(string stringToSend)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnReceive(string receivedString)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CommDeviceType CommunicationType
+        {
+            get { return CommDeviceType.IP; }
+        }
+
+        #endregion
+
+        #region IFusionAsset Members
+
+        public void AssignFusionAsset(Fusion fusionInstance, FusionAssetBase asset)
+        {
+            if (asset is FusionStaticAsset)
+            {
+                this.FusionAsset = asset as FusionStaticAsset;
+
+                fusionInstance.FusionRoom.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
+                fusionInstance.FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 1, "Out of Standby", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 2, "In Call", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.Bool, 3, "Mic Muted", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+                this.FusionAsset.AddSig(Crestron.SimplSharpPro.eSigType.String, 1, "Serial Number", Crestron.SimplSharpPro.eSigIoMask.InputSigOnly);
+            }
+        }
+
+        void FusionRoom_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+                this.FusionUpdate();
+        }
+
+        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        {
+            if (args.UserConfigurableAssetDetailIndex == this.FusionAsset.ParamAssetNumber)
+            {
+                CrestronConsole.PrintLine("{0}.FusionRoom_FusionAssetStateChange", this.GetType());
+                CrestronConsole.PrintLine("  args.EventId = {0}", args.EventId);
+                CrestronConsole.PrintLine("  args.UserConfiguredSigDetail = {0}", args.UserConfiguredSigDetail.GetType());
+            }
+        }
+
+        public FusionStaticAsset FusionAsset
+        {
+            get;
+            protected set;
+        }
+
+        public AssetTypeName AssetTypeName
+        {
+            get { return AssetTypeName.VideoConferenceCodec; }
+        }
+
+        public virtual void FusionUpdate()
+        {
+            try
+            {
+                if (this.FusionAsset != null)
+                {
+                    this.FusionAsset.PowerOn.InputSig.BoolValue = this.DeviceCommunicating;
+                    this.FusionAsset.Connected.InputSig.BoolValue = this.DeviceCommunicating;
+                    this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[1].BoolValue = (this.Standby.StandbyState != StandbyState.Standby);
+                    this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[2].BoolValue = (this.Calls.Count > 0);
+                    this.FusionAsset.FusionGenericAssetDigitalsAsset1.BooleanInput[3].BoolValue = this.Audio.Microphones.Mute;
+                    this.FusionAsset.FusionGenericAssetSerialsAsset3.StringInput[1].StringValue = this.SystemUnit.Hardware.ModuleSerialNumber;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.FusionUpdate(), {1}", this.GetType(), e.Message);
+            }
+        }
+
+        public virtual void FusionError(string errorDetails)
+        {
+            if (this.FusionAsset != null)
+            {
+                this.FusionAsset.AssetError.InputSig.StringValue = errorDetails;
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -418,6 +651,8 @@ namespace UXLib.Devices.VC.Cisco
     /// </summary>
     /// <param name="codec">The instance of the Codec</param>
     public delegate void CodecConnectedEventHandler(CiscoCodec codec);
+
+    public delegate void PresentationModeChangedEventHandler(CiscoCodec codec);
 
     /// <summary>
     /// Mode to use in presentations

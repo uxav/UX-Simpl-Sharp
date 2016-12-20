@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 
 namespace UXLib.Devices.Audio.QSC
@@ -63,8 +64,13 @@ namespace UXLib.Devices.Audio.QSC
         /// <summary>
         /// Geth the off hook status of the phone
         /// </summary>
-        [System.ComponentModel.DefaultValue(false)]
-        public bool OffHook { get; protected set; }
+        public bool OffHook
+        {
+            get
+            {
+                return (OffHookLEDControl.ControlPosition == 1);
+            }
+        }
 
         /// <summary>
         /// Trigger the connect button of the phone
@@ -79,6 +85,21 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         [System.ComponentModel.DefaultValue(false)]
         public bool Connected { get; protected set; }
+
+        private DateTime _CallConnectedTime;
+
+        /// <summary>
+        /// Time of current call duration
+        /// </summary>
+        public TimeSpan CallTimer
+        {
+            get
+            {
+                if (_CallConnectedTime != null)
+                    return DateTime.Now - _CallConnectedTime;
+                else return TimeSpan.FromSeconds(0);
+            }
+        }
 
         /// <summary>
         /// Returns true if incoming call
@@ -110,6 +131,15 @@ namespace UXLib.Devices.Audio.QSC
         }
 
         /// <summary>
+        /// The last dialled number
+        /// </summary>
+        public string LastDialledNumber
+        {
+            get;
+            protected set;
+        }
+
+        /// <summary>
         /// State of the Ringer LED
         /// </summary>
         public bool IsRinging
@@ -127,6 +157,12 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         [System.ComponentModel.DefaultValue("")]
         public string CallDisplayName { get; protected set; }
+
+        /// <summary>
+        /// Get the current caller display number of the connected call
+        /// </summary>
+        [System.ComponentModel.DefaultValue("")]
+        public string CallDisplayNumber { get; protected set; }
 
         /// <summary>
         /// Set or get the Do Not Disturb state
@@ -160,6 +196,28 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         public event QSysSoftPhoneStatusChangeEventHandler StatusChanged;
 
+        QSysPhoneCallState _CallStatus = QSysPhoneCallState.Idle;
+        public QSysPhoneCallState CallStatus
+        {
+            get
+            {
+                return _CallStatus;
+            }
+            protected set
+            {
+                if (_CallStatus != value)
+                {
+                    _CallStatus = value;
+                    if (value == QSysPhoneCallState.Dialing)
+                        this.LastDialledNumber = this.CallDisplayName;
+                    if (value == QSysPhoneCallState.Connected)
+                        this._CallConnectedTime = DateTime.Now;
+                    if (CallStatusChanged != null)
+                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, value));
+                }
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -172,13 +230,15 @@ namespace UXLib.Devices.Audio.QSC
                 if (control == RingingLEDControl)
                 {
                     StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.IsRingingStatusChanged));
-                    if (CallStatusChanged != null && this.IsRinging)
-                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Ringing));
+                    if (this.IsRinging)
+                        CallStatus = QSysPhoneCallState.Ringing;
                 }
                 if (control == DialStringControl)
                     StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.DialStringChanged));
                 if (control == DNDControl)
                     StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.DNDStatusChanged));
+                if (control == OffHookLEDControl)
+                    StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.OffHookStatusChanged));
             }
 
             if (control == ProgressControl)
@@ -189,60 +249,47 @@ namespace UXLib.Devices.Audio.QSC
                 if (control.StringValue == "Disconnected")
                 {
                     this.Connected = false;
+                    this.CallDisplayNumber = string.Empty;
                     this.CallDisplayName = string.Empty;
                     this.IncomingCall = false;
-                    if (this.OffHook)
-                    {
-                        this.OffHook = false;
-                        if (StatusChanged != null)
-                            StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.OffHookStatusChanged));
-                    }
-                    if (CallStatusChanged != null)
-                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Disconnected));
-                }
-                else if (control.StringValue.Length > 0 && control.StringValue != "NO_ROUTE_DESTINATION")
-                {
-                    if (!this.OffHook)
-                    {
-                        this.OffHook = true;
-                        if (StatusChanged != null)
-                            StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.OffHookStatusChanged));
-                    }
-                }
-                else
-                {
-                    if (this.OffHook)
-                    {
-                        this.OffHook = false;
-                        if (StatusChanged != null)
-                            StatusChanged(this, new QSysSoftPhoneStatusChangeEventArgs(QSysSoftPhoneStatusChangeEventID.OffHookStatusChanged));
-                    }
-                    if (CallStatusChanged != null)
-                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Idle));
+                    CallStatus = QSysPhoneCallState.Disconnected;
                 }
 
-                if (control.StringValue.StartsWith("Dialing: "))
+                if (control.StringValue.StartsWith("Dialing"))
                 {
-                    this.CallDisplayName = control.StringValue.Remove(0, 9);
-                    if (CallStatusChanged != null)
-                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Dialing));
+                    this.CallDisplayNumber = control.StringValue.Split(' ').Last();
+                    this.CallDisplayName = this.CallDisplayNumber;
+                    CallStatus = QSysPhoneCallState.Dialing;
                 }
 
-                else if (control.StringValue.StartsWith("Call in progress: "))
+                else if (control.StringValue.StartsWith("Call in progress") || control.StringValue.StartsWith("Connected"))
                 {
-                    this.CallDisplayName = control.StringValue.Remove(0, 18);
+                    this.CallDisplayName = control.StringValue.Split(' ').Last();
                     this.Connected = true;
                     this.IncomingCall = false;
-                    if (CallStatusChanged != null)
-                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Connected));
+                    CallStatus = QSysPhoneCallState.Connected;
                 }
 
                 else if (control.StringValue.StartsWith("Incoming call from: "))
                 {
                     this.CallDisplayName = control.StringValue.Remove(0, 20);
                     this.IncomingCall = true;
-                    if (CallStatusChanged != null)
-                        CallStatusChanged(this, new QSysSoftPhoneCallStatusChangeEventArgs(this, QSysPhoneCallState.Incoming));
+                    CallStatus = QSysPhoneCallState.Incoming;
+                }
+
+                else if (control.StringValue.StartsWith("Incoming Call - "))
+                {
+                    Regex r = new Regex(@"Incoming Call - (\S+) \(([\s\S]*)\)");
+                    Match details = r.Match(control.StringValue);
+                    this.CallDisplayNumber = details.Groups[1].Value;
+                    this.CallDisplayName = details.Groups[2].Value;
+                    this.IncomingCall = true;
+                    CallStatus = QSysPhoneCallState.Incoming;
+                }
+
+                else if (control.StringValue == "Idle")
+                {
+                    CallStatus = QSysPhoneCallState.Idle;
                 }
             }
         }
@@ -351,6 +398,14 @@ namespace UXLib.Devices.Audio.QSC
         public string CallDisplayName
         {
             get { return Phone.CallDisplayName; }
+        }
+
+        /// <summary>
+        /// The caller display name or number of the call
+        /// </summary>
+        public string CallDisplayNumber
+        {
+            get { return Phone.CallDisplayNumber; }
         }
 
         /// <summary>

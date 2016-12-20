@@ -49,6 +49,8 @@ namespace UXLib.Devices.VC.Cisco
         {
             if (MuteChange != null)
                 MuteChange(Codec, Mute);
+
+            this.Codec.FusionUpdate();
         }
 
         int _Volume;

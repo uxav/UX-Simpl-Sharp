@@ -6,11 +6,12 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharpPro.DeviceSupport;
+using UXLib.Devices;
 using UXLib.Models;
 
 namespace UXLib.UI
 {
-    public class UIController
+    public class UIController : IFusionStaticAsset, IDevice
     {
         public UIController(uint id, BasicTriList device)
         {
@@ -30,6 +31,7 @@ namespace UXLib.UI
                 }
 
                 this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(DeviceOnlineStatusChanged);
 
                 if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
                 {
@@ -42,10 +44,17 @@ namespace UXLib.UI
             }
         }
 
+        public virtual void DeviceOnlineStatusChanged(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            
+        }
+
         public UIController(uint id, BasicTriList device, Room defaultRoom)
             : this(id, device)
         {
-            this.Room = defaultRoom;
+            _room = defaultRoom;
+            _room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+            _room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
         }
 
         public uint ID { get; protected set; }
@@ -94,8 +103,16 @@ namespace UXLib.UI
             }
             set
             {
-                this.Room.Source = value;
+                if (this.Room.Source != value)
+                    this.Room.Source = value;
+                else if (value != null)
+                    UIShouldShowSourceControl(value);
             }
+        }
+
+        public virtual void UIShouldShowSourceControl(Source source)
+        {
+
         }
 
         void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
@@ -108,7 +125,12 @@ namespace UXLib.UI
 
         void Device_IpInformationChange(GenericBase currentDevice, ConnectedIpEventArgs args)
         {
-            
+            if (args.Connected)
+                ErrorLog.Notice("UI Device {0} with ID {1} is online with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
+                    args.DeviceIpAddress);
+            else
+                ErrorLog.Notice("UI Device {0} with ID {1} is offline with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
+                    args.DeviceIpAddress);
         }
 
         void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
@@ -137,7 +159,8 @@ namespace UXLib.UI
 
         protected virtual void OnSourceChange(Source previousSource, Source newSource)
         {
-
+            if (newSource != null)
+                UIShouldShowSourceControl(newSource);
         }
 
         protected virtual void OnVolumeChange(VolumeLevelType volumeType, ushort volumeLevel)
@@ -145,22 +168,21 @@ namespace UXLib.UI
 
         }
 
-        /// <summary>
-        /// Debug some stuff about the panel's behaviour
-        /// </summary>
-        /// <param name="message">A string to send to the console</param>
-        public void Debug(string message)
+        public void Debug(DateTime startTime, string message, params object[] args)
         {
-            CrestronConsole.PrintLine("UI 0x{00:X} {1}", this.Device.ID, message);
+            string formattedMessage = string.Format(message, args);
+            TimeSpan ts = DateTime.Now - startTime;
+            CrestronConsole.PrintLine("{0} - {1}",
+                string.Format("{0} ({1}) {2:00}:{3:0000}", this.GetType().Name, this.ID, ts.Seconds, ts.Milliseconds),
+                formattedMessage);
         }
 
-        /// <summary>
-        /// Debug some stuff about the panel's behaviour
-        /// </summary>
-        /// <param name="message">A string to send to the notice log</param>
-        public void WriteLog(string message)
+        public void Debug(string message, params object[] args)
         {
-            ErrorLog.Notice("UI 0x{00:X} : {1}", this.Device.ID, message);
+            string formattedMessage = string.Format(message, args);
+            CrestronConsole.PrintLine("{0} - {1}",
+                string.Format("{0} ({1})", this.GetType().Name, this.ID),
+                formattedMessage);
         }
 
         public void Wake()
@@ -174,6 +196,62 @@ namespace UXLib.UI
             if (this.SystemReservedSigs != null)
                 this.SystemReservedSigs.BacklightOff();
         }
+
+        #region IFusionStaticAsset Members
+
+        public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
+
+        #region IFusionAsset Members
+
+        public AssetTypeName AssetTypeName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void AssignFusionAsset(Fusion fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FusionUpdate()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FusionError(string errorDetails)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IDevice Members
+
+
+        public string DeviceManufacturer
+        {
+            get;
+            protected set;
+        }
+
+        public string DeviceModel
+        {
+            get;
+            protected set;
+        }
+
+        public string DeviceSerialNumber
+        {
+            get;
+            protected set;
+        }
+
+        #endregion
     }
 
     public delegate void RoomChangeEventHandler(UIController uiController, RoomChangeEventArgs args);

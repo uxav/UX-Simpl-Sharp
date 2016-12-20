@@ -14,7 +14,7 @@ namespace UXLib.Devices.Displays.NEC
         public NecComPortHandler(ComPort comPort)
         {
             ComPort = comPort;
-            RxQueue = new CrestronQueue<byte>();
+            RxQueue = new CrestronQueue<byte>(1000);
 
             if (!ComPort.Registered)
             {
@@ -41,7 +41,10 @@ namespace UXLib.Devices.Displays.NEC
         public void Initialize()
         {
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-            RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
+            RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+            RxThread.Priority = Thread.eThreadPriority.UberPriority;
+            RxThread.Name = "NEC ComPort - Rx Handler";
+            RxThread.Start();
             ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
         }
 
@@ -147,6 +150,7 @@ namespace UXLib.Devices.Displays.NEC
 #endif
                             if (ReceivedPacket != null)
                                 ReceivedPacket(this, copiedBytes);
+                            CrestronEnvironment.AllowOtherAppsToRun();
                         }
                         else
                         {

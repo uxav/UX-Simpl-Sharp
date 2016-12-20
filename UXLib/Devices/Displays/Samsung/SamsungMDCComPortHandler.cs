@@ -14,7 +14,7 @@ namespace UXLib.Devices.Displays.Samsung
         public SamsungMDCComPortHandler(ComPort comPort)
         {
             ComPort = comPort;
-            RxQueue = new CrestronQueue<byte>();
+            RxQueue = new CrestronQueue<byte>(1000);
 
             if (!ComPort.Registered)
             {
@@ -32,17 +32,33 @@ namespace UXLib.Devices.Displays.Samsung
                 ComPort.eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
                 ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
                 false);
+
+            TxQueue = new CrestronQueue<byte[]>(10);
         }
 
         ComPort ComPort;
+        CrestronQueue<byte[]> TxQueue { get; set; }
         CrestronQueue<byte> RxQueue { get; set; }
+        Thread TxThread { get; set; }
         Thread RxThread { get; set; }
 
+        public bool Initialized { get; private set; }
         public void Initialize()
         {
-            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-            RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.Running);
-            ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
+            if (!Initialized)
+            {
+                CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+                TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                TxThread.Priority = Thread.eThreadPriority.UberPriority;
+                TxThread.Name = string.Format("Samsung Display ComPort - Tx Handler");
+                TxThread.Start();
+                RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                RxThread.Priority = Thread.eThreadPriority.UberPriority;
+                RxThread.Name = string.Format("Samsung Display ComPort - Rx Handler");
+                RxThread.Start();
+                ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
+                Initialized = true;
+            }
         }
 
         void ComPort_SerialDataReceived(ComPort ReceivingComPort, ComPortSerialDataEventArgs args)
@@ -52,6 +68,37 @@ namespace UXLib.Devices.Displays.Samsung
         }
 
         public event SamsungMDCComPortReceivedPacketEventHandler ReceivedPacket;
+
+        object SendBufferProcess(object o)
+        {
+            while (true)
+            {
+                try
+                {
+                    Byte[] packet = TxQueue.Dequeue();
+#if DEBUG
+                    //CrestronConsole.Print("Samsung Tx: ");
+                    //Tools.PrintBytes(packet, packet.Length);
+#endif
+                    if (programStopping)
+                    {
+                        TxQueue.Clear();
+                        return null;
+                    }
+                    else
+                    {
+                        this.ComPort.Send(packet, packet.Length);
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (e.Message != "ThreadAbortException")
+                    {
+                        ErrorLog.Exception(string.Format("{0} - Exception in tx buffer thread", GetType().Name), e);
+                    }
+                }
+            }
+        }
 
         object ReceiveBufferProcess(object obj)
         {
@@ -64,6 +111,9 @@ namespace UXLib.Devices.Displays.Samsung
                 try
                 {
                     byte b = RxQueue.Dequeue();
+
+                    if (programStopping)
+                        return null;
 
                     if (b == 0xAA)
                     {
@@ -89,8 +139,14 @@ namespace UXLib.Devices.Displays.Samsung
                         {
                             byte[] copiedBytes = new byte[byteIndex];
                             Array.Copy(bytes, copiedBytes, byteIndex);
+#if DEBUG
+                            //CrestronConsole.Print("Samsung Rx: ");
+                            //Tools.PrintBytes(copiedBytes, copiedBytes.Length);
+#endif
                             if (ReceivedPacket != null)
                                 ReceivedPacket(this, copiedBytes);
+
+                            CrestronEnvironment.AllowOtherAppsToRun();
                         }
                     }
                 }
@@ -102,16 +158,28 @@ namespace UXLib.Devices.Displays.Samsung
                         CrestronConsole.Print("Error in Samsung Rx: ");
                         Tools.PrintBytes(bytes, byteIndex);
 #endif
-                        ErrorLog.Exception(string.Format("{0} - Exception in thread", GetType().ToString()), e);
+                        ErrorLog.Exception(string.Format("{0} - Exception in rx thread", GetType().Name), e);
                     }
                 }
             }
         }
 
+        bool programStopping = false;
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
             if (programEventType == eProgramStatusEventType.Stopping)
-                RxThread.Abort();
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("Samsung com port handler - Program Stopping!");
+#endif
+                programStopping = true;
+
+                if (RxThread != null && RxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
+                {
+                    if (RxQueue.IsEmpty)
+                        RxQueue.Enqueue(0x00);
+                }
+            }
         }
 
         public void Send(byte[] bytes, int length)
@@ -126,11 +194,11 @@ namespace UXLib.Devices.Displays.Samsung
                 for (int i = 1; i < bytes.Length; i++)
                     chk = chk + bytes[i];
                 packet[packet.Length - 1] = (byte)chk;
-#if DEBUG
-                //CrestronConsole.Print("Samsung Tx: ");
-                //Tools.PrintBytes(packet, packet.Length);
-#endif
-                this.ComPort.Send(packet, packet.Length);
+
+                if (!TxQueue.TryToEnqueue(packet))
+                {
+                    ErrorLog.Error("Error in {0}, could not Enqueue packet to send", this.GetType().Name);
+                }
             }
             else
             {

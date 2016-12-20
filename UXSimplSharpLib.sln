@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UXLib", "UXLib\UXLib.csproj", "{372C9F2A-CCC7-4396-BC70-B6A566AA8EC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XXPostBuild", "XXPostBuild\XXPostBuild.csproj", "{A0079868-3048-46F1-96C0-C7BF3FE132FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{372C9F2A-CCC7-4396-BC70-B6A566AA8EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{372C9F2A-CCC7-4396-BC70-B6A566AA8EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{372C9F2A-CCC7-4396-BC70-B6A566AA8EC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0079868-3048-46F1-96C0-C7BF3FE132FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0079868-3048-46F1-96C0-C7BF3FE132FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0079868-3048-46F1-96C0-C7BF3FE132FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0079868-3048-46F1-96C0-C7BF3FE132FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
