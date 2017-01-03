@@ -99,6 +99,14 @@ namespace UXLib.Models
             }
         }
 
+        public SourceCollection ContentShareSources
+        {
+            get
+            {
+                return new SourceCollection(InternalDictionary.Values.Where(s => s.IsPresentationSource && s.AllowedForContentShare));
+            }
+        }
+
         public SourceCollection TelevisionSources
         {
             get

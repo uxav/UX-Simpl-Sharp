@@ -69,6 +69,20 @@ namespace UXLib.Models
             }
         }
 
+        private bool _AllowedForContentShare = true;
+        public bool AllowedForContentShare
+        {
+            get
+            {
+                return _AllowedForContentShare;
+            }
+        }
+
+        public void DisableForContentShare()
+        {
+            _AllowedForContentShare = false;
+        }
+
         public bool IsWirelessPresentationSource
         {
             get
