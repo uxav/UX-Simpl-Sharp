@@ -29,14 +29,22 @@ namespace UXLib
 
             if (dir.GetFiles("*" + this.Name + "*.log").Length > 0)
             {
-                FileInfo file = dir.GetFiles("*" + this.Name + "*.log")
-                 .OrderByDescending(f => f.LastWriteTime)
-                 .First();
+                try
+                {
+                    FileInfo file = dir.GetFiles("*" + this.Name + "*.log")
+                     .OrderByDescending(f => f.LastWriteTime)
+                     .First();
 
-                int maxSize = 1024 * 1024;
+                    int maxSize = 1024 * 1024;
 
-                if (file.Length < maxSize)
-                    return file.AppendText();
+                    if (file.Length < maxSize)
+                        return file.AppendText();
+                }
+                catch (Exception e)
+                {
+                    ErrorLog.Exception("Error in Logger.GetLog() getting file, will create new file", e);
+                    return new StreamWriter(CreateNewFile());
+                }
             }
 
             return new StreamWriter(CreateNewFile());
