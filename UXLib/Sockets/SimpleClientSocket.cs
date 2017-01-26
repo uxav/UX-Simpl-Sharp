@@ -70,7 +70,7 @@ namespace UXLib.Sockets
                 CrestronConsole.PrintLine("socket.ConnectToServerAsync(OnConnect) = {0}", error);
 #endif
             }
-            else
+            else if (!waitingForConnection)
             {
                 ErrorLog.Notice("{0} Socket {1} already connected!", this.GetType().Name, Socket.AddressClientConnectedTo);
             }
