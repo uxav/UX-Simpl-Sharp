@@ -8,6 +8,7 @@ using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.Devices.VC.Cisco
 {
@@ -47,15 +48,25 @@ namespace UXLib.Devices.VC.Cisco
             args.Add("FeedbackSlot", feedbackSlot.ToString());
             XDocument response;
 
-            if (deregisterFirst)
+            if (deregisterFirst || deregisterOnBoot)
             {
+                if (deregisterOnBoot)
+                {
+                    CrestronConsole.PrintLine("Deregistering codec feedback on first boot to combat potential issue with codec lockups");
+                    ErrorLog.Notice("Deregistering codec feedback on first boot to combat potential issue with codec lockups");
+                }
 #if DEBUG
                 CrestronConsole.PrintLine("Deresgistering feedback mechanism with CiscoCodec");
 #endif
                 response = Codec.SendCommand("HttpFeedback/Deregister", args);
 
+                if (deregisterOnBoot)
+                {
+                    CrestronConsole.PrintLine("Deregister response:\r\n{0}", response.ToString());
+                    deregisterOnBoot = false;
+                }
 #if DEBUG
-                CrestronConsole.PrintLine("Deregister repsonse:\r\n{0}", response.ToString());
+                CrestronConsole.PrintLine("Deregister response:\r\n{0}", response.ToString());
 #endif
             }
 
@@ -78,6 +89,8 @@ namespace UXLib.Devices.VC.Cisco
             CrestronConsole.PrintLine("Register repsonse:\r\n{0}", response.ToString());
 #endif
         }
+
+        bool deregisterOnBoot = true;
 
         public void Register(int feedbackSlot, string[] expressions)
         {
@@ -139,8 +152,10 @@ namespace UXLib.Devices.VC.Cisco
 
         public event CodecUserInterfaceWidgetActionEventHandler WidgetActionEvent;
 
-        void OnReceivedData(object sender, OnHttpRequestArgs args)
+        object ProcessData(object a)
         {
+            OnHttpRequestArgs args = (OnHttpRequestArgs)a;
+
             try
             {
                 args.Response.KeepAlive = true;
@@ -281,7 +296,7 @@ namespace UXLib.Devices.VC.Cisco
                             element = element.Elements().FirstOrDefault();
                             path = string.Format("{0}/{1}", path, element.XName.LocalName);
                         }
-                            
+
 #if DEBUG
                         CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
                         CrestronConsole.PrintLine("{0}\r\n", element.ToString());
@@ -302,9 +317,9 @@ namespace UXLib.Devices.VC.Cisco
                 else if (args.Request.Header.RequestType == "GET")
                 {
                     args.Response.SendError(405, "Method not allowed");
-                    return;
+                    return null;
                 }
-                return;
+                return null;
             }
             catch (Exception e)
             {
@@ -317,8 +332,15 @@ namespace UXLib.Devices.VC.Cisco
                 }
 
                 args.Response.SendError(500, "Internal server error");
-                return;
+                return null;
             }
+        }
+
+        void OnReceivedData(object sender, OnHttpRequestArgs args)
+        {
+            Thread pThread = new Thread(ProcessData, args, Thread.eThreadStartOptions.CreateSuspended);
+            pThread.Priority = Thread.eThreadPriority.UberPriority;
+            pThread.Start();
         }
 
         public event CodecFeedbackServerReceiveEventHandler ReceivedData;

@@ -51,11 +51,6 @@ namespace UXLib.Devices.VC.Cisco
 
         CodecHTTPClient HttpClient { get; set; }
 
-        /// <summary>
-        /// Returns true if the HttpClient for the codec is busy running a process
-        /// </summary>
-        public bool HttpClientBusy { get { return this.HttpClient.Busy; } }
-
         internal CodecFeedbackServer FeedbackServer { get; set; }
 
         /// <summary>
@@ -208,8 +203,7 @@ namespace UXLib.Devices.VC.Cisco
                         if (!this.HttpClient.HasSessionKey)
                             this.HttpClient.StartSession();
 
-                        if (!this.FeedbackServer.Registered)
-                            this.Registerfeedback();
+                        this.Registerfeedback();
 
                         this.DeviceCommunicating = true;
                         
@@ -222,7 +216,11 @@ namespace UXLib.Devices.VC.Cisco
                                 HasConnected(this);
 
                                 if (CheckStatus == null || CheckStatus.ThreadState != Thread.eThreadStates.ThreadRunning)
-                                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.Running);
+                                {
+                                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.CreateSuspended);
+                                    CheckStatus.Priority = Thread.eThreadPriority.UberPriority;
+                                    CheckStatus.Start();
+                                }
                             }
                         }
                         catch (Exception e)
@@ -247,43 +245,33 @@ namespace UXLib.Devices.VC.Cisco
 
         object CheckStatusThread(object threadObject)
         {
-            Thread.Sleep(60000);
+            CrestronEnvironment.AllowOtherAppsToRun();
             
             while (true)
             {
                 try
                 {
-                    if (!this.HttpClient.Busy)
-                    {
-                        if (!this.HttpClient.HasSessionKey)
-                            this.HttpClient.StartSession();
+                    if (!this.HttpClient.HasSessionKey)
+                        this.HttpClient.StartSession();
 
-                        bool registered = this.FeedbackServer.Registered;
+                    bool registered = this.FeedbackServer.Registered;
 #if DEBUG
                     CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
 #endif
-                        if (!registered)
-                        {
-                            ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
-#if DEBUG
-                        CrestronConsole.PrintLine("Registering Feedback");
-#endif
-                            this.Registerfeedback();
-                        }
-
-                        this.DeviceCommunicating = true;
-
-                        this.Calls.Update();
-
-                        if (this.Calls.Active.Count() > 0)
-                            Thread.Sleep(5000);
-                        else
-                            Thread.Sleep(60000);
-                    }
-                    else
+                    if (!registered)
                     {
-                        Thread.Sleep(5000);
+                        ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
+#if DEBUG
+                    CrestronConsole.PrintLine("Registering Feedback");
+#endif
+                        this.Registerfeedback();
                     }
+
+                    this.DeviceCommunicating = true;
+
+                    this.Calls.Update();
+                    CrestronEnvironment.AllowOtherAppsToRun();
+                    Thread.Sleep(60000);
                 }
                 catch (Exception e)
                 {

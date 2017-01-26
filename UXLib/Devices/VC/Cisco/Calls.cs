@@ -104,9 +104,16 @@ namespace UXLib.Devices.VC.Cisco
                         _Calls[callID].Status = CallStatus.Dialling;
                         OnCallStatusChange(_Calls[callID], CallInfoChangeNotificationSource.DialRequest);
                     }
-                    if (this.Codec.LoggingEnabled)
+                    try
                     {
-                        this.Codec.Logger.Log("Dialed call with API - Result ok - Call ID: {0}", callID);
+                        if (this.Codec.LoggingEnabled)
+                        {
+                            this.Codec.Logger.Log("Dialed call with API - Result ok - Call ID: {0}", callID);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Error("Could not write to Codec.Logger in Codec.Call.Dial()");
                     }
                     return new DialResult(callID);
                 }   
@@ -207,12 +214,6 @@ namespace UXLib.Devices.VC.Cisco
                             CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Call ID = {0}", callID);
                             CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Elements().count = {0}", args.Data.Elements().Count());
 #endif
-                            if (call.Status == CallStatus.Connecting && !args.Data.Elements().Any(e => e.XName.LocalName == "Status"))
-                            {
-                                CrestronConsole.PrintLine("Received call status with no status value for call {0} which is currently shown as connecting... Requesting full update",
-                                    call.ID);
-                                //this.Update();
-                            }
 
                             foreach (XElement e in args.Data.Elements())
                             {
@@ -318,7 +319,9 @@ namespace UXLib.Devices.VC.Cisco
 
         public void Update()
         {
-            new Thread(UpdateCallsThread, null, Thread.eThreadStartOptions.Running);
+            Thread nt = new Thread(UpdateCallsThread, null, Thread.eThreadStartOptions.CreateSuspended);
+            nt.Priority = Thread.eThreadPriority.UberPriority;
+            nt.Start();
         }
 
         object UpdateCallsThread(object obj)

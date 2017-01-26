@@ -118,14 +118,6 @@ namespace UXLib.Devices.VC.Cisco
             return null;
         }
 
-        public bool Busy
-        {
-            get
-            {
-                return this.HttpClient.ProcessBusy;
-            }
-        }
-
         HttpClientResponse Get(string path)
         {
             HttpClientRequest request = new HttpClientRequest();
