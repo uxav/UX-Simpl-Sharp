@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.Fusion;
 using UXLib.Devices;
 using UXLib.Models;
+using UXLib.Models.Fusion;
 
 namespace UXLib.Devices.Displays
 {
@@ -162,7 +163,7 @@ namespace UXLib.Devices.Displays
 
         #region IFusionAsset Members
 
-        public void AssignFusionAsset(Fusion fusionInstance, FusionAssetBase asset)
+        public void AssignFusionAsset(FusionController fusionInstance, FusionAssetBase asset)
         {
             if (asset is FusionStaticAsset)
             {

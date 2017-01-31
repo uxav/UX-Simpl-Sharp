@@ -7,18 +7,18 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
 using UXLib.Extensions;
 
-namespace UXLib.Models
+namespace UXLib.Models.Fusion
 {
     public class FusionAssetCollection : IEnumerable<FusionAssetBase>
     {
-        public FusionAssetCollection(Fusion fusionInstance)
+        public FusionAssetCollection(FusionController fusionInstance)
         {
             Fusion = fusionInstance;
             Assets = new Dictionary<uint, FusionAssetBase>();
             Devices = new Dictionary<GenericDevice, FusionAssetBase>();
         }
 
-        public Fusion Fusion { get; private set; }
+        public FusionController Fusion { get; private set; }
         private Dictionary<uint, FusionAssetBase> Assets;
         private Dictionary<GenericDevice, FusionAssetBase> Devices;
 

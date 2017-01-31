@@ -11,6 +11,7 @@ using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Fusion;
 using UXLib.Models;
+using UXLib.Models.Fusion;
 
 namespace UXLib.Devices.VC.Cisco
 {
@@ -560,7 +561,7 @@ namespace UXLib.Devices.VC.Cisco
 
         #region IFusionAsset Members
 
-        public void AssignFusionAsset(Fusion fusionInstance, FusionAssetBase asset)
+        public void AssignFusionAsset(FusionController fusionInstance, FusionAssetBase asset)
         {
             if (asset is FusionStaticAsset)
             {

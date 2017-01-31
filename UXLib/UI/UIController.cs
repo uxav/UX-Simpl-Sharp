@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharpPro.DeviceSupport;
 using UXLib.Devices;
 using UXLib.Models;
+using UXLib.Models.Fusion;
 
 namespace UXLib.UI
 {
@@ -49,7 +50,7 @@ namespace UXLib.UI
             
         }
 
-        public UIController(uint id, BasicTriList device, Room defaultRoom)
+        public UIController(uint id, BasicTriList device, UXLib.Models.Room defaultRoom)
             : this(id, device)
         {
             _room = defaultRoom;
@@ -61,8 +62,8 @@ namespace UXLib.UI
         public string Name { get; set; }
         public BasicTriList Device { get; protected set; }
         public TswFtSystemReservedSigs SystemReservedSigs { get; protected set; }
-        Room _room;
-        public Room Room
+        UXLib.Models.Room _room;
+        public UXLib.Models.Room Room
         {
             set
             {
@@ -115,7 +116,7 @@ namespace UXLib.UI
 
         }
 
-        void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
+        void Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)
         {
             if (this.Room == room)
             {
@@ -133,20 +134,20 @@ namespace UXLib.UI
                     args.DeviceIpAddress);
         }
 
-        void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
+        void Room_RoomDetailsChange(UXLib.Models.Room room, RoomDetailsChangeEventArgs args)
         {
             
         }
 
         public event RoomChangeEventHandler RoomChanged;
 
-        protected virtual void RoomWillChange(Room newRoom)
+        protected virtual void RoomWillChange(UXLib.Models.Room newRoom)
         {
             if (RoomChanged != null)
                 RoomChanged(this, new RoomChangeEventArgs(newRoom, RoomChangeEventType.WillChange));
         }
 
-        protected virtual void OnRoomChange(Room newRoom)
+        protected virtual void OnRoomChange(UXLib.Models.Room newRoom)
         {
             if (RoomChanged != null)
                 RoomChanged(this, new RoomChangeEventArgs(newRoom, RoomChangeEventType.HasChanged));
@@ -213,7 +214,7 @@ namespace UXLib.UI
             get { throw new NotImplementedException(); }
         }
 
-        public void AssignFusionAsset(Fusion fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        public void AssignFusionAsset(FusionController fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
         {
             throw new NotImplementedException();
         }
@@ -258,13 +259,13 @@ namespace UXLib.UI
 
     public class RoomChangeEventArgs : EventArgs
     {
-        public RoomChangeEventArgs(Room newRoom, RoomChangeEventType eventType)
+        public RoomChangeEventArgs(UXLib.Models.Room newRoom, RoomChangeEventType eventType)
         {
             NewRoom = newRoom;
             EventType = eventType;
         }
 
-        public Room NewRoom { get; protected set; }
+        public UXLib.Models.Room NewRoom { get; protected set; }
         public RoomChangeEventType EventType { get; protected set; }
     }
 

@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
 using UXLib.UI;
+using UXLib.Models.Fusion;
 
 namespace UXLib.Models
 {
@@ -94,7 +95,7 @@ namespace UXLib.Models
                     return false;
             }
         }
-        public Fusion Fusion { get; protected set; }
+        public FusionController Fusion { get; protected set; }
 
         public virtual void OnSourceChange(Source previousSource, Source newSource)
         {
@@ -245,7 +246,12 @@ namespace UXLib.Models
 
         public virtual void FusionAssign(uint ipId)
         {
-            this.Fusion = new Fusion(this, ipId);
+            this.Fusion = new FusionController(this, ipId, false);
+        }
+
+        public virtual void FusionAssign(uint ipId, bool useScheduling)
+        {
+            this.Fusion = new FusionController(this, ipId, useScheduling);
         }
 
         public event RoomDetailsChangeEventHandler RoomDetailsChange;

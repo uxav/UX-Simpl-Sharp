@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.Fusion;
 
-namespace UXLib.Models
+namespace UXLib.Models.Fusion
 {
     public interface IFusionStaticAsset : IFusionAsset
     {

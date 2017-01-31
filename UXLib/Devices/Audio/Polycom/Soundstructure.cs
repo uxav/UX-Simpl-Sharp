@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.Fusion;
 using UXLib.Devices;
 using UXLib.Models;
+using UXLib.Models.Fusion;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.Polycom
@@ -482,7 +483,7 @@ namespace UXLib.Devices.Audio.Polycom
             get { return AssetTypeName.DSP; }
         }
 
-        public void AssignFusionAsset(Fusion fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        public void AssignFusionAsset(FusionController fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
         {
             if (asset is FusionStaticAsset)
             {

@@ -6,22 +6,28 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
 
-namespace UXLib.Models
+namespace UXLib.Models.Fusion
 {
-    public class Fusion
+    public class FusionController
     {
-        public Fusion(Room room, uint ipId)
+        public FusionController(UXLib.Models.Room room, uint ipId, bool useScheduling)
         {
             this.Room = room;
             this.FusionRoom = new FusionRoom(ipId, room.ControlSystem, room.Name, Guid.NewGuid().ToString());
             this.FusionRoom.OnlineStatusChange += new OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
             this.Assets = new FusionAssetCollection(this);
             this.FusionRoom.FusionStateChange += new FusionStateEventHandler(FusionRoom_FusionStateChange);
+            if (useScheduling)
+            {
+                this.FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
+                this.Scheduler = new FusionScheduler(this);
+            }
         }
 
-        public Room Room { get; private set; }
+        public UXLib.Models.Room Room { get; private set; }
         public FusionRoom FusionRoom { get; private set; }
         public FusionAssetCollection Assets { get; private set; }
+        public FusionScheduler Scheduler { get; private set; }
 
         public void Register()
         {
