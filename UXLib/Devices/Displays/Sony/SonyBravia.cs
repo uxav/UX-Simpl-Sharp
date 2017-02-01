@@ -158,7 +158,7 @@ namespace UXLib.Devices.Displays.Sony
 
                     foreach (JToken token in volumeStatus["result"].First())
                     {
-                        if (token["target"].Value<string>() == "speaker")
+                        if (token["target"].Value<string>() == this.TargetAudioDevice.ToString().ToLower())
                         {
                             _VolumeMin = token["minVolume"].Value<int>();
                             _VolumeMax = token["maxVolume"].Value<int>();
@@ -220,6 +220,8 @@ namespace UXLib.Devices.Displays.Sony
         private int _VolumeMin = 0;
         private int _VolumeMax = 100;
 
+        public TargetVolumeDeviceType TargetAudioDevice { get; set; }
+
         public int Volume
         {
             get { return _Volume; }
@@ -229,7 +231,7 @@ namespace UXLib.Devices.Displays.Sony
                 {
                     if (value >= _VolumeMin && value <= _VolumeMax)
                     {
-                        Request("audio", "setAudioVolume", GetNextID(), "1.0", new { @volume = value.ToString(), @target = "speaker" });
+                        Request("audio", "setAudioVolume", GetNextID(), "1.0", new { @volume = value.ToString(), @target = this.TargetAudioDevice.ToString().ToLower() });
                         _Volume = value;
                         if (VolumeChanged != null)
                             VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
@@ -300,5 +302,11 @@ namespace UXLib.Devices.Displays.Sony
         }
 
         #endregion
+    }
+
+    public enum TargetVolumeDeviceType
+    {
+        Speaker,
+        Headphone
     }
 }
