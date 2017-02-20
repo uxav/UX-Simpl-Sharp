@@ -38,6 +38,6 @@ Write-Host "dll Version         = " $version
 
 Write-Host "Renaming file to UXLib_$version`_$ConfigurationName.dll"
 
-Write-Host "Moving cpz to C:\Users\mike\Dropbox (UX Digital)\Crestron Resources\UXLib Builds\$ConfigurationName\UXLib_$version`_$ConfigurationName.dll"
+Write-Host "Moving cpz to \\Mac\Dropbox for Business\Crestron Resources\UXLib Builds\$ConfigurationName\UXLib_$version`_$ConfigurationName.dll"
 
-Copy-Item $dllpath "C:\Users\mike\Dropbox (UX Digital)\Crestron Resources\UXLib Builds\$ConfigurationName\UXLib_$version`_$ConfigurationName.dll"
+Copy-Item $dllpath "\\Mac\Dropbox for Business\Crestron Resources\UXLib Builds\$ConfigurationName\UXLib_$version`_$ConfigurationName.dll"

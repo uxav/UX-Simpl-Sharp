@@ -205,15 +205,22 @@ namespace UXLib.Devices.Audio.Polycom
                     case "vcgitem":
                         {
                             List<ISoundstructureItem> channels = new List<ISoundstructureItem>();
-                            for (int e = 2; e < elements.Count(); e++)
+                            if (elements.Count() > 2)
                             {
-                                if (this.VirtualChannels.Contains(elements[e]))
+                                for (int e = 2; e < elements.Count(); e++)
                                 {
-                                    channels.Add(this.VirtualChannels[elements[e]]);
+                                    if (this.VirtualChannels.Contains(elements[e]))
+                                    {
+                                        channels.Add(this.VirtualChannels[elements[e]]);
+                                    }
                                 }
+                                VirtualChannelGroup group = new VirtualChannelGroup(this, elements[1], channels);
+                                listedItems.Add(group);
                             }
-                            VirtualChannelGroup group = new VirtualChannelGroup(this, elements[1], channels);
-                            listedItems.Add(group);
+                            else
+                            {
+                                ErrorLog.Warn("Ignoring Soundstructure group item {0} as it has no members", elements[1]);
+                            }
                         }
                         break;
                     case "vcrename":
@@ -322,9 +329,10 @@ namespace UXLib.Devices.Audio.Polycom
                                     if (!Initialised && CheckAllItemsHaveInitialised())
                                     {
                                         Initialised = true;
-#if DEBUG
+
+                                        ErrorLog.Notice("Soundstructure Initialised");
                                         CrestronConsole.PrintLine("Soundstructure Initialised!");
-#endif
+
                                         if (HasInitialised != null)
                                             HasInitialised(this);
                                     }

@@ -47,24 +47,54 @@ namespace UXLib.Devices.Audio.Revolabs
             switch (command)
             {
                 case "micstatus":
-                    this.Status = (MicStatus)uint.Parse(value);
+                    try
+                    {
+                        this.Status = (MicStatus)uint.Parse(value);
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Error("{0}.UpdateValue() Could not parse micstatus value \"{1}\", {2}", this.GetType().Name, value, e.Message);
+                    }
                     break;
                 case "mictype":
-                    this.Type = (MicType)uint.Parse(value);
+                    try
+                    {
+                        this.Type = (MicType)uint.Parse(value);
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Error("{0}.UpdateValue() Could not parse mictype value \"{1}\", {2}", this.GetType().Name, value, e.Message);
+                    }
 #if DEBUG
                     CrestronConsole.PrintLine("Mic {0} is MicType.{1}", this.ChannelNumber, this.Type);
 #endif
                     break;
                 case "mutestatus":
-                    string[] args = value.Split(',');
-                    _Mute = (args[0] == "1") ? true : false;
-                    _MuteType = (MuteType)uint.Parse(args[1]);
-                    _MuteLock = (args[2] == "1") ? true : false;
+                    try
+                    {
+                        string[] args = value.Split(',');
+                        _Mute = (args[0] == "1") ? true : false;
+                        _MuteType = (MuteType)uint.Parse(args[1]);
+                        _MuteLock = (args[2] == "1") ? true : false;
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorLog.Error("{0}.UpdateValue() Could not parse mutestatus value \"{1}\", {2}", this.GetType().Name, value, e.Message);                        
+                    }
 #if DEBUG
                     CrestronConsole.PrintLine("Mic {0} Mute = {1}, MuteType.{2}, MuteLock = {3}", this.ChannelNumber, this.Mute, this.MuteType, this.MuteLock);
 #endif
                     if (VolumeChanged != null)
-                        VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                    {
+                        try
+                        {
+                            VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                        }
+                        catch (Exception e)
+                        {
+                            ErrorLog.Error("{0}.VolumeChanged event error, {1}", this.GetType().Name, e.Message);                            
+                        }
+                    }
                     break;
             }
         }
