@@ -33,7 +33,7 @@ namespace UXLib.Devices.Displays.Samsung
                 ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
                 false);
 
-            TxQueue = new CrestronQueue<byte[]>(10);
+            TxQueue = new CrestronQueue<byte[]>(50);
         }
 
         ComPort ComPort;
@@ -48,16 +48,29 @@ namespace UXLib.Devices.Displays.Samsung
             if (!Initialized)
             {
                 CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-                TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
-                TxThread.Priority = Thread.eThreadPriority.UberPriority;
-                TxThread.Name = string.Format("Samsung Display ComPort - Tx Handler");
-                TxThread.Start();
+                ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
+                Initialized = true;
+            }
+        }
+
+        void CreateRxHandlerThread()
+        {
+            if (!RxHandlerThreadRunning)
+            {
                 RxThread = new Thread(ReceiveBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
                 RxThread.Priority = Thread.eThreadPriority.UberPriority;
                 RxThread.Name = string.Format("Samsung Display ComPort - Rx Handler");
                 RxThread.Start();
-                ComPort.SerialDataReceived += new ComPortDataReceivedEvent(ComPort_SerialDataReceived);
-                Initialized = true;
+            }
+        }
+
+        bool RxHandlerThreadRunning
+        {
+            get
+            {
+                if (RxThread != null && RxThread.ThreadState == Thread.eThreadStates.ThreadRunning)
+                    return true;
+                return false;
             }
         }
 
@@ -65,13 +78,16 @@ namespace UXLib.Devices.Displays.Samsung
         {
             foreach (byte b in args.SerialData.ToByteArray())
                 RxQueue.Enqueue(b);
+
+            if (!RxHandlerThreadRunning)
+                CreateRxHandlerThread();
         }
 
         public event SamsungMDCComPortReceivedPacketEventHandler ReceivedPacket;
 
         object SendBufferProcess(object o)
         {
-            while (true)
+            while (!TxQueue.IsEmpty)
             {
                 try
                 {
@@ -88,6 +104,8 @@ namespace UXLib.Devices.Displays.Samsung
                     else
                     {
                         this.ComPort.Send(packet, packet.Length);
+                        CrestronEnvironment.AllowOtherAppsToRun();
+                        Thread.Sleep(10);
                     }
                 }
                 catch (Exception e)
@@ -98,6 +116,8 @@ namespace UXLib.Devices.Displays.Samsung
                     }
                 }
             }
+
+            return null;
         }
 
         object ReceiveBufferProcess(object obj)
@@ -146,7 +166,9 @@ namespace UXLib.Devices.Displays.Samsung
                             if (ReceivedPacket != null)
                                 ReceivedPacket(this, copiedBytes);
 
-                            CrestronEnvironment.AllowOtherAppsToRun();
+                            Thread.Sleep(10);
+                            if (RxQueue.IsEmpty)
+                                return null;
                         }
                     }
                 }
@@ -161,6 +183,8 @@ namespace UXLib.Devices.Displays.Samsung
                         ErrorLog.Exception(string.Format("{0} - Exception in rx thread", GetType().Name), e);
                     }
                 }
+
+                CrestronEnvironment.AllowOtherAppsToRun();
             }
         }
 
@@ -198,6 +222,14 @@ namespace UXLib.Devices.Displays.Samsung
                 if (!TxQueue.TryToEnqueue(packet))
                 {
                     ErrorLog.Error("Error in {0}, could not Enqueue packet to send", this.GetType().Name);
+                }
+
+                if (TxThread == null || TxThread.ThreadState != Thread.eThreadStates.ThreadRunning)
+                {
+                    TxThread = new Thread(SendBufferProcess, null, Thread.eThreadStartOptions.CreateSuspended);
+                    TxThread.Priority = Thread.eThreadPriority.HighPriority;
+                    TxThread.Name = string.Format("Samsung Display ComPort - Tx Handler");
+                    TxThread.Start();
                 }
             }
             else

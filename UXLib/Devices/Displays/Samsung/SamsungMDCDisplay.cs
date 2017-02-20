@@ -169,7 +169,7 @@ namespace UXLib.Devices.Displays.Samsung
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 PollCommand(CommandType.SerialNumber);
-                pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
+                pollTimer = new CTimer(OnPollEvent, null, 1000, 5000);
             }
             else if(this.pollTimer != null)
             {
@@ -186,13 +186,11 @@ namespace UXLib.Devices.Displays.Samsung
                 this.Connect();
             else if (this.ComPort != null && !this.ComPort.Initialized)
                 this.ComPort.Initialize();
-            //PollCommand(CommandType.SerialNumber);
-            pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
         }
 
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
-            if (this.pollTimer != null && !this.pollTimer.Disposed)
+            if (programEventType == eProgramStatusEventType.Stopping && this.pollTimer != null && !this.pollTimer.Disposed)
             {
                 this.pollTimer.Stop();
                 this.pollTimer.Dispose();

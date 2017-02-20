@@ -47,8 +47,6 @@ namespace UXLib.Sockets
             this.Connect(true);
         }
 
-        bool waitingForConnection = false;
-
         /// <summary>
         /// Connect the socket
         /// </summary>
@@ -61,25 +59,18 @@ namespace UXLib.Sockets
 #endif
             this.shouldReconnect = shouldReconnect;
 
-            if (Socket.ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED && !waitingForConnection)
+            if (Socket.ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 SocketErrorCodes error = Socket.ConnectToServerAsync(OnConnect);
-                if (error == SocketErrorCodes.SOCKET_OPERATION_PENDING)
-                    waitingForConnection = true;
 #if DEBUG
                 CrestronConsole.PrintLine("socket.ConnectToServerAsync(OnConnect) = {0}", error);
 #endif
-            }
-            else if (!waitingForConnection)
-            {
-                ErrorLog.Notice("{0} Socket {1} already connected!", this.GetType().Name, Socket.AddressClientConnectedTo);
             }
         }
 
         public void Disconnect()
         {
             shouldReconnect = false;
-            waitingForConnection = false;
 
             if (this.Connected)
             {
@@ -103,62 +94,60 @@ namespace UXLib.Sockets
 
         public event SimpleClientSocketConnectionEventHandler SocketConnectionEvent;
 
-        private bool hasFailedToConnect = false;
-
         protected virtual void OnConnect(TCPClient socket)
         {
 #if DEBUG
             CrestronConsole.PrintLine("{0}.OnConnect(TCPClient socket) socket.ClientStatus = {1}", this.GetType().Name, socket.ClientStatus);
 #endif
-            waitingForConnection = false;
-
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
-#if DEBUG
-                CrestronConsole.PrintLine("Socket connected to device at {0}", socket.AddressClientConnectedTo);
-#endif
-
-                if (hasFailedToConnect)
-                {
-                    hasFailedToConnect = false;
-                    ErrorLog.Notice("Socket connected to device at {0}", socket.AddressClientConnectedTo);
-                }
+                ErrorLog.Notice("Socket connected to device at {0}", socket.AddressClientConnectedTo);
                 rxQueue.Clear();
-                if (rxHandler == null || rxHandler.ThreadState != Thread.eThreadStates.ThreadRunning)
-                {
-                    rxHandler = new Thread(ReceiveBufferProcess, this.Socket, Thread.eThreadStartOptions.CreateSuspended);
-                    rxHandler.Priority = Thread.eThreadPriority.UberPriority;
-                    rxHandler.Name = string.Format("{0} - Rx Handler", this.Name);
-                    rxHandler.Start();
-                    if (SocketConnectionEvent != null)
-                        SocketConnectionEvent(this, socket.ClientStatus);
-                    socket.ReceiveDataAsync(OnReceive);
-                }
-                else if (shouldReconnect)
-                {
-                    if (!hasFailedToConnect)
-                    {
-                        CrestronConsole.PrintLine("{0}.OnConnect(TCPClient socket) Failed to connect to device at {1}",
-                            this.GetType().Name, socket.AddressClientConnectedTo);
-                        ErrorLog.Error("{0}.OnConnect(TCPClient socket) Failed to connect to device at {1}",
-                            this.GetType().Name, socket.AddressClientConnectedTo);
-                        hasFailedToConnect = true;
-                    }
-                    this.Connect(shouldReconnect);
-                }
+
+                if (SocketConnectionEvent != null)
+                    SocketConnectionEvent(this, socket.ClientStatus);
+                socket.ReceiveDataAsync(OnReceive);
+            }
+            else if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_NO_CONNECT)
+            {
+                this.Connect(shouldReconnect);
+            }
+        }
+
+        void CreateRxHandlerThread()
+        {
+            if (!RxHandlerThreadRunning)
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("{0} Launching RxHandler Thread ...", this.GetType().Name);
+#endif
+                rxHandler = new Thread(ReceiveBufferProcess, this.Socket, Thread.eThreadStartOptions.CreateSuspended);
+                rxHandler.Priority = Thread.eThreadPriority.UberPriority;
+                rxHandler.Name = string.Format("{0} - Rx Handler", this.Name);
+                rxHandler.Start();
+            }
+        }
+
+        bool RxHandlerThreadRunning
+        {
+            get
+            {
+                if (rxHandler != null && rxHandler.ThreadState == Thread.eThreadStates.ThreadRunning)
+                    return true;
+                return false;
             }
         }
 
         void socket_SocketStatusChange(TCPClient myTCPClient, SocketStatus clientSocketStatus)
         {
-#if DEBUG
             CrestronConsole.PrintLine("{0}.SocketStatusChange, device at {1}, {2}", this.GetType().Name, Socket.AddressClientConnectedTo, clientSocketStatus.ToString());
-#endif
 
             if(clientSocketStatus == SocketStatus.SOCKET_STATUS_NO_CONNECT)
             {
                 if (shouldReconnect)
+                {
                     ErrorLog.Warn("Socket disconnected from device at {0}", Socket.AddressClientConnectedTo);
+                }
                 if (SocketConnectionEvent != null)
                     SocketConnectionEvent(this, Socket.ClientStatus);
                 if (shouldReconnect)
@@ -171,16 +160,21 @@ namespace UXLib.Sockets
         protected virtual void OnReceive(TCPClient socket, int byteCount)
         {
 #if DEBUG
-            //CrestronConsole.PrintLine("{0} Socket OnReceive() Rx: ", this.GetType().ToString());
-            //Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
+            CrestronConsole.PrintLine("{0} Socket ({1}) OnReceive() Rx: ", this.GetType().ToString(), socket.ClientStatus);
+            Tools.PrintBytes(socket.IncomingDataBuffer, byteCount);
 #endif
-            for (int b = 0; b < byteCount; b++)
-            {
-                rxQueue.Enqueue(socket.IncomingDataBuffer[b]);
-            }
-
             if (socket.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
+            {
+                for (int b = 0; b < byteCount; b++)
+                {
+                    rxQueue.Enqueue(socket.IncomingDataBuffer[b]);
+                }
+
+                if (!RxHandlerThreadRunning)
+                    CreateRxHandlerThread();
+
                 socket.ReceiveDataAsync(OnReceive);
+            }
         }
 
         public event SimpleClientSocketReceiveEventHandler ReceivedPacketEvent;
@@ -193,9 +187,9 @@ namespace UXLib.Sockets
                 if (this.ReceivedPacketEvent != null)
                     this.ReceivedPacketEvent(this, new SimpleClientSocketReceiveEventArgs(bytes));
             }
-            catch
+            catch(Exception e)
             {
-                ErrorLog.Error("{0} - Error in OnReceivedPacket()", GetType().ToString());
+                ErrorLog.Error("{0}.OnReceivedPacket() Error: {1}", this.GetType().Name, e.Message);
             }
         }
 
@@ -240,6 +234,9 @@ namespace UXLib.Sockets
                         OnReceivedPacket(copiedBytes);
 
                         CrestronEnvironment.AllowOtherAppsToRun();
+                        Thread.Sleep(10);
+                        if (rxQueue.IsEmpty)
+                            return null;
                     }
                     else
                     {
