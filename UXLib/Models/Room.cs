@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Text;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Fusion;
-using UXLib.UI;
 using UXLib.Models.Fusion;
+using UXLib.UI;
 
 namespace UXLib.Models
 {
@@ -99,10 +100,7 @@ namespace UXLib.Models
 
         public virtual void OnSourceChange(Source previousSource, Source newSource)
         {
-            if (SourceChange != null)
-            {
-                this.SourceChange(this, new RoomSourceChangeEventArgs(previousSource, newSource));
-            }
+            this.SourceChange(this, new RoomSourceChangeEventArgs(previousSource, newSource));
         }
 
         Source _Source;
@@ -110,30 +108,42 @@ namespace UXLib.Models
         {
             set
             {
-                if (_Source != value)
+                if (_Source != value && (SourceChangeThread == null || SourceChangeThread.ThreadState == Thread.eThreadStates.ThreadFinished))
                 {
-                    Source oldSource = _Source;
-                    _Source = value;
-#if DEBUG
-                    if (value != null)
-                    {
-                        CrestronConsole.PrintLine("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
-                        ErrorLog.Notice("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
-                    }
-                    else
-                    {
-                        CrestronConsole.PrintLine("Room {0}, {1} now has no source selected", this.ID, this.Name);
-                        ErrorLog.Notice("Room {0}, {1} now has no source selected", this.ID, this.Name);
-                    }
-#endif
-                    OnSourceChange(oldSource, _Source);
-                    FusionUpdate();
+                    SourceChangeThread = new Thread(SourceChangeProcess, value);
                 }
             }
             get
             {
                 return _Source;
             }
+        }
+
+        Thread SourceChangeThread;
+        object SourceChangeProcess(object value)
+        {
+            Source oldSource = _Source;
+
+            if (value != null)
+            {
+                _Source = (Source)value;
+#if DEBUG
+                CrestronConsole.PrintLine("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
+                ErrorLog.Notice("Room {0}, {1} has switched to source: {2}", this.ID, this.Name, _Source.Name);
+#endif
+            }
+            else
+            {
+                _Source = null;
+#if DEBUG
+                CrestronConsole.PrintLine("Room {0}, {1} now has no source selected", this.ID, this.Name);
+                ErrorLog.Notice("Room {0}, {1} now has no source selected", this.ID, this.Name);
+#endif
+            }
+            OnSourceChange(oldSource, _Source);
+            FusionUpdate();
+
+            return null;
         }
 
         public virtual SourceCollection Sources
