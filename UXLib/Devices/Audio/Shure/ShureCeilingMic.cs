@@ -17,13 +17,13 @@ namespace UXLib.Devices.Audio.Shure
             this.ID = id;
             this.Name = name;
             Socket = new ShureSocket(hostAddress);
-            Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
-            Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            Socket.StatusChanged += new TCPSocketStatusChangeEventHandler(Socket_StatusChanged);
+            Socket.ReceivedData += new TCPSocketReceivedDataEventHandler(Socket_ReceivedData);
         }
 
         public int ID { get; protected set; }
 
-        void Socket_SocketConnectionEvent(SimpleClientSocket socket, SocketStatus status)
+        void Socket_StatusChanged(TCPSocketClient client, SocketStatus status)
         {
             if (status == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
@@ -35,9 +35,9 @@ namespace UXLib.Devices.Audio.Shure
             }
         }
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        void Socket_ReceivedData(TCPSocketClient client, byte[] data)
         {
-            this.OnReceive(Encoding.ASCII.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length));
+            this.OnReceive(Encoding.ASCII.GetString(data, 0, data.Length));
         }
 
         ShureSocket Socket { get; set; }
