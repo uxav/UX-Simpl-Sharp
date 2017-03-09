@@ -126,12 +126,19 @@ namespace UXLib.UI
 
         void Device_IpInformationChange(GenericBase currentDevice, ConnectedIpEventArgs args)
         {
-            if (args.Connected)
-                ErrorLog.Notice("UI Device {0} with ID {1} is online with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
-                    args.DeviceIpAddress);
+            if (currentDevice is CrestronApp)
+            {
+                // ignore
+            }
             else
-                ErrorLog.Notice("UI Device {0} with ID {1} is offline with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
-                    args.DeviceIpAddress);
+            {
+                if (args.Connected)
+                    ErrorLog.Notice("UI Device {0} with ID {1} is online with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
+                        args.DeviceIpAddress);
+                else
+                    ErrorLog.Notice("UI Device {0} with ID {1} is offline with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
+                        args.DeviceIpAddress);
+            }
         }
 
         void Room_RoomDetailsChange(UXLib.Models.Room room, RoomDetailsChangeEventArgs args)
