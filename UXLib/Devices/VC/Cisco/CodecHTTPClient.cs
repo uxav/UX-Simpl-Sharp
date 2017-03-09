@@ -16,7 +16,6 @@ namespace UXLib.Devices.VC.Cisco
     public class CodecHTTPClient
     {
         public string Host;
-        private HttpClient HttpClient;
         Dictionary<string, string> Cookies;
         string UserName;
         string Password;
@@ -24,12 +23,32 @@ namespace UXLib.Devices.VC.Cisco
         public CodecHTTPClient(string host, string username, string password)
         {
             this.Host = host;
-            this.HttpClient = new HttpClient();
             UserName = username;
             Password = password;
-            this.HttpClient.UseConnectionPooling = true;
-            this.HttpClient.KeepAlive = false;
             Cookies = new Dictionary<string, string>();
+        }
+
+        HttpClient _HttpClient;
+        private HttpClient HttpClient
+        {
+            get
+            {
+                if (_HttpClient == null)
+                {
+                    _HttpClient = new HttpClient();
+                    _HttpClient.UseConnectionPooling = true;
+                }
+
+                if (_HttpClient.ProcessBusy)
+                {
+#if DEBUG
+                    CrestronConsole.PrintLine("** {0}.HttpClient is busy, creating a new instance", this.GetType().Name);
+#endif
+                    return new HttpClient();
+                }
+
+                return _HttpClient;
+            }
         }
 
         HttpClientResponse Request(HttpClientRequest request)
@@ -47,6 +66,8 @@ namespace UXLib.Devices.VC.Cisco
                 request.Header.AddHeader(new HttpHeader("Authorization", "Basic " + auth));
             }
 
+            request.KeepAlive = false;
+
 #if DEBUG
             foreach (HttpHeader item in request.Header)
             {
@@ -55,67 +76,50 @@ namespace UXLib.Devices.VC.Cisco
             if (request.RequestType == RequestType.Post)
                 CrestronConsole.PrintLine("Request Body:\r\n{0}", request.ContentString);
 #endif
-
+            HttpClientResponse response = null;
+            
+#if DEBUG
+            CrestronConsole.PrintLine("Dispatching request....");
+#endif
             try
             {
-                if (this.HttpClient.ProcessBusy)
-                {
-                    Thread waitThread = new Thread(WaitForHttpClientThread, null, Thread.eThreadStartOptions.Running);
-                    waitThread.Join(2000);
-                }
-
-                HttpClientResponse response = this.HttpClient.Dispatch(request);
+                response = this.HttpClient.Dispatch(request);
 #if DEBUG
-                CrestronConsole.PrintLine("Response status {0}", response.Code);
+                CrestronConsole.PrintLine("{0} Response status {1}", request.Url.PathAndParams, response.Code);
                 foreach (HttpHeader item in response.Header)
                 {
                     CrestronConsole.PrintLine(item.Name + ": " + item.Value);
                 }
 #endif
-                if (response.Code == 200 && response.Header != null
-                    && response.Header.ContainsHeaderValue("Content-Type") && response.Header["Content-Type"].Value.Contains("text/html")
-                    && this.Cookies.ContainsKey("SessionId"))
-                {
-#if DEBUG
-                    CrestronConsole.PrintLine("Getting new session id as response was not as expeected");
-#endif
-                    this.Cookies.Clear();
-                    this.StartSession();
-                    return Request(request);
-                }
-#if DEBUG
-                if (response.Code != 204 && response.ContentLength > 256)
-                    CrestronConsole.PrintLine("Response body:\r\n{0} ...", response.ContentString.Replace("\n", "\r\n").Substring(0, 256));
-                else if (response.Code != 204)
-                    CrestronConsole.PrintLine("Response body:\r\n{0}", response.ContentString.Replace("\n", "\r\n"));
-#endif
-                if (response != null && response.Code >= 400)
-                {
-                    ErrorLog.Error("CiscoCodec.HttpClient.Request Response.Code = {0}", response.Code);
-                }
-                else if (response == null)
-                {
-                    ErrorLog.Error("CiscoCodec.HttpClient.Request Response == null");
-                }
-
-                return response;
             }
             catch (Exception e)
             {
-                ErrorLog.Exception(string.Format("{0}.Request(HttpClientRequest request)", this.GetType().Name), e);
+                CrestronConsole.PrintLine("{0}.HttpClient.Dispatch(request) error, {1}", this.GetType().Name, e.Message);
+                throw e;
             }
 
-            return null;
-        }
-
-        private object WaitForHttpClientThread(object obj)
-        {
-            while (this.HttpClient.ProcessBusy)
+            if (response.Code == 200 && response.Header != null
+                && response.Header.ContainsHeaderValue("Content-Type") && response.Header["Content-Type"].Value.Contains("text/html")
+                && this.Cookies.ContainsKey("SessionId"))
             {
-                Thread.Sleep(10);
+#if DEBUG
+                CrestronConsole.PrintLine("Getting new session id as response was not as expeected");
+#endif
+                this.Cookies.Clear();
+                this.StartSession();
+                return Request(request);
             }
 
-            return null;
+            if (response != null && response.Code >= 400)
+            {
+                ErrorLog.Error("CiscoCodec.HttpClient.Request Response.Code = {0}", response.Code);
+            }
+            else if (response == null)
+            {
+                ErrorLog.Error("CiscoCodec.HttpClient.Request Response == null");
+            }
+
+            return response;
         }
 
         HttpClientResponse Get(string path)
@@ -144,21 +148,40 @@ namespace UXLib.Devices.VC.Cisco
             return this.Request(request);
         }
 
-        public void StartSession()
+        internal string StartSession()
         {
-            HttpClientResponse response = this.Post("/xmlapi/session/begin");
-            Regex r = new Regex(@"(.*?)=(.*?)(?:;|,(?!\s))");
-            foreach (Match match in r.Matches(response.Header["Set-Cookie"].Value))
+            HttpClientResponse response = null;
+            try
             {
-                Cookies[match.Groups[1].Value] = match.Groups[2].Value;
+                this.Cookies.Clear();
+                response = this.Post("/xmlapi/session/begin");
             }
-            if (Cookies.ContainsKey("SessionId"))
+            catch (Exception e)
             {
-                ErrorLog.Notice("CodecHTTPClient Received SessionId of {0}", Cookies["SessionId"]);
+                throw e;
             }
-            else
+
+            try
             {
-                ErrorLog.Warn("CodecHTTPClient did not get a SessionId");
+                Regex r = new Regex(@"(.*?)=(.*?)(?:;|,(?!\s))");
+                foreach (Match match in r.Matches(response.Header["Set-Cookie"].Value))
+                {
+                    Cookies[match.Groups[1].Value] = match.Groups[2].Value;
+                }
+                if (Cookies.ContainsKey("SessionId"))
+                {
+                    return Cookies["SessionId"];
+                }
+                else
+                {
+                    ErrorLog.Warn("CodecHTTPClient did not get a SessionId");
+                    return string.Empty;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("{0}.StartSession() Error with processing session response, {1}", this.GetType().Name, e.Message);
+                return string.Empty;
             }
         }
 
@@ -173,41 +196,17 @@ namespace UXLib.Devices.VC.Cisco
         XDocument PutXML(string xmlString)
         {
             HttpClientResponse response;
-            int code = 0;
-
-            try
-            {
-                response = this.Post("/putxml", xmlString);
-                string reply = response.ContentString;
-                code = response.Code;
-                return XDocument.Load(new XmlReader(reply));
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Error occured in CodecHTTPClient.PutXML() {0}, response.Code = {1}", e.Message, code);
-            }
-
-            return null;
+            response = this.Post("/putxml", xmlString);
+            string reply = response.ContentString;
+            return XDocument.Load(new XmlReader(reply));
         }
 
         XDocument GetXML(string path)
         {
             HttpClientResponse response;
-            int code = 0;
-
-            try
-            {
-                response = Get(string.Format("/getxml?location={0}", path));
-                string reply = response.ContentString;
-                code = response.Code;
-                return XDocument.Load(new XmlReader(reply));
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Error occured in CodecHTTPClient.PutXML() {0}, response.Code = {1}", e.Message, code);
-            }
-
-            return null;
+            response = Get(string.Format("/getxml?location={0}", path));
+            string reply = response.ContentString;
+            return XDocument.Load(new XmlReader(reply));
         }
 
         public XDocument SendCommand(string path)
@@ -217,56 +216,85 @@ namespace UXLib.Devices.VC.Cisco
 
         public XDocument SendCommand(string path, CommandArgs args)
         {
-            string pathToSend = "Command";
-            foreach (string pathElement in path.Split('/'))
+            try
             {
-                if (pathElement.Length > 0 && pathElement != pathToSend)
-                    pathToSend = pathToSend + "/" + pathElement;
-            }
+                string pathToSend = "Command";
+                foreach (string pathElement in path.Split('/'))
+                {
+                    if (pathElement.Length > 0 && pathElement != pathToSend)
+                        pathToSend = pathToSend + "/" + pathElement;
+                }
 
-            return this.PutXML(BuildCommand(pathToSend, args));
+                return this.PutXML(BuildCommand(pathToSend, args));
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.SendCommand(), path = {1}, {2}", this.GetType().Name, path, e.Message);
+                throw e;
+            }
         }
 
         public XDocument SendConfiguration(string path, CommandArgs args)
         {
-            string pathToSend = "Configuration";
-            foreach (string pathElement in path.Split('/'))
+            try
             {
-                if (pathElement.Length > 0 && pathElement != pathToSend)
-                    pathToSend = pathToSend + "/" + pathElement;
-            }
+                string pathToSend = "Configuration";
+                foreach (string pathElement in path.Split('/'))
+                {
+                    if (pathElement.Length > 0 && pathElement != pathToSend)
+                        pathToSend = pathToSend + "/" + pathElement;
+                }
 
-            return this.PutXML(BuildCommand(pathToSend, args));
+                return this.PutXML(BuildCommand(pathToSend, args));
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.SendConfiguration(), path = {1}, {2}", this.GetType().Name, path, e.Message);
+                throw e;
+            }
         }
 
         public IEnumerable<XElement> RequestPath(string path)
         {
-            string pathToSend = "";
-            foreach (string pathElement in path.Split('/'))
+            XDocument xml = null;
+            try
             {
-                if (pathElement.Length > 0 && pathToSend.Length > 0)
-                    pathToSend = pathToSend + "/" + pathElement;
-                else if (pathElement.Length > 0)
-                    pathToSend = pathElement;
+                string pathToSend = "";
+                foreach (string pathElement in path.Split('/'))
+                {
+                    if (pathElement.Length > 0 && pathToSend.Length > 0)
+                        pathToSend = pathToSend + "/" + pathElement;
+                    else if (pathElement.Length > 0)
+                        pathToSend = pathElement;
+                }
+
+                string[] pathElements = pathToSend.Split('/');
+                xml = GetXML(pathToSend);
+
+                XElement element = xml.Root;
+                if (element.XName.LocalName == "EmptyResult")
+                    return null;
+
+                foreach (string word in pathElements)
+                {
+                    if (element.XName.LocalName != word && word != pathElements.Last())
+                        element = element.Elements().Where(x => x.XName.LocalName == word).FirstOrDefault();
+                }
+
+                if (element.Elements().Where(x => x.XName.LocalName == pathElements.Last()).Count() > 0)
+                    return element.Elements().Where(x => x.XName.LocalName == pathElements.Last());
+
+                return xml.Elements();
             }
-
-            string[] pathElements = pathToSend.Split('/');
-            XDocument xml = GetXML(pathToSend);
-
-            XElement element = xml.Root;
-            if (element.XName.LocalName == "EmptyResult")
-                return null;
-
-            foreach (string word in pathElements)
+            catch (Exception e)
             {
-                if (element.XName.LocalName != word && word != pathElements.Last())
-                    element = element.Elements().Where(x => x.XName.LocalName == word).FirstOrDefault();
+                ErrorLog.Error("Error in {0}.RequestPath(), path = {1}, {2}", this.GetType().Name, path, e.Message);
+#if DEBUG
+                CrestronConsole.PrintLine("Error in {0}.RequestPath(), path = {1}, {2}", this.GetType().Name, path, e.Message);
+                CrestronConsole.Print("Response = \r\n{0}", xml.ToString());
+#endif
+                throw e;
             }
-
-            if (element.Elements().Where(x => x.XName.LocalName == pathElements.Last()).Count() > 0)
-                return element.Elements().Where(x => x.XName.LocalName == pathElements.Last());
-            
-            return xml.Elements();
         }
 
         public static string BuildCommand(string path, CommandArgs args)

@@ -7,7 +7,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
-using Crestron.SimplSharp.Ssh;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Fusion;
 using UXLib.Models;
@@ -28,13 +28,16 @@ namespace UXLib.Devices.VC.Cisco
         /// <param name="password">Password to login to the system</param>
         /// <param name="ethernetAdapter">Ther EthernetAdapterType of the control system used to connect and receive data</param>
         /// <param name="feedbackListenerPort">The port to be used for the feedback server on the control system</param>
-        public CiscoCodec(string hostNameOrIPAddress, string username, string password, EthernetAdapterType ethernetAdapter, int feedbackListenerPort)
+        /// <param name="feedbackSlot">The slot on the codec to use for registering feedback. Should be 1-4 (3 is reserved for TMS so avoid that value)</param>
+        public CiscoCodec(CrestronControlSystem controlSystem, string hostNameOrIPAddress, string username, string password, EthernetAdapterType ethernetAdapter, int feedbackListenerPort, int feedbackSlot)
         {
+            this.ControlSystem = controlSystem;
             HttpClient = new CodecHTTPClient(hostNameOrIPAddress, username, password);
             FeedbackServer = new CodecFeedbackServer(this, ethernetAdapter, feedbackListenerPort);
             FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
             FeedbackServer.IncomingCallEvent += new CodecIncomingCallEventHandler(FeedbackServer_IncomingCallEvent);
             FeedbackServer.WidgetActionEvent += new CodecUserInterfaceWidgetActionEventHandler(FeedbackServer_WidgetActionEvent);
+            FeedbackSlot = feedbackSlot;
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
             SystemUnit = new SystemUnit(this);
             SystemUnit.State.SystemStateChange += new SystemUnitStateSystemChangeEventHandler(State_SystemStateChange);
@@ -49,6 +52,8 @@ namespace UXLib.Devices.VC.Cisco
             Standby = new Standby(this);
             UserInterface = new UserInterface(this);
         }
+
+        public CrestronControlSystem ControlSystem { get; private set; }
 
         CodecHTTPClient HttpClient { get; set; }
 
@@ -140,8 +145,6 @@ namespace UXLib.Devices.VC.Cisco
         /// </summary>
         public UserInterface UserInterface { get; private set; }
 
-        Thread CheckStatus { get; set; }
-
         /// <summary>
         /// Connect the codec and initialize the comms to the system
         /// </summary>
@@ -149,19 +152,26 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
+                CrestronConsole.PrintLine("{0}.Initialize() called", this.GetType().Name);
+                ErrorLog.Notice("{0}.Initialize() called", this.GetType().Name);
+                if (_CiscoCodecRegisterThread == null || _CiscoCodecRegisterThread.ThreadState == Thread.eThreadStates.ThreadFinished)
+                    _CiscoCodecRegisterThread = new Thread(CiscoCodecRegisterProcess, null);
+                else
+                    ErrorLog.Warn("{0}.Initialize has already been called", this.GetType().Name);
             }
             catch (Exception e)
             {
-                ErrorLog.Error("Error launching {0}.GetStatusThread", this.GetType().Name);
+                ErrorLog.Exception("Error in CiscoCodec.Initialize()", e);
             }
         }
+
+        public int FeedbackSlot { get; private set; }
 
         /// <summary>
         /// Register the feedback server and information required
         /// </summary>
         /// <param name="deregisterFirst">set as true if you want to deregister the slot first</param>
-        public void Registerfeedback()
+        internal void Registerfeedback()
         {
             this.FeedbackServer.Register(1, new string[] {
                 "/Configuration",
@@ -179,109 +189,159 @@ namespace UXLib.Devices.VC.Cisco
             });
         }
 
-        bool hasConnectedOnce = false;
-
         /// <summary>
         /// Event raised when the codec connects
         /// </summary>
         public event CodecConnectedEventHandler HasConnected;
 
-        object GetStatusThread(object threadObject)
+        Thread _CiscoCodecRegisterThread;
+        object CiscoCodecRegisterProcess(object threadObject)
         {
-            int count = 0;
-
-            while (true)
+            while (!programStopping)
             {
-                count++;
-
                 try
                 {
+                    if (this.HttpClient.StartSession().Length > 0)
+                        ErrorLog.Notice("Codec has connected and received a session id");
+                    else
+                        ErrorLog.Warn("Codec has connected but did not receive session id");
+
+                    break;
+                }
+                catch (Exception e)
+                {
+                    ErrorLog.Warn("Could not start session with Cisco codec, {0}", e.Message);
+                }
+
+                CrestronConsole.PrintLine("Waiting for codec connection... will retry in 30 seconds");
+                ErrorLog.Warn("Waiting for codec connection... will retry in 30 seconds");
+
+                CrestronEnvironment.AllowOtherAppsToRun();
+                Thread.Sleep(30000);
+            }
+                
+            try
+            {
+                CrestronConsole.PrintLine("Connecting ControlSystem to codec and registering...");
+
+                CommandArgs args = new CommandArgs();
+                args.Add("HardwareInfo", ControlSystem.ControllerPrompt);
+                args.Add("ID", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS,
+                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.FeedbackServer.AdapterForIPAddress)));
+                args.Add("Name", "Crestron Control System");
+                args.Add("NetworkAddress", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS,
+                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.FeedbackServer.AdapterForIPAddress)));
+                args.Add("SerialNumber", ControlSystem.ControllerPrompt);
+                args.Add("Type", "ControlSystem");
+                XDocument response = this.SendCommand("Peripherals/Connect", args);
+
+                CrestronConsole.PrintLine("Codec registration {0}", response.Element("Command").Element("PeripheralsConnectResult").Attribute("status").Value == "OK");
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error trying to register control system with Cisco Codec", e);
+            }
+
+            try
+            {
+                CrestronConsole.PrintLine("Registering for HttpFeedback...");
+                this.Registerfeedback();
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error trying to register feedback notifications with Cisco Codec", e);
+            }
+
+            try
+            {
+                CrestronConsole.PrintLine("Getting call status...");
+                this.Calls.Update();
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error trying to update calls status with Cisco Codec", e);
+            }
+
+            try
+            {
+                if (this.HasConnected != null)
+                    this.HasConnected(this);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error calling CiscoCodec.HasConnected thread", e);
+            }
+
+            try
+            {
+                CrestronConsole.PrintLine("Creating timer to periodically check the codec connection every 60 seconds");
+                _CheckStatusTimer = new CTimer(CheckStatus, null, 60000, 60000);
+            }
+            catch (Exception e)
+            {
+                CrestronConsole.PrintLine("Error crating CiscoCodec CheckStatus Timer", e.Message);
+                ErrorLog.Error("Error creating CiscoCodec CheckStatus Timer", e.Message);
+            }
+
+            this.DeviceCommunicating = true;
+
+            return null;
+        }
+
+        CTimer _CheckStatusTimer;
+
+        void CheckStatus(object o)
+        {
+            try
+            {
+                bool commsOk = false;
+                try
+                {
+                    //#if DEBUG
+                    CrestronConsole.PrintLine("CiscoCodec Sending Heatbeat...");
+                    //#endif
+                    CommandArgs args = new CommandArgs();
+                    args.Add("ID", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS,
+                        CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.FeedbackServer.AdapterForIPAddress)));
+                    XDocument response = this.SendCommand("Peripherals/HeartBeat", args);
+                    //#if DEBUG
                     try
                     {
-                        if (programStopping)
-                            return null;
-
-                        if (!this.HttpClient.HasSessionKey)
-                            this.HttpClient.StartSession();
-
-                        this.Registerfeedback();
-
-                        this.DeviceCommunicating = true;
-                        
-                        try
-                        {
-                            if (HasConnected != null && !hasConnectedOnce)
-                            {
-                                hasConnectedOnce = true;
-                                ErrorLog.Notice("{0} has connected successfully.. launching thread to continue status checking", this.GetType().Name);
-                                HasConnected(this);
-
-                                if (CheckStatus == null || CheckStatus.ThreadState != Thread.eThreadStates.ThreadRunning)
-                                {
-                                    CheckStatus = new Thread(CheckStatusThread, null, Thread.eThreadStartOptions.CreateSuspended);
-                                    CheckStatus.Priority = Thread.eThreadPriority.UberPriority;
-                                    CheckStatus.Start();
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            ErrorLog.Exception("Error calling CiscoCodec.HasConnected event", e);
-                        }
-
-                        return null;
+                        if (response.Element("Command").Element("PeripheralsHeartBeatResult").Attribute("status").Value == "OK")
+                            CrestronConsole.PrintLine("HeatBeat OK");
+                        else
+                            CrestronConsole.PrintLine("status = {0}", response.Element("Command").Element("PeripheralsHeartBeatResult").Attribute("status").Value);
                     }
                     catch (Exception e)
                     {
-                        Thread.Sleep(10000);
+                        ErrorLog.Exception("Error reading result from Heartbeat Send", e);
                     }
-                }
-                catch (Exception e)
-                {
-                    if (count >= 5)
-                        ErrorLog.Exception("Error in CiscoCodec.GetStatusThread", e);
-                }
-            }
-        }
-
-        object CheckStatusThread(object threadObject)
-        {
-            CrestronEnvironment.AllowOtherAppsToRun();
-            
-            while (true)
-            {
-                try
-                {
-                    if (!this.HttpClient.HasSessionKey)
-                        this.HttpClient.StartSession();
-
-                    bool registered = this.FeedbackServer.Registered;
-#if DEBUG
-                    CrestronConsole.PrintLine("Feedback Registered = {0}", registered);
-#endif
-                    if (!registered)
-                    {
-                        ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
-#if DEBUG
-                    CrestronConsole.PrintLine("Registering Feedback");
-#endif
-                        this.Registerfeedback();
-                    }
+                    //#endif
 
                     this.DeviceCommunicating = true;
-
-                    this.Calls.Update();
-                    CrestronEnvironment.AllowOtherAppsToRun();
-                    Thread.Sleep(60000);
+                    commsOk = true;
                 }
                 catch (Exception e)
                 {
-                    if (e.Message != "ThreadAbortException")
-                    {
-                        ErrorLog.Exception("Error in CiscoCodec.CheckStatusThread", e);
-                        this.DeviceCommunicating = false;
-                    }
+                    ErrorLog.Error("Error checking in with CiscoCodec, {0}", e.Message);
+                    CrestronConsole.PrintLine("Error Sending CiscoCodec Heartbeat ...");
+                    CrestronConsole.PrintLine(e.StackTrace);
+                    CrestronConsole.PrintLine("Stopping CheckStatus Timer and calling CiscoCodec.Initialize()...");
+                    this.DeviceCommunicating = false;
+                    _CheckStatusTimer.Stop();
+                    _CheckStatusTimer.Dispose();
+                    this.Initialize();
                 }
+
+                if(commsOk && !this.FeedbackServer.Registered)
+                {
+                    ErrorLog.Warn("The CiscoCodec was not registered for feedback on CheckStatusThread. Codec could have unregistered itself due to Post errors or connectivity problems");
+                    this.Registerfeedback();
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error occured in CiscoCodec.CheckStatus() timer callback", e);
             }
         }
 
@@ -290,8 +350,6 @@ namespace UXLib.Devices.VC.Cisco
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
             programStopping = true;
-            if (CheckStatus != null)
-                CheckStatus.Abort();
             if (FeedbackServer != null && FeedbackServer.Active)
                 FeedbackServer.Active = false;
         }
@@ -413,14 +471,6 @@ namespace UXLib.Devices.VC.Cisco
 #if DEBUG
             CrestronConsole.PrintLine("Codec State.{0}", State.ToString());
 #endif
-            try
-            {
-                new Thread(GetStatusThread, null, Thread.eThreadStartOptions.Running);
-            }
-            catch (Exception e)
-            {
-                ErrorLog.Error("Error launching {0}.GetStatusThread", this.GetType().Name);
-            }
         }
         
         void FeedbackServer_ReceivedData(CodecFeedbackServer server, CodecFeedbackServerReceiveEventArgs args)

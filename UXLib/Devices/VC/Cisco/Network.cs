@@ -31,7 +31,15 @@ namespace UXLib.Devices.VC.Cisco
         {
             try
             {
-                foreach (XElement networkInfo in Codec.RequestPath("Status/Network").FirstOrDefault().Elements())
+#if DEBUG
+                CrestronConsole.PrintLine("Getting codec network info...");
+#endif
+                IEnumerable<XElement> response = Codec.RequestPath("Status/Network");
+
+#if DEBUG
+                CrestronConsole.PrintLine(response.ToString());
+#endif
+                foreach (XElement networkInfo in response.FirstOrDefault().Elements())
                 {
                     switch (networkInfo.XName.LocalName)
                     {

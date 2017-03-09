@@ -16,7 +16,6 @@ namespace UXLib.Devices.VC.Cisco
             this.Codec = codec;
             this._Calls = new Dictionary<int, Call>();
             this.Codec.FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
-            this.Codec.HasConnected += new CodecConnectedEventHandler(Codec_HasConnected);
         }
 
         CiscoCodec Codec;
@@ -172,6 +171,13 @@ namespace UXLib.Devices.VC.Cisco
                 ErrorLog.Error("Error calling event in {0}.OnCallStatusChange", this.GetType());
             }
 
+#if DEBUG
+            string statusInfo = string.Format("Call ID {0} Status Updated from {3}, Name: {1} Status: {2}",
+                call.ID, call.DisplayName, call.Status, source);
+            CrestronConsole.PrintLine(statusInfo);
+            ErrorLog.Notice(statusInfo);
+#endif
+
             this.Codec.FusionUpdate();
         }
 
@@ -209,20 +215,13 @@ namespace UXLib.Devices.VC.Cisco
                             if (!_Calls.ContainsKey(callID))
                                 _Calls.Add(callID, new Call(Codec, callID));
                             Call call = _Calls[callID];
-#if DEBUG
-                            CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Data = \r\n{0}", args.Data.ToString());
-                            CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Call ID = {0}", callID);
-                            CrestronConsole.PrintLine("Call.FeedbackServer_ReceivedData() Elements().count = {0}", args.Data.Elements().Count());
-#endif
 
                             foreach (XElement e in args.Data.Elements())
                             {
 #if DEBUG
-                                CrestronConsole.PrintLine("  e.XName.LocalName = {0}", e.XName.LocalName);
-#endif
                                 if (!e.HasElements)
                                     CrestronConsole.PrintLine("Codec.Calls[{0}].{1} = {2}", call.ID, e.XName.LocalName, e.Value);
-
+#endif
                                 switch (e.XName.LocalName)
                                 {
                                     case "AnswerState":
@@ -251,7 +250,8 @@ namespace UXLib.Devices.VC.Cisco
                                         call.Protocol = e.Value;
                                         break;
                                     case "RemoteNumber":
-                                        call.RemoteNumber = e.Value;
+                                        if (e.Value.Length > 0)
+                                            call.RemoteNumber = e.Value;
                                         break;
                                     case "Status":
                                         //CrestronConsole.PrintLine("Codec RX - Call {0} status = {1}", call.ID, e.Value);
@@ -272,17 +272,9 @@ namespace UXLib.Devices.VC.Cisco
                                         {
                                             ErrorLog.Error("Could not parse Enum CallStatus from value {0}, {1}", e.Value, ex.Message);
                                         }
-
-                                        if (call.InProgress && (checkTimer == null || checkTimer.Disposed))
-                                        {
-                                            //checkTimer = new CTimer(CheckConnectingCall, call, 500, 500);
-                                        }
                                         break;
                                 }
                             }
-#if DEBUG
-                            CrestronConsole.PrintLine("OnCallStatusChange(call)");
-#endif
                             OnCallStatusChange(call, CallInfoChangeNotificationSource.HttpFeedbackServer);
                         }
                         break;
@@ -294,29 +286,9 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
-        CTimer checkTimer;
-
-        void CheckConnectingCall(object call)
-        {
-            if (this.Any(c => c.InProgress))
-            {
-                CrestronConsole.PrintLine("Calls are in progress ... updating");
-                this.Update();
-                if (!this.Any(c => c.InProgress))
-                {
-                    CrestronConsole.PrintLine("No calls in progress ... disposing timer");
-                    checkTimer.Stop();
-                    checkTimer.Dispose();
-                }
-            }
-            else
-            {
-                CrestronConsole.PrintLine("No calls in progress ... disposing timer");
-                checkTimer.Stop();
-                checkTimer.Dispose();
-            }
-        }
-
+        /// <summary>
+        /// Perform a full call status update of the codec
+        /// </summary>
         public void Update()
         {
             Thread nt = new Thread(UpdateCallsThread, null, Thread.eThreadStartOptions.CreateSuspended);
@@ -465,11 +437,6 @@ namespace UXLib.Devices.VC.Cisco
             }
 
             return null;
-        }
-
-        void Codec_HasConnected(CiscoCodec codec)
-        {
-            this.Update();
         }
 
         #region IEnumerable<Call> Members

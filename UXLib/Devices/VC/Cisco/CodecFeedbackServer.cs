@@ -16,7 +16,7 @@ namespace UXLib.Devices.VC.Cisco
     {
         HttpServer server;
         CiscoCodec Codec;
-        EthernetAdapterType AdapterForIPAddress;
+        internal EthernetAdapterType AdapterForIPAddress { get; private set; }
 
         public CodecFeedbackServer(CiscoCodec codec, EthernetAdapterType ethernetAdapter, int feedbackListenerPort)
         {
@@ -46,28 +46,20 @@ namespace UXLib.Devices.VC.Cisco
         {
             CommandArgs args = new CommandArgs();
             args.Add("FeedbackSlot", feedbackSlot.ToString());
-            XDocument response;
 
             if (deregisterFirst || deregisterOnBoot)
             {
                 if (deregisterOnBoot)
                 {
                     CrestronConsole.PrintLine("Deregistering codec feedback on first boot to combat potential issue with codec lockups");
-                    ErrorLog.Notice("Deregistering codec feedback on first boot to combat potential issue with codec lockups");
                 }
 #if DEBUG
                 CrestronConsole.PrintLine("Deresgistering feedback mechanism with CiscoCodec");
 #endif
-                response = Codec.SendCommand("HttpFeedback/Deregister", args);
+                Codec.SendCommand("HttpFeedback/Deregister", args);
 
                 if (deregisterOnBoot)
-                {
-                    CrestronConsole.PrintLine("Deregister response:\r\n{0}", response.ToString());
                     deregisterOnBoot = false;
-                }
-#if DEBUG
-                CrestronConsole.PrintLine("Deregister response:\r\n{0}", response.ToString());
-#endif
             }
 
             args.Add("ServerUrl", this.ServerURL);
@@ -83,11 +75,7 @@ namespace UXLib.Devices.VC.Cisco
             CrestronConsole.PrintLine("Resgistering feedback mechanism with CiscoCodec");
 #endif
 
-            response = Codec.SendCommand("HttpFeedback/Register", args);
-
-#if DEBUG
-            CrestronConsole.PrintLine("Register repsonse:\r\n{0}", response.ToString());
-#endif
+            Codec.SendCommand("HttpFeedback/Register", args);
         }
 
         bool deregisterOnBoot = true;
@@ -101,23 +89,10 @@ namespace UXLib.Devices.VC.Cisco
         {
             get
             {
-#if DEBUG
-                CrestronConsole.PrintLine("Checking codec feedback registration....");
-#endif
                 IEnumerable<XElement> statusInfo = Codec.RequestPath("Status/HttpFeedback");
-#if DEBUG
-                CrestronConsole.PrintLine("");
-#endif
                 foreach (XElement element in statusInfo)
                 {
-#if DEBUG
-                    CrestronConsole.PrintLine(element.ToString());
-#endif
-
                     string url = element.Elements().Where(e => e.XName.LocalName == "URL").FirstOrDefault().Value;
-#if DEBUG
-                    CrestronConsole.PrintLine("URL = {0}", url);
-#endif
                     if (url == this.ServerURL)
                         return true;
                 }
@@ -160,7 +135,7 @@ namespace UXLib.Devices.VC.Cisco
             {
                 args.Response.KeepAlive = true;
 #if DEBUG
-                CrestronConsole.PrintLine("\r\n{0}   New Request to {1} from {2}", DateTime.Now.ToString(), server.ServerName, args.Connection.RemoteEndPointAddress);
+                CrestronConsole.PrintLine("\r\n>>> CODEC EVENT to {0} from {1}", server.ServerName, args.Connection.RemoteEndPointAddress);
 #endif
 
                 if (args.Request.Header.RequestType == "POST")
@@ -299,7 +274,8 @@ namespace UXLib.Devices.VC.Cisco
 
 #if DEBUG
                         CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-                        CrestronConsole.PrintLine("{0}\r\n", element.ToString());
+                        ErrorLog.Notice("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+                        //CrestronConsole.PrintLine("{0}\r\n", element.ToString());
 #endif
                         if (ReceivedData != null)
                         {

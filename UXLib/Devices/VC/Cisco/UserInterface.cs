@@ -24,9 +24,6 @@ namespace UXLib.Devices.VC.Cisco
         {
             foreach (XElement element in Codec.RequestPath("Status/UserInterface").Elements())
             {
-#if DEBUG
-                CrestronConsole.PrintLine("SystemUnit.{0} = {1}", element.XName.LocalName, element.Value);
-#endif
                 switch (element.XName.LocalName)
                 {
                     case "ContactInfo":

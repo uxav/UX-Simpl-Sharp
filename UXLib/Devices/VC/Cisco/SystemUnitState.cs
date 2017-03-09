@@ -47,34 +47,19 @@ namespace UXLib.Devices.VC.Cisco
                 case @"Status/SystemUnit/State":
                     foreach (XElement state in args.Data.Elements())
                     {
+#if DEBUG
                         if (!state.HasElements)
                             CrestronConsole.PrintLine("Codec.Status.SystemUnit.State.{0} = {1}", state.XName.LocalName, state.Value);
+#endif
                         switch (state.XName.LocalName)
                         {
                             case "NumberOfActiveCalls": NumberOfActiveCalls = int.Parse(state.Value); break;
-                            case "NumberOfInProgressCalls":
-                                NumberOfInProgressCalls = int.Parse(state.Value);
-                                if (NumberOfInProgressCalls > 0 && (_CheckCallProgressTimer == null || _CheckCallProgressTimer.Disposed))
-                                    _CheckCallProgressTimer = new CTimer(CheckCallProgress, null, 2000, 1000);
-                                break;
+                            case "NumberOfInProgressCalls": NumberOfInProgressCalls = int.Parse(state.Value); break;
                             case "NumberOfSuspendedCalls": NumberOfSuspendedCalls = int.Parse(state.Value); break;
                             case "System": System = (SystemState)Enum.Parse(typeof(SystemState), state.Value, false); break;
                         }
                     }
                     break;
-            }
-        }
-
-        CTimer _CheckCallProgressTimer;
-
-        void CheckCallProgress(object o)
-        {
-            if (this.NumberOfInProgressCalls > 0)
-                this.Codec.Calls.Update();
-            else
-            {
-                _CheckCallProgressTimer.Stop();
-                _CheckCallProgressTimer.Dispose();
             }
         }
 
