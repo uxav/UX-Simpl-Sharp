@@ -23,8 +23,8 @@ namespace UXLib.Devices.Audio.QSC
             Socket = new QSysSocket(address);
             Controls = new QSysControlCollection(this);
             Phones = new QSysPhoneCollection(this);
-            Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
-            Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
+            this.Socket.StatusChanged += new TCPSocketStatusChangeEventHandler(Socket_StatusChanged);
+            this.Socket.ReceivedData += new TCPSocketReceivedDataEventHandler(Socket_ReceivedData);
         }
 
         QSysSocket Socket { get; set; }
@@ -41,13 +41,10 @@ namespace UXLib.Devices.Audio.QSC
         /// <remarks>You need to register phones by using the Register method</remarks>
         public QSysPhoneCollection Phones { get; internal set; }
 
-        void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
+        void Socket_StatusChanged(TCPSocketClient client, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED && HasConnected != null)
                 HasConnected(this);
-#if DEBUG
-            CrestronConsole.PrintLine("QSys.SocketStatus = {0}", status.ToString());
-#endif
         }
 
         /// <summary>
@@ -60,9 +57,9 @@ namespace UXLib.Devices.Audio.QSC
         /// </summary>
         public event QSysReceivedDataEventHandler DataReceived;
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        void Socket_ReceivedData(TCPSocketClient client, byte[] data)
         {
-            this.OnReceive(Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length));
+            this.OnReceive(Encoding.Default.GetString(data, 0, data.Length));
         }
 
         /// <summary>
@@ -92,6 +89,7 @@ namespace UXLib.Devices.Audio.QSC
 
         public void Connect()
         {
+            ErrorLog.Notice("{0}.Connect() called", this.GetType().Name);
             Socket.Connect();
         }
 
@@ -148,9 +146,10 @@ namespace UXLib.Devices.Audio.QSC
 
         public void Send(string stringToSend)
         {
-            Crestron.SimplSharp.CrestronSockets.SocketErrorCodes result = Socket.Send(stringToSend);
-            if (result != Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
-                ErrorLog.Error("Could not send command \"{0}\" result = {1}", stringToSend, result.ToString());
+            if (Socket.Connected)
+                Socket.Send(stringToSend);
+            else
+                ErrorLog.Error("Could not send command \"{0}\", Socket not connected!", stringToSend);
         }
 
         #endregion
@@ -188,8 +187,12 @@ namespace UXLib.Devices.Audio.QSC
 
         public void Initialize()
         {
+            ErrorLog.Notice("{0}.Initialize() called", this.GetType().Name);
             if (!this.Connected)
+            {
+                ErrorLog.Notice("{0} not connected ... will now connect", this.GetType().Name);
                 this.Connect();
+            }
         }
 
         public CommDeviceType CommunicationType

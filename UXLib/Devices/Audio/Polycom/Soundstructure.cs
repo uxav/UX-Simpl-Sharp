@@ -16,8 +16,8 @@ namespace UXLib.Devices.Audio.Polycom
         public Soundstructure(string hostAddress)
         {
             Socket = new SoundstructureSocket(this, hostAddress);
-            Socket.ReceivedPacketEvent +=new UXLib.Sockets.SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
-            Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            Socket.ReceivedData += new TCPSocketReceivedDataEventHandler(Socket_ReceivedData);
+            Socket.StatusChanged += new TCPSocketStatusChangeEventHandler(Socket_StatusChanged);
         }
 
         public SoundstructureSocket Socket { get; protected set; }
@@ -26,20 +26,22 @@ namespace UXLib.Devices.Audio.Polycom
         public SoundstructureItemCollection VirtualChannelGroups { get; protected set; }
         public SoundstructureEthernetSettings LanAdapter { get; protected set; }
 
-        public bool Initialised { get; protected set; }
+        public bool Initialized { get; protected set; }
 
-        public void Initialise()
+        public void Initialize()
         {
-            CrestronConsole.PrintLine("{0}.Initialise()", this.GetType().Name);
-            this.Initialised = false;
-            this.Send("get eth_settings 1");
-            listedItems.Clear();
-            this.Send("vclist");
-        }
-
-        void Initialise(object obj)
-        {
-            this.Initialise();
+            if (!this.Connected)
+            {
+                this.Connect();
+            }
+            else
+            {
+                CrestronConsole.PrintLine("{0}.Initialise()", this.GetType().Name);
+                this.Initialized = false;
+                this.Send("get eth_settings 1");
+                listedItems.Clear();
+                this.Send("vclist");
+            }
         }
 
         public void Reboot()
@@ -47,20 +49,21 @@ namespace UXLib.Devices.Audio.Polycom
             this.Socket.Send(string.Format("set {0}\r", SoundstructureCommandType.SYS_REBOOT.ToString().ToLower()));
         }
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        void Socket_ReceivedData(TCPSocketClient client, byte[] data)
         {
-            this.OnReceive(Encoding.Default.GetString(args.ReceivedPacket, 0, args.ReceivedPacket.Length));
+            this.OnReceive(Encoding.Default.GetString(data, 0, data.Length));
         }
 
-        void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
+        void Socket_StatusChanged(TCPSocketClient client, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 CrestronConsole.PrintLine("Soundstructure device Connected on {0}", this.Socket.HostAddress);
                 ErrorLog.Notice("Soundstructure device Connected on {0}", this.Socket.HostAddress);
-                this.Initialise();
+                if (!this.Initialized)
+                    this.Initialize();
             }
-            else
+            else if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_NO_CONNECT)
             {
                 this.DeviceCommunicating = false;
                 this.FusionUpdate();
@@ -99,10 +102,7 @@ namespace UXLib.Devices.Audio.Polycom
 
         public void Send(string stringToSend)
         {
-            Crestron.SimplSharp.CrestronSockets.SocketErrorCodes error = this.Socket.Send(stringToSend);
-
-            if (error != Crestron.SimplSharp.CrestronSockets.SocketErrorCodes.SOCKET_OK)
-                throw new SocketException("An error occured trying to send a command to the Soundstructure socket");
+            this.Socket.Send(stringToSend);
         }
 
         public event SoundstructureValueChangeHandler ValueChange;
@@ -326,9 +326,9 @@ namespace UXLib.Devices.Audio.Polycom
                                             break;
                                     }
 
-                                    if (!Initialised && CheckAllItemsHaveInitialised())
+                                    if (!Initialized && CheckAllItemsHaveInitialised())
                                     {
-                                        Initialised = true;
+                                        Initialized = true;
 
                                         ErrorLog.Notice("Soundstructure Initialised");
                                         CrestronConsole.PrintLine("Soundstructure Initialised!");
@@ -459,13 +459,6 @@ namespace UXLib.Devices.Audio.Polycom
         #endregion
 
         #region ICommDevice Members
-
-
-        public void Initialize()
-        {
-            if (!this.Connected)
-                this.Connect();
-        }
 
         public CommDeviceType CommunicationType
         {

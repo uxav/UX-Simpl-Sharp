@@ -17,8 +17,8 @@ namespace UXLib.Devices.Displays.Samsung
             this.Name = name;
             this.DisplayID = displayID;
             this.Socket = socket;
-            this.Socket.ReceivedPacketEvent += new UXLib.Sockets.SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
-            this.Socket.SocketConnectionEvent += new UXLib.Sockets.SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            this.Socket.ReceivedData += new TCPSocketReceivedDataEventHandler(Socket_ReceivedData);
+            this.Socket.StatusChanged += new TCPSocketStatusChangeEventHandler(Socket_StatusChanged);
         }
 
         public SamsungMDCDisplay(string name, int displayID, SamsungMDCComPortHandler comPort)
@@ -47,6 +47,11 @@ namespace UXLib.Devices.Displays.Samsung
             {
                 if (packet[1] == 0xff)
                 {
+#if DEBUG
+                    //CrestronConsole.PrintLine("");
+                    CrestronConsole.Print("Samsung Rx: ");
+                    Tools.PrintBytes(packet, packet.Length);
+#endif
                     if (packet[4] == 'A') // Packet contains 'Ack'
                     {
                         byte cmd = packet[5];
@@ -54,11 +59,6 @@ namespace UXLib.Devices.Displays.Samsung
                         byte[] values = new byte[dataLength - 2];
                         for (int b = 6; b < (dataLength + 4); b++)
                             values[b - 6] = packet[b];
-#if DEBUG
-                    //CrestronConsole.PrintLine("");
-                    CrestronConsole.Print("Samsung Rx: ");
-                    Tools.PrintBytes(packet, packet.Length);
-#endif
                         if (Enum.IsDefined(typeof(CommandType), cmd))
                         {
                             CommandType cmdType = (CommandType)cmd;
@@ -88,13 +88,13 @@ namespace UXLib.Devices.Displays.Samsung
                                     base.Input = GetInputForCommandValue(values[3]);
                                     CheckInputValue(values[3]);
 #if DEBUG
-                                //CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
+                                CrestronConsole.PrintLine("  Mute = {0}, Volume = {1}, Input = {2}, Aspect = {3}", this.VolumeMute, this.Volume, this.Input.ToString(), values[4]);
 #endif
                                     break;
                                 case CommandType.DisplayStatus:
                                     OnVideoSyncChange(!Convert.ToBoolean(values[3]));
 #if DEBUG
-                                //CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
+                                CrestronConsole.PrintLine("  Lamp: {0}, Temp: {1}, No_Sync: {2}", values[0], values[4], values[3]);
 #endif
                                     break;
                                 case CommandType.SerialNumber:
@@ -129,7 +129,8 @@ namespace UXLib.Devices.Displays.Samsung
                     else if (packet[4] == 'N') // Packet contains 'Nak'
                     {
 #if DEBUG
-                    ErrorLog.Error("Samsung MDC Received Error with command type 0x{0}", packet[5].ToString("X2"));
+                        CrestronConsole.PrintLine("{0} received Nak on command \"0x{1:X2}\"", this.GetType().Name, packet[5]);
+                        ErrorLog.Error("Samsung MDC Received Error with command type 0x{0}", packet[5].ToString("X2"));
 #endif
                     }
                 }
@@ -145,12 +146,12 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        void Socket_ReceivedData(TCPSocketClient client, byte[] data)
         {
             // Check if the display ID of the received packet matches this instance
-            if (args.ReceivedPacket[2] == this.DisplayID)
+            if (data[2] == this.DisplayID)
             {
-                this.OnReceive(args.ReceivedPacket);
+                this.OnReceive(data);
             }
         }
 
@@ -164,14 +165,14 @@ namespace UXLib.Devices.Displays.Samsung
 
         CTimer pollTimer;
 
-        void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
+        void Socket_StatusChanged(TCPSocketClient client, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 PollCommand(CommandType.SerialNumber);
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 5000);
             }
-            else if(this.pollTimer != null)
+            else if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_NO_CONNECT && this.pollTimer != null)
             {
                 this.pollTimer.Stop();
                 this.pollTimer.Dispose();

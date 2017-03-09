@@ -223,6 +223,7 @@
     <Compile Include="Sockets\SimpleClientSocket.cs" />
     <Compile Include="Models\Source.cs" />
     <Compile Include="Models\SourceCollection.cs" />
+    <Compile Include="Sockets\TCPSocketClient.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="UI\UIColorPicker.cs" />
     <Compile Include="UI\UIDynamicIcon.cs" />

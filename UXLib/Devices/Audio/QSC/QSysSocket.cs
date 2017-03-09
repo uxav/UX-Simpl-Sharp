@@ -5,31 +5,33 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
+using Crestron.SimplSharpPro.CrestronThread;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.QSC
 {
-    internal class QSysSocket : SimpleClientSocket
+    internal class QSysSocket : TCPSocketClient
     {
         public QSysSocket(string address)
             : base(address, 1702, 1000)
-        {
-            this.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(QSysSocket_SocketConnectionEvent);
-        }
+        { }
 
         private CTimer PollTimer;
 
-        void QSysSocket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
+        protected override void OnConnect(TCPClient client)
         {
-            if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
-            {
-                PollTimer = new CTimer(GetStatus, null, 10, 10000);
-            }
-            else if (PollTimer != null)
+            base.OnConnect(client);
+            PollTimer = new CTimer(GetStatus, null, 1000, 30000);
+        }
+
+        protected override void OnDisconnect(TCPClient client)
+        {
+            if (PollTimer != null)
             {
                 PollTimer.Stop();
                 PollTimer.Dispose();
             }
+            base.OnDisconnect(client);
         }
 
         public static List<string> ElementsFromString(string str)
@@ -54,87 +56,78 @@ namespace UXLib.Devices.Audio.QSC
             this.Send("sg");
         }
 
-        public override Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(string str)
+        public override void Send(string str)
         {
-#if DEBUG
-            if (str != "sg")
-                CrestronConsole.PrintLine("QSys Tx: {0}", str);
-#endif
-
             str = str + "\x0a";
 
-            return base.Send(str);
+            base.Send(str);
         }
 
-        protected override object ReceiveBufferProcess(object obj)
+        public override event TCPSocketReceivedDataEventHandler ReceivedData;
+
+        protected override object ReceiveThreadProcess(object o)
         {
-            Byte[] bytes = new Byte[this.BufferSize];
-            int byteIndex = 0;
 
-            while (true)
+#if DEBUG
+            CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() Start", this.GetType().Name);
+#endif
+            int index = 0;
+            byte[] bytes = new Byte[this.BufferSize];
+
+            while (this.ProgramRunning && this.Status == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
-                try
-                {
-                    byte b = rxQueue.Dequeue();
+                byte b = ReceiveQueue.Dequeue();
 
-                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+                if (b == 13) { }
+                // skip
+                else if (b == 10)
+                {
+                    // Copy bytes to new array with length of packet and ignoring the CR.
+                    Byte[] copiedBytes = new Byte[index];
+                    Array.Copy(bytes, copiedBytes, index);
+
+                    index = 0;
+
+                    if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
+                    {
+                        if (this.ReceivedData != null)
+                            this.ReceivedData(this, copiedBytes);
+                    }
+#if DEBUG
+                    CrestronConsole.PrintLine("{0} Processed reply: {1}", this.GetType().Name, Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length));
+#endif
+
+                    if (ReceivedData != null)
+                        ReceivedData(this, copiedBytes);
+
+                    if (ReceiveQueue.IsEmpty)
+                        break;
+                }
+                else
+                {
+                    if (index < bytes.Length)
+                    {
+                        bytes[index] = b;
+                        index++;
+                    }
+                    else
                     {
 #if DEBUG
-                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
-                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
+                        CrestronConsole.PrintLine("Buffer overflow, index = {0}, b = {1}", index, b);
 #endif
-                        return null;
-                    }
-
-                    // skip any CR chars
-                    if (b == 13) { }
-                    // If find byte = LF
-                    else if (b == 10)
-                    {
-                        // Copy bytes to new array with length of packet and ignoring the CR.
-                        Byte[] copiedBytes = new Byte[byteIndex];
-                        Array.Copy(bytes, copiedBytes, byteIndex);
-
-                        byteIndex = 0;
-
-                        if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
-                            OnReceivedPacket(copiedBytes);
-
-                        CrestronEnvironment.AllowOtherAppsToRun();
-                    }
-                    else if (b > 0 && b <= 127)
-                    {
-                        if (byteIndex < this.BufferSize)
-                        {
-                            bytes[byteIndex] = b;
-                            byteIndex++;
-                        }
-                        else
-                        {
-                            ErrorLog.Error("{0} - Buffer overflow error", GetType().ToString());
-
-                            string lastBytes = string.Empty;
-                            for (int bt = this.BufferSize - 51; bt < this.BufferSize - 1; bt++)
-                            {
-                                byte btVal = bytes[bt];
-                                if (btVal > 32 && btVal <= 127)
-                                    lastBytes = lastBytes + (char)btVal;
-                                else
-                                    lastBytes = lastBytes + @"\x" + btVal.ToString("X2");
-                            }
-
-                            ErrorLog.Notice("Last 50 bytes of buffer: \"{0}\"", lastBytes);
-                            ErrorLog.Warn("The buffer was cleared as a result");
-                            byteIndex = 0;
-                        }
+                        ErrorLog.Error("{0}.ReceiveThreadProcess - Buffer overflow error", this.GetType().Name);
+                        index = 0;
+                        break;
                     }
                 }
-                catch (Exception e)
-                {
-                    if (e.Message != "ThreadAbortException")
-                        ErrorLog.Error("{0} - Error in thread: {1}, byteIndex = {2}", GetType().ToString(), e.Message, byteIndex);
-                }
+
+                CrestronEnvironment.AllowOtherAppsToRun();
+                Thread.Sleep(0);
             }
+#if DEBUG
+            CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() End", this.GetType().Name);
+#endif
+            return null;
         }
     }
 }

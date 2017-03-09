@@ -9,20 +9,11 @@ using UXLib.Sockets;
 
 namespace UXLib.Devices.Displays.Samsung
 {
-    public class SamsungMDCSocket : SimpleClientSocket
+    public class SamsungMDCSocket : TCPSocketClient
     {
         public SamsungMDCSocket(string address)
             : base(address, 1515, 1000)
         {
-
-        }
-
-        protected override string Name
-        {
-            get
-            {
-                return "Samsung Display Socket Handler";
-            }
         }
 
         public static byte[] BuildCommand(CommandType command, int id, byte[] data)
@@ -52,7 +43,7 @@ namespace UXLib.Devices.Displays.Samsung
             return result;
         }
 
-        public override Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(byte[] bytes)
+        public override void Send(byte[] bytes)
         {
             // Packet must start with correct header
             if (bytes[0] == 0xAA)
@@ -64,11 +55,7 @@ namespace UXLib.Devices.Displays.Samsung
                 for (int i = 1; i < bytes.Length; i++)
                     chk = chk + bytes[i];
                 packet[packet.Length - 1] = (byte)chk;
-#if DEBUG
-                CrestronConsole.Print("Samsung Tx: ");
-                Tools.PrintBytes(packet, packet.Length);
-#endif
-                return base.Send(packet);
+                base.Send(packet);
             }
             else
             {
@@ -76,66 +63,77 @@ namespace UXLib.Devices.Displays.Samsung
             }
         }
 
-        public override Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(string str)
+        public override void Send(string str)
         {
             var bytes = new byte[str.Length];
 
             for (int i = 0; i < str.Length; i++)
                 bytes[i] = unchecked((byte)str[i]);
 
-            return this.Send(bytes);
+            this.Send(bytes);
         }
 
-        protected override object ReceiveBufferProcess(object obj)
+        protected override SocketErrorCodes SendPacket(TCPClient client, byte[] packet)
         {
+            Thread.Sleep(100);
+            return base.SendPacket(client, packet);
+        }
+
+        public override event TCPSocketReceivedDataEventHandler ReceivedData;
+
+        protected override object ReceiveThreadProcess(object o)
+        {
+
 #if DEBUG
-            CrestronConsole.PrintLine("{0}.ReceiveBufferProcess Thread Started", this.GetType().Name);
+            CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() Start", this.GetType().Name);
 #endif
-            Byte[] bytes = new Byte[this.BufferSize];
-            int byteIndex = 0;
+            int index = 0;
+            byte[] bytes = new Byte[this.BufferSize];
             int dataLength = 0;
 
-            while (true)
+            while (this.ProgramRunning && this.Status == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 try
                 {
-                    byte b = rxQueue.Dequeue();
-
-                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
-                    {
-                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
-                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
-                        return null;
-                    }
+                    byte b = ReceiveQueue.Dequeue();
 
                     if (b == 0xAA)
                     {
-                        byteIndex = 0;
+                        index = 0;
                         dataLength = 0;
                     }
+                    else if (index < this.BufferSize)
+                        index++;
                     else
-                        byteIndex++;
-
-                    bytes[byteIndex] = b;
-                    if (byteIndex == 3)
-                        dataLength = bytes[byteIndex];
-
-                    if (byteIndex == (dataLength + 4))
                     {
-                        int chk = bytes[byteIndex];
+#if DEBUG
+                        CrestronConsole.PrintLine("Buffer overflow, index = {0}, b = {1}", index, b);
+#endif
+                        ErrorLog.Error("{0}.ReceiveThreadProcess - Buffer overflow error", this.GetType().Name);
+                        index = 0;
+                        break;
+                    }
+
+                    bytes[index] = b;
+                    if (index == 3)
+                        dataLength = bytes[index];
+
+                    if (index == (dataLength + 4))
+                    {
+                        int chk = bytes[index];
 
                         int test = 0;
-                        for (int i = 1; i < byteIndex; i++)
+                        for (int i = 1; i < index; i++)
                             test = test + bytes[i];
 
                         if (chk == (byte)test)
                         {
-                            byte[] copiedBytes = new byte[byteIndex];
-                            Array.Copy(bytes, copiedBytes, byteIndex);
-                            OnReceivedPacket(copiedBytes);
-                            Thread.Sleep(10);
-                            if (rxQueue.IsEmpty)
-                                return null;
+                            byte[] copiedBytes = new byte[index];
+                            Array.Copy(bytes, copiedBytes, index);
+                            if (ReceivedData != null)
+                                ReceivedData(this, copiedBytes);
+                            if (ReceiveQueue.IsEmpty)
+                                break;
                         }
                     }
                 }
@@ -144,7 +142,14 @@ namespace UXLib.Devices.Displays.Samsung
                     if (e.Message != "ThreadAbortException")
                         ErrorLog.Exception(string.Format("{0} - Exception in thread", this.GetType().Name), e);
                 }
+
+                CrestronEnvironment.AllowOtherAppsToRun();
+                Thread.Sleep(0);
             }
+#if DEBUG
+            CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() End", this.GetType().Name);
+#endif
+            return null;
         }
     }
 }
