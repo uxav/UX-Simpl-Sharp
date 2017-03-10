@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
+using Crestron.SimplSharpPro.CrestronThread;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Displays.NEC
 {
-    public class NecDisplaySocket : SimpleClientSocket
+    public class NecDisplaySocket : TCPSocketClient
     {
         public NecDisplaySocket(string address)
             : base(address, 7142, 1000)
@@ -38,35 +39,35 @@ namespace UXLib.Devices.Displays.NEC
             return result;
         }
 
-        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes SendCommand(int address, string message)
+        public void SendCommand(int address, string message)
         {
             string str = "\x02" + message + "\x03";
-            return this.Send(address, MessageType.Command, str);
+            this.Send(address, MessageType.Command, str);
         }
 
-        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes SetParameter(int address, string message)
+        public void SetParameter(int address, string message)
         {
             string str = "\x02" + message + "\x03";
-            return this.Send(address, MessageType.SetParameter, str);
+            this.Send(address, MessageType.SetParameter, str);
         }
 
-        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes GetParameter(int address, string message)
+        public void GetParameter(int address, string message)
         {
             string str = "\x02" + message + "\x03";
-            return this.Send(address, MessageType.GetParameter, str);
+            this.Send(address, MessageType.GetParameter, str);
         }
 
-        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(int address, MessageType messageType, string message)
+        public void Send(int address, MessageType messageType, string message)
         {
             byte[] messageBytes = new byte[message.Length];
             for (int i = 0; i < message.Length; i++)
             {
                 messageBytes[i] = unchecked((byte)message[i]);
             }
-            return this.Send(address, messageType, messageBytes);
+            this.Send(address, messageType, messageBytes);
         }
 
-        public Crestron.SimplSharp.CrestronSockets.SocketErrorCodes Send(int address, MessageType messageType, byte[] message)
+        public void Send(int address, MessageType messageType, byte[] message)
         {
 #if DEBUG
             //CrestronConsole.Print("NEC Send display {0}, MessageType.{1}, ", address, messageType.ToString());
@@ -91,36 +92,30 @@ namespace UXLib.Devices.Displays.NEC
             CrestronConsole.Print("NEC Tx: ");
             Tools.PrintBytes(finalPacket, finalPacket.Length, true);
 #endif
-            return base.Send(finalPacket);
+            base.Send(finalPacket);
         }
 
-        protected override object ReceiveBufferProcess(object obj)
+        public override event TCPSocketReceivedDataEventHandler ReceivedData;
+
+        protected override object ReceiveThreadProcess(object o)
         {
+
             Byte[] bytes = new Byte[this.BufferSize];
             int byteIndex = 0;
 
-            while (true)
+            while (this.ProgramRunning && this.Status == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 try
                 {
-                    byte b = rxQueue.Dequeue();
-
-                    if (((TCPClient)obj).ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
-                    {
-#if DEBUG
-                        CrestronConsole.PrintLine("{0}.ReceiveBufferProcess exiting thread, Socket.ClientStatus = {1}",
-                            this.GetType().Name, ((TCPClient)obj).ClientStatus);
-#endif
-                        return null;
-                    }
+                    byte b = ReceiveQueue.Dequeue();
 
                     // If find byte = CR
                     if (b == 13)
                     {
                         // check the next byte may also be 13 in which this one maybe the checksum
-                        if (rxQueue.Peek() == 13)
+                        if (ReceiveQueue.Peek() == 13)
                         {
-                            b = rxQueue.Dequeue();
+                            b = ReceiveQueue.Dequeue();
                             bytes[byteIndex] = b;
                             byteIndex++;
                         }
@@ -134,23 +129,20 @@ namespace UXLib.Devices.Displays.NEC
                         int chk = 0;
 
                         for (int i = 1; i < (copiedBytes.Length - 1); i++)
-                        {
                             chk = chk ^ copiedBytes[i];
-                        }
-
 #if DEBUG
                         CrestronConsole.Print("NEC Rx: ");
                         Tools.PrintBytes(copiedBytes, copiedBytes.Length, false);
 #endif
-
                         if (copiedBytes.Length > 0 && chk == (int)copiedBytes.Last())
                         {
-                            OnReceivedPacket(copiedBytes);
+                            if (this.ReceivedData != null)
+                                this.ReceivedData(this, copiedBytes);
                         }
-                        else if(copiedBytes.Length > 0)
+                        else if (copiedBytes.Length > 0)
                         {
-                            ErrorLog.Error("NEC Display Rx: \"{0}\"", Tools.GetBytesAsReadableString(copiedBytes, copiedBytes.Length, true));
-                            ErrorLog.Error("NEC Display Rx - Checksum Error, chk = 0x{0}, byteIndex = {1}, copiedBytes.Length = {2}",
+                            ErrorLog.Warn("NEC Display Rx: \"{0}\"", Tools.GetBytesAsReadableString(copiedBytes, copiedBytes.Length, true));
+                            ErrorLog.Warn("NEC Display Rx - Checksum Error, chk = 0x{0}, byteIndex = {1}, copiedBytes.Length = {2}",
                                 chk.ToString("X2"), byteIndex, copiedBytes.Length);
 #if DEBUG
                             CrestronConsole.PrintLine("NEC Display Rx - Checksum Error, chk = 0x{0}, byteIndex = {1}, copiedBytes.Length = {2}",
@@ -160,20 +152,26 @@ namespace UXLib.Devices.Displays.NEC
 #endif
                         }
 
-                        CrestronEnvironment.AllowOtherAppsToRun();
+                        if (ReceiveQueue.IsEmpty)
+                            break;
                     }
                     else
                     {
                         bytes[byteIndex] = b;
                         byteIndex++;
                     }
+
+                    CrestronEnvironment.AllowOtherAppsToRun();
+                    Thread.Sleep(0);
                 }
                 catch (Exception e)
                 {
-                    if (e.Message != "ThreadAbortException")
-                        ErrorLog.Exception(string.Format("{0} - Exception in ReceiveBufferProcess", GetType().ToString()), e);
+                    ErrorLog.Error("{0} - Error in ReceiveThreadProcess, {1}", this.GetType().Name, e.Message);
+                    break;
                 }
             }
+
+            return null;
         }
     }
 

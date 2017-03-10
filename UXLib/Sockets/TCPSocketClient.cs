@@ -56,7 +56,8 @@ namespace UXLib.Sockets
         public void Connect(bool shouldReconnect)
         {
             _shouldReconnect = shouldReconnect;
-            ErrorLog.Notice("{0}.Connect(shouldReconnect = {1})", this.GetType().Name, shouldReconnect);
+            if (!_connectFailed)
+                ErrorLog.Notice("{0}.Connect(shouldReconnect = {1})", this.GetType().Name, shouldReconnect);
             if (Connected)
                 ErrorLog.Warn("{0}.Connect() ... allready connected!", this.GetType().Name);
             else
@@ -214,6 +215,8 @@ namespace UXLib.Sockets
         /// </summary>
         public abstract event TCPSocketReceivedDataEventHandler ReceivedData;
 
+        bool _connectFailed = false;
+
         void OnConnectResult(TCPClient client)
         {
 #if DEBUG
@@ -223,12 +226,18 @@ namespace UXLib.Sockets
 
             if (client.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
+                ErrorLog.Notice("TCP Client to {0} connected on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
+                _connectFailed = false;
+                this.Status = SocketStatus.SOCKET_STATUS_CONNECTED;
                 this.OnConnect(client);
             }
             else
             {
-                ErrorLog.Warn("TCP Client to {0} could not connect on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
-
+                if (!_connectFailed)
+                {
+                    _connectFailed = true;
+                    ErrorLog.Warn("TCP Client to {0} could not connect on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
+                }
                 if (_shouldReconnect)
                 {
 #if DEBUG
@@ -241,17 +250,11 @@ namespace UXLib.Sockets
 
         protected virtual void OnConnect(TCPClient client)
         {
-            ErrorLog.Notice("TCP Client to {0} connected on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
-
-            this.Status = SocketStatus.SOCKET_STATUS_CONNECTED;
-
             client.ReceiveDataAsync(OnReceive);
         }
 
         protected virtual void OnDisconnect(TCPClient client)
         {
-            this.Status = SocketStatus.SOCKET_STATUS_NO_CONNECT;
-
             if (this.ProgramRunning)
             {
                 ErrorLog.Warn("TCP Client to {0} disconnected!", client.AddressClientConnectedTo);
@@ -272,6 +275,7 @@ namespace UXLib.Sockets
         {
             if (numberOfBytesReceived <= 0)
             {
+                this.Status = SocketStatus.SOCKET_STATUS_NO_CONNECT;
                 this.OnDisconnect(client);
             }
             else

@@ -17,8 +17,8 @@ namespace UXLib.Devices.Displays.NEC
             this.Name = name;
             this.DisplayID = displayID;
             this.Socket = socket;
-            this.Socket.ReceivedPacketEvent += new SimpleClientSocketReceiveEventHandler(Socket_ReceivedPacketEvent);
-            this.Socket.SocketConnectionEvent += new SimpleClientSocketConnectionEventHandler(Socket_SocketConnectionEvent);
+            this.Socket.StatusChanged += new TCPSocketStatusChangeEventHandler(Socket_StatusChanged);
+            this.Socket.ReceivedData += new TCPSocketReceivedDataEventHandler(Socket_ReceivedData);
         }
 
         public NecLCDMonitor(string name, int displayID, NecComPortHandler comPortHandler)
@@ -36,7 +36,7 @@ namespace UXLib.Devices.Displays.NEC
 
         CTimer pollTimer;
 
-        void Socket_SocketConnectionEvent(SimpleClientSocket socket, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
+        void Socket_StatusChanged(TCPSocketClient client, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
         {
             if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
             {
@@ -45,7 +45,7 @@ namespace UXLib.Devices.Displays.NEC
 #endif
                 pollTimer = new CTimer(OnPollEvent, null, 1000, 1000);
             }
-            else if(this.pollTimer != null)
+            else if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_NO_CONNECT && this.pollTimer != null)
             {
 #if DEBUG
                 CrestronConsole.PrintLine("NEC Display Disconnected");
@@ -184,9 +184,9 @@ namespace UXLib.Devices.Displays.NEC
             }
         }
 
-        void Socket_ReceivedPacketEvent(SimpleClientSocket socket, SimpleClientSocketReceiveEventArgs args)
+        void Socket_ReceivedData(TCPSocketClient client, byte[] data)
         {
-            OnReceive(args.ReceivedPacket);
+            OnReceive(data);
         }
 
         void ComPort_ReceivedPacket(NecComPortHandler handler, byte[] receivedPacket)
