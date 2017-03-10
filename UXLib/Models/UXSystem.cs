@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using UXLib.UI;
 
@@ -42,6 +43,24 @@ namespace UXLib.Models
             foreach (Room room in this.Rooms)
             {
                 room.Initialize();
+            }
+
+            CrestronConsole.AddNewConsoleCommand(ConsoleGetRoomName,
+                "GetRoomName", "Get room name for Room ID", ConsoleAccessLevelEnum.AccessOperator);
+        }
+
+        void ConsoleGetRoomName(string argsString)
+        {
+            try
+            {
+                string[] args = argsString.Split(',');
+                CrestronConsole.ConsoleCommandResponse("Room name for ID {0} is {1}",
+                    this.Rooms[uint.Parse(args[0])].ID,
+                    this.Rooms[uint.Parse(args[0])].Name);
+            }
+            catch (Exception e)
+            {
+                CrestronConsole.ConsoleCommandResponse("Error {0}", e.Message);
             }
         }
     }
