@@ -56,7 +56,7 @@ namespace UXLib.Sockets
         public void Connect(bool shouldReconnect)
         {
             _shouldReconnect = shouldReconnect;
-            if (!_connectFailed)
+            if (_connectFailCount == 0)
                 ErrorLog.Notice("{0}.Connect(shouldReconnect = {1})", this.GetType().Name, shouldReconnect);
             if (Connected)
                 ErrorLog.Warn("{0}.Connect() ... allready connected!", this.GetType().Name);
@@ -143,12 +143,22 @@ namespace UXLib.Sockets
         /// <param name="byteArray">A byte array to send. Array must be the size required to send</param>
         public virtual void Send(byte[] byteArray)
         {
+            if (this.Connected)
+            {
 #if DEBUG
-            CrestronConsole.PrintLine("{0}.Send() {1} bytes queued", this.GetType().Name, byteArray.Length);
+                CrestronConsole.PrintLine("{0}.Send() {1} bytes queued", this.GetType().Name, byteArray.Length);
 #endif
-            _sendQueue.Enqueue(byteArray);
-            if (_sendThread == null || _sendThread.ThreadState == Thread.eThreadStates.ThreadFinished)
-                _sendThread = new Thread(SendThreadProcess, null);
+                _sendQueue.Enqueue(byteArray);
+                if (_sendThread == null || _sendThread.ThreadState == Thread.eThreadStates.ThreadFinished)
+                    _sendThread = new Thread(SendThreadProcess, null);
+            }
+            else
+            {
+#if DEBUG
+                CrestronConsole.PrintLine("{0}.Send() - Cannot Enqueue data as socket is not connected!", this.GetType().Name);
+                ErrorLog.Warn("{0}.Send() - Socket not connected!", this.GetType().Name);
+#endif
+            }
         }
 
         /// <summary>
@@ -215,7 +225,7 @@ namespace UXLib.Sockets
         /// </summary>
         public abstract event TCPSocketReceivedDataEventHandler ReceivedData;
 
-        bool _connectFailed = false;
+        int _connectFailCount = 0;
 
         void OnConnectResult(TCPClient client)
         {
@@ -227,25 +237,38 @@ namespace UXLib.Sockets
             if (client.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 ErrorLog.Notice("TCP Client to {0} connected on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
-                _connectFailed = false;
+                _connectFailCount = 0;
                 this.Status = SocketStatus.SOCKET_STATUS_CONNECTED;
                 this.OnConnect(client);
             }
             else
             {
-                if (!_connectFailed)
+                _connectFailCount++;
+
+                if (_connectFailCount <= 5)
                 {
-                    _connectFailed = true;
-                    ErrorLog.Warn("TCP Client to {0} could not connect on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
+                    ErrorLog.Warn("TCP Client to {0} could not connect on port {1} (Attempt {2})",
+                        _client.AddressClientConnectedTo, _client.PortNumber, _connectFailCount);
+                    if (_shouldReconnect)
+                        RetryConnection(null);
                 }
-                if (_shouldReconnect)
+                else
                 {
-#if DEBUG
-                    CrestronConsole.PrintLine("Retrying connection to {0}", _client.AddressClientConnectedTo);
-#endif
-                    this.Connect(_shouldReconnect);
+                    if (_connectFailCount == 6)
+                        ErrorLog.Warn("TCP Client to {0} has failed to connect ... will retry every 60 seconds. Logging suppressed",
+                            _client.AddressClientConnectedTo);
+                    if (_shouldReconnect)
+                        _retryTimer = new CTimer(RetryConnection, 60000);
                 }
             }
+        }
+
+        CTimer _retryTimer;
+
+        void RetryConnection(object o)
+        {
+            CrestronConsole.PrintLine("Retrying connection to {0} on port {1}", _client.AddressClientConnectedTo, _client.PortNumber);
+            this.Connect(_shouldReconnect);
         }
 
         protected virtual void OnConnect(TCPClient client)
