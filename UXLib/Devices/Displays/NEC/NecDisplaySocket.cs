@@ -148,7 +148,7 @@ namespace UXLib.Devices.Displays.NEC
                             CrestronConsole.PrintLine("NEC Display Rx - Checksum Error, chk = 0x{0}, byteIndex = {1}, copiedBytes.Length = {2}",
                                 chk.ToString("X2"), byteIndex, copiedBytes.Length);
 
-                            CrestronConsole.PrintLine("rxQueue.Peek() = {0}", rxQueue.Peek());
+                            CrestronConsole.PrintLine("rxQueue.Peek() = {0}", ReceiveQueue.Peek());
 #endif
                         }
 
