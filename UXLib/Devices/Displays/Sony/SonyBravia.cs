@@ -100,35 +100,64 @@ namespace UXLib.Devices.Displays.Sony
             }
         }
 
-        private string macAddress;
+        private string _MACAddress;
+        public string MACAddress
+        {
+            get
+            {
+                return _MACAddress;
+            }
+        }
+
+        private string _Version;
+        public string Version
+        {
+            get
+            {
+                return _Version;
+            }
+        }
 
         public override void Initialize()
         {
-            this.client = new HttpClient();
-            this.client.KeepAlive = true;
-            this.client.UseConnectionPooling = true;
-
-            JObject systemInfo = Request("system", "getSystemInformation", GetNextID(), "1.0");
-
-            _DeviceModel = systemInfo["result"].First()["model"].Value<string>();
-            macAddress = systemInfo["result"].First()["macAddr"].Value<string>();
-            _DeviceSerialNumber = systemInfo["result"].First()["serial"].Value<string>();
-
-            JObject powerStatus = Request("system", "getPowerStatus", GetNextID(), "1.0");
- 
-            bool power = (powerStatus["result"].First()["status"].Value<string>() == "active");
-
-            if (power) this.PowerStatus = UXLib.Devices.DevicePowerStatus.PowerOn;
-
-            JObject wolMode = Request("system", "getWolMode", GetNextID(), "1.0");
- 
-            bool wakeOnLanEnabled = wolMode["result"].First()["enabled"].Value<bool>();
-
-            if (!wakeOnLanEnabled)
+            try
             {
-                Request("system", "setWolMode", GetNextID(), "1.0", new { @enabled = true });
+                this.client = new HttpClient();
+                this.client.KeepAlive = true;
+                this.client.UseConnectionPooling = true;
+
+                JObject systemInfo = Request("system", "getSystemInformation", GetNextID(), "1.0");
+
+                _DeviceModel = systemInfo["result"].First()["model"].Value<string>();
+                _MACAddress = systemInfo["result"].First()["macAddr"].Value<string>();
+                _DeviceSerialNumber = systemInfo["result"].First()["serial"].Value<string>();
+                _Version = systemInfo["result"].First()["generation"].Value<string>();
+
+                JObject powerStatus = Request("system", "getPowerStatus", GetNextID(), "1.0");
+
+                bool power = (powerStatus["result"].First()["status"].Value<string>() == "active");
+
+                if (power) this.PowerStatus = UXLib.Devices.DevicePowerStatus.PowerOn;
+
+                JObject wolMode = Request("system", "getWolMode", GetNextID(), "1.0");
+
+                bool wakeOnLanEnabled = wolMode["result"].First()["enabled"].Value<bool>();
+
+                if (!wakeOnLanEnabled)
+                {
+                    Request("system", "setWolMode", GetNextID(), "1.0", new { @enabled = true });
+                }
+
+                if (this.HasInitialized != null)
+                    this.HasInitialized(this);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.Initialize(), {1}", this.GetType().Name, e.Message);
             }
         }
+
+        public event SonyBraviaDeviceHasInitialized HasInitialized;
 
         public override bool Power
         {
@@ -303,6 +332,8 @@ namespace UXLib.Devices.Displays.Sony
 
         #endregion
     }
+
+    public delegate void SonyBraviaDeviceHasInitialized(SonyBravia device);
 
     public enum TargetVolumeDeviceType
     {
