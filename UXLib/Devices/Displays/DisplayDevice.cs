@@ -260,6 +260,7 @@ namespace UXLib.Devices.Displays
         YUV,
         SVideo,
         MagicInfo,
-        TV
+        TV,
+        HDBaseT
     }
 }
