@@ -22,6 +22,7 @@ namespace UXLib.UI
             if (this.Device != null)
             {
                 CrestronConsole.PrintLine("Registering UI Device \'{0}\'", device.GetType().ToString());
+                CrestronConsole.PrintLine("UI Device \'{0}\' parent is {1}", device.GetType().Name, device.Parent.GetType().Name);
 
                 if (device is TswFt5ButtonSystem)
                 {
@@ -31,10 +32,18 @@ namespace UXLib.UI
                     SystemReservedSigs.Use();
                 }
 
-                this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                try
+                {
+                    this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                }
+                catch
+                {
+                    // Probably not an Ethernet device
+                }
+                
                 this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(DeviceOnlineStatusChanged);
 
-                if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                if (this.Device.Parent is CrestronControlSystem && this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
                 {
                     ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
                 }
