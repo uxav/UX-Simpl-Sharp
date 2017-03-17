@@ -9,14 +9,16 @@ namespace UXLib.Models
     public class RoomCollection : UXCollection<Room>
     {
         internal RoomCollection() { }
+        internal RoomCollection(Dictionary<uint, Room> fromDictionary)
+        {
+            InternalDictionary = new Dictionary<uint, Room>(fromDictionary);
+        }
 
         public override Room this[uint roomID]
         {
             get
             {
-                if (this.Contains(roomID))
-                    return base[roomID];
-                return null;
+                return base[roomID];
             }
             internal set
             {
@@ -32,28 +34,6 @@ namespace UXLib.Models
         public void Add(Room room)
         {
             this[room.ID] = room;
-        }
-
-        public void Add(UXSystem system, uint roomID, string roomName)
-        {
-            Room newRoom = new Room(system, roomID);
-            newRoom.Name = roomName;
-
-            this[newRoom.ID] = newRoom;
-        }
-
-        public void Add(UXSystem system, uint id, string name, uint parentID)
-        {
-            if (this.Contains(parentID))
-            {
-                Room newRoom = new Room(system, id, this[parentID]);
-                newRoom.Name = name;
-                this[newRoom.ID] = newRoom;
-            }
-            else
-            {
-                throw new IndexOutOfRangeException(string.Format("Cannot add room with parent as parentID {0} does not exist", parentID));
-            }
         }
     }
 }

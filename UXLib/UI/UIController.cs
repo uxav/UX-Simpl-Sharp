@@ -127,9 +127,17 @@ namespace UXLib.UI
 
         void Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)
         {
-            if (this.Room == room)
+            try
             {
-                OnSourceChange(args.PreviousSource, args.NewSource);
+                if (this.Room == room)
+                {
+                    OnSourceChange(args.PreviousSource, args.NewSource);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(string.Format("Error in {0}.Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)",
+                    this.GetType().Name), e);
             }
         }
 
@@ -176,8 +184,15 @@ namespace UXLib.UI
 
         protected virtual void OnSourceChange(Source previousSource, Source newSource)
         {
-            if (newSource != null)
-                UIShouldShowSourceControl(newSource);
+            try
+            {
+                if (newSource != null)
+                    UIShouldShowSourceControl(newSource);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(string.Format("Error in {0}.OnSourceChange(Source previousSource, Source newSource)", this.GetType().Name), e);
+            }
         }
 
         protected virtual void OnVolumeChange(VolumeLevelType volumeType, ushort volumeLevel)

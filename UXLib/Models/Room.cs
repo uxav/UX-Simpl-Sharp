@@ -22,21 +22,8 @@ namespace UXLib.Models
             this.ID = id;
             this._Name = "";
             this._Location = "";
-            if (parentRoom != null)
-            {
-                this.ParentRoom = parentRoom;
-                this.ParentRoom.ChildRoom = this;
-
-                // Find the master room by looping through the parents.
-                Room room = parentRoom;
-                while (room.IsChild)
-                {
-                    room = room.ParentRoom;
-                }
-
-                // This room shouldn't have a parent (isn't a child) and is the master room.
-                this.MasterRoom = room;
-            }
+            this.System.Rooms.Add(this);
+            this.ParentRoom = parentRoom;
         }
 
         public UXSystem System { get; private set; }
@@ -83,9 +70,44 @@ namespace UXLib.Models
                     this.RoomDetailsChange(this, new RoomDetailsChangeEventArgs());
             }
         }
-        public Room ParentRoom { get; private set; }
-        public Room MasterRoom { get; private set; }
-        public Room ChildRoom { get; private set; }
+
+        Room _ParentRoom;
+        public Room ParentRoom
+        {
+            get
+            {
+                return _ParentRoom;
+            }
+            set
+            {
+                _ParentRoom = value;
+            }
+        }
+
+        public Room MasterRoom
+        {
+            get
+            {
+                Room room = this;
+                while (room.IsChild)
+                    room = room.ParentRoom;
+                return room;
+            }
+        }
+
+        public RoomCollection Children
+        {
+            get
+            {
+                Dictionary<uint, Room> rooms = new Dictionary<uint, Room>();
+                foreach (Room room in this.System.Rooms.ToList().Where(r => r.ParentRoom == this))
+                {
+                    rooms.Add(room.ID, room);
+                }
+                return new RoomCollection(rooms);
+            }
+        }
+
         public bool HasFusion
         {
             get
@@ -100,7 +122,15 @@ namespace UXLib.Models
 
         public virtual void OnSourceChange(Source previousSource, Source newSource)
         {
-            this.SourceChange(this, new RoomSourceChangeEventArgs(previousSource, newSource));
+            try
+            {
+                if (this.SourceChange != null)
+                    this.SourceChange(this, new RoomSourceChangeEventArgs(previousSource, newSource));
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(string.Format("Error calling {0}.SourceChange Event", this.GetType().Name), e);
+            }
         }
 
         Source _Source;
@@ -181,14 +211,7 @@ namespace UXLib.Models
         {
             get
             {
-                if (this.ChildRoom != null)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return (this.Children.Count > 0);
             }
         }
 
@@ -196,29 +219,7 @@ namespace UXLib.Models
         {
             get
             {
-                if (this.ParentRoom != null)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        public bool HasChild
-        {
-            get
-            {
-                if (this.ChildRoom != null)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return (this.ParentRoom != null);
             }
         }
 
@@ -226,14 +227,7 @@ namespace UXLib.Models
         {
             get
             {
-                if (this.ParentRoom != null)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                return (this.IsParent && !this.IsChild);
             }
         }
 
@@ -292,7 +286,12 @@ namespace UXLib.Models
 
         public virtual void Shutdown()
         {
-            
+
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Room ID: {0} \"{1}\"", this.ID, this.Name);
         }
     }
 
@@ -304,7 +303,7 @@ namespace UXLib.Models
         public RoomDetailsChangeEventArgs()
             : base()
         {
-
+            
         }
     }
 

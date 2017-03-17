@@ -155,6 +155,8 @@
     <Compile Include="Devices\Displays\ElectricScreenRelaysInterlocked.cs" />
     <Compile Include="Devices\Displays\ElectricScreenRelaysMomentary.cs" />
     <Compile Include="Devices\Displays\Samsung\SamsungMDCDisplay.cs" />
+    <Compile Include="Devices\ParitionSensors\IPartitionSensor.cs" />
+    <Compile Include="Devices\ParitionSensors\PartitionSensorCollection.cs" />
     <Compile Include="Devices\VC\Cisco\Audio.cs" />
     <Compile Include="Devices\VC\Cisco\Call.cs" />
     <Compile Include="Devices\VC\Cisco\CallHistory.cs" />

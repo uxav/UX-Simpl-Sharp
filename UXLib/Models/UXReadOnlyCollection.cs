@@ -14,6 +14,11 @@ namespace UXLib.Models
         {
             InternalDictionary = new Dictionary<TKey, TValue>();
         }
+
+        internal UXReadOnlyCollection(IDictionary<TKey, TValue> fromDictionary)
+        {
+            InternalDictionary = new Dictionary<TKey, TValue>(fromDictionary);
+        }
         
         protected Dictionary<TKey, TValue> InternalDictionary;
 
