@@ -35,5 +35,11 @@ namespace UXLib.Models
         {
             this[room.ID] = room;
         }
+
+        internal void Remove(Room room)
+        {
+            if (this.Contains(room))
+                InternalDictionary.Remove(room.ID);
+        }
     }
 }

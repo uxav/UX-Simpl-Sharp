@@ -293,6 +293,33 @@ namespace UXLib.Models
         {
             return string.Format("Room ID: {0} \"{1}\"", this.ID, this.Name);
         }
+
+        private RoomCollection _JoinedRooms;
+        public RoomCollection JoinedRooms
+        {
+            get
+            {
+                if (_JoinedRooms == null)
+                    _JoinedRooms = new RoomCollection();
+                return _JoinedRooms;
+            }
+        }
+
+        public virtual void OnPartitionStateChange(UXLib.Devices.ParitionSensors.IPartitionSensor system, UXLib.Devices.ParitionSensors.PartitionEventArgs args)
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("Room \"{0}\" partition to child room \"{1}\" is {2}",
+                this.Name, args.ChildRoom.Name, args.PartitionState);
+#endif
+            if (args.ParentRoom == this && args.PartitionState == UXLib.Devices.ParitionSensors.RoomPartitionState.Open)
+            {
+                this.JoinedRooms.Add(args.ChildRoom);
+            }
+            else if (args.ParentRoom == this && args.PartitionState == UXLib.Devices.ParitionSensors.RoomPartitionState.Closed)
+            {
+                this.JoinedRooms.Remove(args.ChildRoom);
+            }
+        }
     }
 
     public delegate void RoomDetailsChangeEventHandler(Room room, RoomDetailsChangeEventArgs args);
