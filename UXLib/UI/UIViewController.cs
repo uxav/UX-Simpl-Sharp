@@ -11,9 +11,9 @@ namespace UXLib.UI
     {
         public UIViewController(UIController uiController, UIViewBase view)
         {
-            this.UIController = uiController;
-            this.View = view;
-            this.View.VisibilityChange += new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
+            UIController = uiController;
+            View = view;
+            View.VisibilityChange += View_VisibilityChange;
         }
 
         public UIViewController(UIViewController ownerViewController, UIViewBase view)

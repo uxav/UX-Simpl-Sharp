@@ -6,17 +6,16 @@ using Crestron.SimplSharp;
 
 namespace UXLib.Models
 {
-    public class VolumeLevelCollection : UXCollection<VolumeLevel>
+    public sealed class VolumeLevelCollection : UXCollection<VolumeLevel>
     {
         public VolumeLevelCollection() { }
 
         public VolumeLevelCollection(List<VolumeLevel> fromLevels)
         {
-            InternalDictionary = new Dictionary<uint, VolumeLevel>();
             uint count = 0;
             foreach (VolumeLevel level in fromLevels)
             {
-                this[count] = level;
+                Add(count, level);
                 count++;
             }
         }

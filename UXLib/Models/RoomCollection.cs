@@ -6,12 +6,15 @@ using Crestron.SimplSharpPro;
 
 namespace UXLib.Models
 {
-    public class RoomCollection : UXCollection<Room>
+    public sealed class RoomCollection : UXCollection<Room>
     {
         internal RoomCollection() { }
         internal RoomCollection(Dictionary<uint, Room> fromDictionary)
         {
-            InternalDictionary = new Dictionary<uint, Room>(fromDictionary);
+            foreach (var room in fromDictionary)
+            {
+                Add(room.Key, room.Value);
+            }
         }
 
         public override Room this[uint roomID]

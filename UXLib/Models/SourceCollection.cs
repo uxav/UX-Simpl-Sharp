@@ -13,12 +13,8 @@ namespace UXLib.Models
         internal SourceCollection() { }
 
         internal SourceCollection(IEnumerable<Source> listOfSources)
+            : base(listOfSources)
         {
-            InternalDictionary = new Dictionary<uint, Source>();
-            foreach (Source source in listOfSources)
-            {
-                this[source.ID] = source;
-            }
         }
 
         public override Source this[uint sourceID]

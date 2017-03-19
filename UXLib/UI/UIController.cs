@@ -18,6 +18,9 @@ namespace UXLib.UI
         {
             this.ID = id;
             this.Device = device;
+#if DEBUG
+            device.SigChange += DebugSigChange;
+#endif
 
             if (this.Device != null)
             {
@@ -122,7 +125,9 @@ namespace UXLib.UI
 
         public virtual void UIShouldShowSourceControl(Source source)
         {
-
+#if DEBUG
+            CrestronConsole.PrintLine("UIController {0} UIShouldShowSourceControl() for Source {1}", ID, source);
+#endif 
         }
 
         void Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)
@@ -160,7 +165,7 @@ namespace UXLib.UI
 
         void Room_RoomDetailsChange(UXLib.Models.Room room, RoomDetailsChangeEventArgs args)
         {
-            
+            OnRoomDetailsChange();
         }
 
         public event RoomChangeEventHandler RoomChanged;
@@ -228,7 +233,13 @@ namespace UXLib.UI
             if (this.SystemReservedSigs != null)
                 this.SystemReservedSigs.BacklightOff();
         }
-
+#if DEBUG
+        static void DebugSigChange(BasicTriList currentDevice, SigEventArgs args)
+        {
+            CrestronConsole.PrintLine("{0}.SigChange ID 0x{1:X2} {2}", currentDevice.GetType().Name,
+                currentDevice.ID, args.Sig.ToString());
+        }
+#endif
         #region IFusionStaticAsset Members
 
         public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset

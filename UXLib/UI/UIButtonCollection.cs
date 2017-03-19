@@ -125,7 +125,6 @@ namespace UXLib.UI
             }
 
             InternalDictionary.Clear();
-            InternalDictionary = null;
 
             disposed = true;
         }

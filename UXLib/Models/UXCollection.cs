@@ -15,7 +15,8 @@ namespace UXLib.Models
     /// <typeparam name="T">Type of object stored with a uint key value</typeparam>
     public class UXCollection<T> : UXReadOnlyCollection<uint, T>, IEnumerable<T>, IEnumerable
     {
-        internal UXCollection() { }
+        internal UXCollection()
+        { }
 
         internal UXCollection(Dictionary<uint, T> fromDictionary)
             : base(fromDictionary) { }
@@ -44,16 +45,6 @@ namespace UXLib.Models
             {
                 base[key] = value;
             }
-        }
-
-        internal override void Add(uint key, T value)
-        {
-            base.Add(key, value);
-        }
-
-        public override int IndexOf(T value)
-        {
-            return base.IndexOf(value);
         }
 
         public List<T> ToList()
