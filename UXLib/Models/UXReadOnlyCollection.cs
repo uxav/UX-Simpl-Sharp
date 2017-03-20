@@ -12,10 +12,15 @@ namespace UXLib.Models
     {
         internal UXReadOnlyCollection()
         {
-            InternalDictionary = new Dictionary<TKey, TValue>();
+            
         }
-        
-        protected Dictionary<TKey, TValue> InternalDictionary;
+
+        internal UXReadOnlyCollection(IDictionary<TKey, TValue> fromDictionary)
+        {
+            InternalDictionary = new Dictionary<TKey, TValue>(fromDictionary);
+        }
+
+        protected readonly Dictionary<TKey, TValue> InternalDictionary = new Dictionary<TKey, TValue>();
 
         public virtual TValue this[TKey key] {
             get
@@ -63,7 +68,7 @@ namespace UXLib.Models
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         #endregion

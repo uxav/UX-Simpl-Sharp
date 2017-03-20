@@ -7,7 +7,7 @@ using Crestron.SimplSharpPro.CrestronThread;
 
 namespace UXLib.Devices.Audio.Polycom
 {
-    public class VoipOutChannel : VoipChannel, ISoundstructurePhoneOutChannel
+    public class VoipOutChannel : VoipChannel, ITelcoInterface
     {
         public VoipOutChannel(Soundstructure device, string name, uint[] values)
             : base(device, name, SoundstructurePhysicalChannelType.VOIP_OUT, values)
@@ -48,6 +48,9 @@ namespace UXLib.Devices.Audio.Polycom
             {
                 case SoundstructureCommandType.PHONE_CONNECT:
                     _OffHook = Convert.ToBoolean(value);
+
+                    if (OffHookChange != null)
+                        OffHookChange(this, _OffHook);
 #if DEBUG
                     CrestronConsole.PrintLine("{0} OffHook = {1}", this.Name, OffHook);
 #endif
@@ -86,7 +89,7 @@ namespace UXLib.Devices.Audio.Polycom
             this.Device.Socket.Set(this, SoundstructureCommandType.VOIP_SEND);
         }
 
-        #region ISoundstructurePhoneOutChannel Members
+        #region ITelcoInterface Members
 
         public bool OffHook
         {
@@ -126,6 +129,8 @@ namespace UXLib.Devices.Audio.Polycom
         {
             this.Device.Socket.Set(this, SoundstructureCommandType.VOIP_REBOOT);
         }
+
+        public event TelcoOffHookStatusChangeEventHandler OffHookChange;
 
         #endregion
     }

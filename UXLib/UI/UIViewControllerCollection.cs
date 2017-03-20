@@ -13,7 +13,7 @@ namespace UXLib.UI
 
         public UIViewControllerCollection(UITimeOut timeout)
         {
-            this.ViewTimeOut = timeout;
+            ViewTimeOut = timeout;
         }
 
         public UITimeOut ViewTimeOut;
@@ -34,16 +34,20 @@ namespace UXLib.UI
         {
             get
             {
-                return InternalDictionary.Values.FirstOrDefault(p => p.Visible == true);
+                return InternalDictionary.Values.FirstOrDefault(p => p.Visible);
             }
         }
 
         public void Add(UIViewController newView)
         {
-            if (!this.Contains(newView))
+#if DEBUG
+            CrestronConsole.PrintLine("{0}.Add(UIViewController newView) - View visible join = {1}",
+                GetType().Name, newView.VisibleJoinNumber);
+#endif
+            if (!Contains(newView))
             {
                 this[newView.VisibleJoinNumber] = newView;
-                newView.VisibilityChange += new UIViewControllerEventHandler(ViewController_VisibilityChange);
+                newView.VisibilityChange += ViewController_VisibilityChange;
             }
         }
 
@@ -57,7 +61,7 @@ namespace UXLib.UI
                 }
             }
 
-            if (this.Contains(newView))
+            if (Contains(newView))
             {
                 newView.Show();
             }
@@ -65,32 +69,31 @@ namespace UXLib.UI
 
         public void ShowOnly(uint joinNumber)
         {
-            if (this.Contains(joinNumber))
+            if (Contains(joinNumber))
             {
-                this.ShowOnly(this[joinNumber]);
+                ShowOnly(this[joinNumber]);
             }
         }
 
         void ViewController_VisibilityChange(UIViewController sender, UIViewVisibilityEventArgs args)
         {
-            if (sender.Visible && this.ViewTimeOut != null)
+            if (sender.Visible && ViewTimeOut != null)
             {
-                this.ViewTimeOut.Set();
+                ViewTimeOut.Set();
             }
         }
 
         public virtual void Dispose()
         {
-            this.ViewTimeOut.Dispose();
+            ViewTimeOut.Dispose();
 
             foreach (UIViewController view in this)
             {
-                view.VisibilityChange -= new UIViewControllerEventHandler(ViewController_VisibilityChange);
+                view.VisibilityChange -= ViewController_VisibilityChange;
                 view.Dispose();
             }
 
             InternalDictionary.Clear();
-            InternalDictionary = null;
         }
     }
 }

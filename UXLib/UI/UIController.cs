@@ -18,10 +18,14 @@ namespace UXLib.UI
         {
             this.ID = id;
             this.Device = device;
+#if DEBUG
+            device.SigChange += DebugSigChange;
+#endif
 
             if (this.Device != null)
             {
                 CrestronConsole.PrintLine("Registering UI Device \'{0}\'", device.GetType().ToString());
+                CrestronConsole.PrintLine("UI Device \'{0}\' parent is {1}", device.GetType().Name, device.Parent.GetType().Name);
 
                 if (device is TswFt5ButtonSystem)
                 {
@@ -31,10 +35,18 @@ namespace UXLib.UI
                     SystemReservedSigs.Use();
                 }
 
-                this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                try
+                {
+                    this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                }
+                catch
+                {
+                    // Probably not an Ethernet device
+                }
+                
                 this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(DeviceOnlineStatusChanged);
 
-                if (this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                if (this.Device.Parent is CrestronControlSystem && this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
                 {
                     ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
                 }
@@ -113,14 +125,24 @@ namespace UXLib.UI
 
         public virtual void UIShouldShowSourceControl(Source source)
         {
-
+#if DEBUG
+            CrestronConsole.PrintLine("UIController {0} UIShouldShowSourceControl() for Source {1}", ID, source);
+#endif 
         }
 
         void Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)
         {
-            if (this.Room == room)
+            try
             {
-                OnSourceChange(args.PreviousSource, args.NewSource);
+                if (this.Room == room)
+                {
+                    OnSourceChange(args.PreviousSource, args.NewSource);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(string.Format("Error in {0}.Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)",
+                    this.GetType().Name), e);
             }
         }
 
@@ -143,7 +165,7 @@ namespace UXLib.UI
 
         void Room_RoomDetailsChange(UXLib.Models.Room room, RoomDetailsChangeEventArgs args)
         {
-            
+            OnRoomDetailsChange();
         }
 
         public event RoomChangeEventHandler RoomChanged;
@@ -167,8 +189,15 @@ namespace UXLib.UI
 
         protected virtual void OnSourceChange(Source previousSource, Source newSource)
         {
-            if (newSource != null)
-                UIShouldShowSourceControl(newSource);
+            try
+            {
+                if (newSource != null)
+                    UIShouldShowSourceControl(newSource);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(string.Format("Error in {0}.OnSourceChange(Source previousSource, Source newSource)", this.GetType().Name), e);
+            }
         }
 
         protected virtual void OnVolumeChange(VolumeLevelType volumeType, ushort volumeLevel)
@@ -204,7 +233,13 @@ namespace UXLib.UI
             if (this.SystemReservedSigs != null)
                 this.SystemReservedSigs.BacklightOff();
         }
-
+#if DEBUG
+        static void DebugSigChange(BasicTriList currentDevice, SigEventArgs args)
+        {
+            CrestronConsole.PrintLine("{0}.SigChange ID 0x{1:X2} {2}", currentDevice.GetType().Name,
+                currentDevice.ID, args.Sig.ToString());
+        }
+#endif
         #region IFusionStaticAsset Members
 
         public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset

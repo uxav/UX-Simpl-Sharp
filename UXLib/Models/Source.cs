@@ -159,6 +159,8 @@ namespace UXLib.Models
         FreeSat,
         YouView,
         YouTube,
-        FireBox
+        FireBox,
+        Skype,
+        Hangouts
     }
 }

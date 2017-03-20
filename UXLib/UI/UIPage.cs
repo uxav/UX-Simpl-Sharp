@@ -27,13 +27,11 @@ namespace UXLib.UI
 
         public override void Show()
         {
-            if (base.Visible)
-            {
-                base.VisibleDigitalJoin.BoolValue = false;
-                base.VisibleDigitalJoin.BoolValue = true;
-            }
-            else
-                base.Show();
+#if DEBUG
+            CrestronConsole.PrintLine("UIPage.Show() Visible Join {0}, Current feedback join = {1}",
+                VisibleJoinNumber, VisibleFeedbackJoin);
+#endif
+            base.Show();
         }
 
         public UIPage(UIController uiController, uint visibleJoinNumber)

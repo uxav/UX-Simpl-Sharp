@@ -13,7 +13,7 @@ namespace UXLib.Devices.Audio.Polycom
     public class SoundstructureSocket : TCPSocketClient
     {
         public SoundstructureSocket(Soundstructure device, string hostAddress)
-            : base (hostAddress, 52774, 1000)
+            : base (hostAddress, 52774, 10000)
         {
             Device = device;
         }

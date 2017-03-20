@@ -110,18 +110,21 @@ namespace UXLib.UI
         {
             get
             {
-                if (this.VisibleDigitalJoin != null)
-                    return this.VisibleDigitalJoin.BoolValue;
-                return true;
+                return VisibleDigitalJoin == null || VisibleDigitalJoin.BoolValue;
             }
             set
             {
-                if (this.VisibleDigitalJoin != null)
-                {
-                    this.VisibleDigitalJoin.BoolValue = value;
-                    if (value) OnShow();
-                    else OnHide();
-                }
+                if (VisibleDigitalJoin == null) return;
+#if DEBUG
+                CrestronConsole.PrintLine("UIObject.set_Visible {0} -> {1} (Digital join {2})",
+                    VisibleDigitalJoin.BoolValue, value, VisibleDigitalJoin.Number);
+#endif
+                VisibleDigitalJoin.BoolValue = value;
+#if DEBUG
+                CrestronConsole.PrintLine(VisibleDigitalJoin.ToString());
+#endif
+                if (value) OnShow();
+                else OnHide();
             }
         }
 
@@ -392,6 +395,9 @@ namespace UXLib.UI
         {
             if (!subscribed)
             {
+#if DEBUG
+                CrestronConsole.PrintLine("{0}.SubscribeToSigChanges()", GetType().Name);
+#endif
                 if(this.SmartObject != null)
                     this.SmartObject.SigChange += new SmartObjectSigChangeEventHandler(OnSigChange);
                 else
@@ -431,8 +437,11 @@ namespace UXLib.UI
             }
             else if (args.Event == eSigEvent.BoolChange && this.VisibleFeedbackJoin != null && args.Sig == this.VisibleFeedbackJoin)
             {
-                if (args.Sig.BoolValue && this.VisibleDigitalJoin != null && !this.VisibleDigitalJoin.BoolValue)
-                    OnShow();
+#if DEBUG
+                CrestronConsole.PrintLine("{0}.OnSigChange - VisibleFeedbackJoin {1} = {2}",
+                    GetType().Name, VisibleFeedbackJoin.Number, VisibleFeedbackJoin.BoolValue);
+#endif
+                Visible = args.Sig.BoolValue;
             }
             else if (args.Event == eSigEvent.BoolChange && this.TransitionCompleteDigitalJoin != null && args.Sig == this.TransitionCompleteDigitalJoin)
             {
@@ -511,6 +520,9 @@ namespace UXLib.UI
         /// </summary>
         public virtual void Show()
         {
+#if DEBUG
+            CrestronConsole.PrintLine("UIObject.Show()");
+#endif
             this.Visible = true;
         }
 
