@@ -183,26 +183,33 @@ namespace UXLib.Devices.Displays.Sony
                 {
                     Request("videoScreen", "setBannerMode", GetNextID(), "1.0", new { @value = "hidden" });
 
-                    JObject volumeStatus = Request("audio", "getVolumeInformation", GetNextID(), "1.0");
-
-                    foreach (JToken token in volumeStatus["result"].First())
+                    new CTimer(specific =>
                     {
-                        if (token["target"].Value<string>() == this.TargetAudioDevice.ToString().ToLower())
+                        JObject volumeStatus = Request("audio", "getVolumeInformation", GetNextID(), "1.0");
+
+                        foreach (JToken token in volumeStatus["result"].First())
                         {
-                            _VolumeMin = token["minVolume"].Value<int>();
-                            _VolumeMax = token["maxVolume"].Value<int>();
-                            int v = token["volume"].Value<int>();
-                            if (v != _Volume)
+                            if (token["target"].Value<string>() == this.TargetAudioDevice.ToString().ToLower())
                             {
-                                this.Volume = _Volume;
-                            }
-                            bool m = token["mute"].Value<bool>();
-                            if (m != _Mute)
-                            {
-                                this.Mute = _Mute;
+                                _VolumeMin = token["minVolume"].Value<int>();
+                                _VolumeMax = token["maxVolume"].Value<int>();
+                                int v = token["volume"].Value<int>();
+                                if (v != _Volume)
+                                {
+                                    _Volume = v;
+                                    if (VolumeChanged != null)
+                                        VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                                }
+                                bool m = token["mute"].Value<bool>();
+                                if (m != _Mute)
+                                {
+                                    _Mute = m;
+                                    if (VolumeChanged != null)
+                                        VolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.MuteChanged));
+                                }
                             }
                         }
-                    }
+                    }, 1000);
                 }
             }
         }
