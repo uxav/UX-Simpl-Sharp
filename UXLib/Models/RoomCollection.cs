@@ -21,7 +21,9 @@ namespace UXLib.Models
         {
             get
             {
-                return base[roomID];
+                if (Contains(roomID))
+                    return base[roomID];
+                return null;
             }
             internal set
             {
@@ -41,7 +43,7 @@ namespace UXLib.Models
 
         internal void Remove(Room room)
         {
-            if (this.Contains(room))
+            if (Contains(room))
                 InternalDictionary.Remove(room.ID);
         }
     }

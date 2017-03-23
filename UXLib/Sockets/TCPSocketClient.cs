@@ -209,7 +209,7 @@ namespace UXLib.Sockets
         {
 #if DEBUG
             CrestronConsole.Print("{0} Tx: ", this.GetType().Name);
-            Tools.PrintBytes(packet, packet.Length);
+            Tools.PrintBytes(packet, packet.Length, true);
 #endif
 
             return client.SendData(packet, packet.Length);
@@ -304,7 +304,7 @@ namespace UXLib.Sockets
             else
             {
 #if DEBUG
-                CrestronConsole.PrintLine("{0}.OnReceive() numberOfBytesReceived = {1}, Enqueuing...", this.GetType().Name, numberOfBytesReceived);
+                //CrestronConsole.PrintLine("{0}.OnReceive() numberOfBytesReceived = {1}, Enqueuing...", this.GetType().Name, numberOfBytesReceived);
 #endif
                 for (int b = 0; b < numberOfBytesReceived; b++)
                 {
