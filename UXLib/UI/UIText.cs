@@ -40,7 +40,9 @@ namespace UXLib.UI
             StringWriter sw = new StringWriter();
             XElement element = xml.Element("FONT");
             element.WriteTo(new XmlTextWriter(sw));
-            return sw.ToString();
+            string text = sw.ToString();
+            text = text.Replace("|", UIText.NewLine);
+            return text;
         }
 
         public string Text
