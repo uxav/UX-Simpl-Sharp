@@ -69,7 +69,7 @@ namespace UXLib.Devices.Audio.QSC
         {
 
 #if DEBUG
-            CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() Start", this.GetType().Name);
+            //CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() Start", this.GetType().Name);
 #endif
             int index = 0;
             byte[] bytes = new Byte[this.BufferSize];
@@ -90,15 +90,12 @@ namespace UXLib.Devices.Audio.QSC
 
                     if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
                     {
-                        if (this.ReceivedData != null)
-                            this.ReceivedData(this, copiedBytes);
-                    }
+                        if (ReceivedData != null)
+                            ReceivedData(this, copiedBytes);
 #if DEBUG
-                    CrestronConsole.PrintLine("{0} Processed reply: {1}", this.GetType().Name, Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length));
+                        CrestronConsole.PrintLine("{0} Processed reply: {1}", this.GetType().Name, Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length));
 #endif
-
-                    if (ReceivedData != null)
-                        ReceivedData(this, copiedBytes);
+                    }
 
                     if (ReceiveQueue.IsEmpty)
                         break;
@@ -125,7 +122,7 @@ namespace UXLib.Devices.Audio.QSC
                 Thread.Sleep(0);
             }
 #if DEBUG
-            CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() End", this.GetType().Name);
+            //CrestronConsole.PrintLine("{0}.ReceiveThreadProcess() End", this.GetType().Name);
 #endif
             return null;
         }

@@ -66,6 +66,13 @@ namespace UXLib.Models
             if (VolumeChanged != null)
                 VolumeChanged(this, args);
         }
+
+        public override string ToString()
+        {
+            return string.Format("VolumeLevel \"{0}\" - {1}%, {2}", Device.Name,
+                Tools.ScaleRange(Level, ushort.MinValue, ushort.MaxValue, 0, 100),
+                Mute ? "Muted" : "Unmuted");
+        }
     }
 
     public delegate void VolumeLevelChangeEventHandler(VolumeLevel volumeLevel, VolumeChangeEventArgs args);
