@@ -194,6 +194,10 @@ namespace UXLib.Devices.Audio.Polycom
                             {
                                 listedItems.Add(new AnalogPhoneOutChannel(this, elements[1], values.ToArray()));
                             }
+                            else if (type == SoundstructurePhysicalChannelType.PSTN_IN)
+                            {
+                                listedItems.Add(new AnalogPhoneInChannel(this, elements[1], values.ToArray()));
+                            }
                             else
                             {
                                 listedItems.Add(new VirtualChannel(this, elements[1],

@@ -106,6 +106,7 @@
     <Compile Include="Devices\Audio\BSS\SoundWebObject.cs" />
     <Compile Include="Devices\Audio\BSS\SoundWebSocket.cs" />
     <Compile Include="Devices\Audio\ITelcoInterface.cs" />
+    <Compile Include="Devices\Audio\Polycom\AnalogPhoneInChannel.cs" />
     <Compile Include="Devices\Audio\Polycom\AnalogPhoneOutChannel.cs" />
     <Compile Include="Devices\Audio\Polycom\ISoundStructureItem.cs" />
     <Compile Include="Devices\Audio\Polycom\Soundstructure.cs" />
