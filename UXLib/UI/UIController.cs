@@ -66,6 +66,7 @@ namespace UXLib.UI
             : this(id, device)
         {
             _room = defaultRoom;
+            _defaultRoom = defaultRoom;
             _room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
             _room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
         }
@@ -74,6 +75,12 @@ namespace UXLib.UI
         public string Name { get; set; }
         public BasicTriList Device { get; protected set; }
         public TswFtSystemReservedSigs SystemReservedSigs { get; protected set; }
+        private UXLib.Models.Room _defaultRoom;
+        public UXLib.Models.Room DefaultRoom
+        {
+            get { return _defaultRoom; }
+        }
+
         UXLib.Models.Room _room;
         public UXLib.Models.Room Room
         {
@@ -91,6 +98,18 @@ namespace UXLib.UI
                     }
 
                     _room = value;
+#if DEBUG
+                    CrestronConsole.PrintLine("{0} ID {1} Room set to {2}", GetType().Name,
+                        ID, value);
+#endif
+                    if (_defaultRoom == null)
+                    {
+                        _defaultRoom = value;
+#if DEBUG
+                        CrestronConsole.PrintLine("{0} ID {1} Room set to {2}", GetType().Name,
+                            ID, value);
+#endif
+                    }
 
                     if (_room != null)
                     {
@@ -121,6 +140,11 @@ namespace UXLib.UI
                 else if (value != null)
                     UIShouldShowSourceControl(value);
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} ID {1} ({2} 0x{3:X2})", GetType().Name, ID, Device.GetType().Name, Device.ID);
         }
 
         public virtual void UIShouldShowSourceControl(Source source)
