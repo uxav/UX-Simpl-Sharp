@@ -65,10 +65,13 @@ namespace UXLib.UI
         public UIController(uint id, BasicTriList device, UXLib.Models.Room defaultRoom)
             : this(id, device)
         {
-            _room = defaultRoom;
-            _defaultRoom = defaultRoom;
-            _room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-            _room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+            if (defaultRoom != null)
+            {
+                _room = defaultRoom;
+                _defaultRoom = defaultRoom;
+                _room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                _room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+            }
         }
 
         public uint ID { get; protected set; }
