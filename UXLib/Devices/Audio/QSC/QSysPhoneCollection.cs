@@ -42,6 +42,7 @@ namespace UXLib.Devices.Audio.QSC
         /// <param name="idDND"></param>
         /// <param name="idProgress"></param>
         /// <param name="idKeypadBaseName"></param>
+        /// <param name="changeGroupID"></param>
         /// <returns>The instance of the phone created</returns>
         public QSysSoftPhone Register(string idOffHookLED, string idRingingLED, string idConnect, string idDisconnect,
             string idDialString, string idDND, string idProgress, string idKeypadBaseName, int changeGroupID)

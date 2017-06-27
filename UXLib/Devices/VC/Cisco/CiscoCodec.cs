@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXmlLinq;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Fusion;
@@ -23,6 +24,7 @@ namespace UXLib.Devices.VC.Cisco
         /// <summary>
         /// Create an instance of a Cisco VC Codec
         /// </summary>
+        /// <param name="controlSystem"></param>
         /// <param name="hostNameOrIPAddress">The IP Address or hostname of the codec</param>
         /// <param name="username">Username to login to the system</param>
         /// <param name="password">Password to login to the system</param>
@@ -31,7 +33,7 @@ namespace UXLib.Devices.VC.Cisco
         /// <param name="feedbackSlot">The slot on the codec to use for registering feedback. Should be 1-4 (3 is reserved for TMS so avoid that value)</param>
         public CiscoCodec(CrestronControlSystem controlSystem, string hostNameOrIPAddress, string username, string password, EthernetAdapterType ethernetAdapter, int feedbackListenerPort, int feedbackSlot)
         {
-            this.ControlSystem = controlSystem;
+            ControlSystem = controlSystem;
             HttpClient = new CodecHTTPClient(hostNameOrIPAddress, username, password);
             FeedbackServer = new CodecFeedbackServer(this, ethernetAdapter, feedbackListenerPort);
             FeedbackServer.ReceivedData += new CodecFeedbackServerReceiveEventHandler(FeedbackServer_ReceivedData);
@@ -170,7 +172,6 @@ namespace UXLib.Devices.VC.Cisco
         /// <summary>
         /// Register the feedback server and information required
         /// </summary>
-        /// <param name="deregisterFirst">set as true if you want to deregister the slot first</param>
         internal void Registerfeedback()
         {
             this.FeedbackServer.Register(1, new string[] {
@@ -226,16 +227,25 @@ namespace UXLib.Devices.VC.Cisco
 
                 CommandArgs args = new CommandArgs();
                 args.Add("HardwareInfo", ControlSystem.ControllerPrompt);
-                args.Add("ID", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS,
-                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.FeedbackServer.AdapterForIPAddress)));
+                args.Add("ID",
+                    CrestronEthernetHelper.GetEthernetParameter(
+                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS,
+                        CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                            FeedbackServer.AdapterForIPAddress)));
                 args.Add("Name", "Crestron Control System");
-                args.Add("NetworkAddress", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS,
-                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(this.FeedbackServer.AdapterForIPAddress)));
-                args.Add("SerialNumber", ControlSystem.ControllerPrompt);
+                args.Add("NetworkAddress",
+                    CrestronEthernetHelper.GetEthernetParameter(
+                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS,
+                        CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                            FeedbackServer.AdapterForIPAddress)));
+                args.Add("SerialNumber", "Unknown");
                 args.Add("Type", "ControlSystem");
-                XDocument response = this.SendCommand("Peripherals/Connect", args);
+                var assembly = Assembly.GetExecutingAssembly().GetName();
+                args.Add("SoftwareInfo", assembly.Name + " " + assembly.Version);
+                XDocument response = SendCommand("Peripherals/Connect", args);
 
-                CrestronConsole.PrintLine("Codec registration {0}", response.Element("Command").Element("PeripheralsConnectResult").Attribute("status").Value == "OK");
+                CrestronConsole.PrintLine("Codec registration {0}",
+                    response.Element("Command").Element("PeripheralsConnectResult").Attribute("status").Value == "OK");
             }
             catch (Exception e)
             {
@@ -391,7 +401,6 @@ namespace UXLib.Devices.VC.Cisco
         /// 
         /// </summary>
         /// <param name="path">The XPath of the request</param>
-        /// <param name="useHttp">Set as true to force using the HttpClient otherwise it will use the SSHClient</param>
         /// <returns>An IEnumberable containing returned XElements of data</returns>
         public IEnumerable<XElement> RequestPath(string path)
         {

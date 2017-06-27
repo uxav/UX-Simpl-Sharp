@@ -52,11 +52,9 @@ namespace UXLib.Models.Fusion
 
                 asset.AssignFusionAsset(this.Fusion, Assets[newId]);
 
-                if (asset is Devices.IDevice && asset is FusionStaticAsset)
-                {
-                    ((FusionStaticAsset)Assets[newId]).ParamMake.Value = ((Devices.IDevice)asset).DeviceManufacturer;
-                    ((FusionStaticAsset)Assets[newId]).ParamModel.Value = ((Devices.IDevice)asset).DeviceModel;
-                }
+                if (!(asset is Devices.IDevice) || !(asset is IFusionStaticAsset)) return Assets[newId];
+                ((FusionStaticAsset)Assets[newId]).ParamMake.Value = ((Devices.IDevice)asset).DeviceManufacturer;
+                ((FusionStaticAsset)Assets[newId]).ParamModel.Value = ((Devices.IDevice)asset).DeviceModel;
 
                 return Assets[newId];
             }

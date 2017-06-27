@@ -98,7 +98,6 @@ namespace UXLib.Devices.Audio.Revolabs
         {
             Byte[] bytes = new Byte[1000];
             int byteIndex = 0;
-            int dataLength = 0;
 
             while (true)
             {

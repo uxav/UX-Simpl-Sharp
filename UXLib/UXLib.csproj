@@ -33,6 +33,7 @@
     <NoConfig>true</NoConfig>
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
     <DocumentationFile>bin\Debug\UXLib.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
@@ -145,6 +146,8 @@
     <Compile Include="Devices\Cameras\ICamera.cs" />
     <Compile Include="Devices\Displays\Smart\SmartBoard.cs" />
     <Compile Include="Devices\Displays\Sony\SonyBravia.cs" />
+    <Compile Include="Devices\Displays\VividTouch\VividTouchDisplay.cs" />
+    <Compile Include="Devices\Displays\VividTouch\VividTouchComPortHandler.cs" />
     <Compile Include="Devices\ICommDevice.cs" />
     <Compile Include="Devices\IHoistDevice.cs" />
     <Compile Include="Devices\IDevice.cs" />

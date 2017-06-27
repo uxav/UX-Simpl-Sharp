@@ -35,6 +35,12 @@ namespace UXLib.UI
                     SystemReservedSigs.Use();
                 }
 
+                var x60Device = device as TswX60BaseClass;
+                if (x60Device != null)
+                {
+                    x60Device.ExtenderHardButtonReservedSigs.Use();
+                }
+
                 try
                 {
                     this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);

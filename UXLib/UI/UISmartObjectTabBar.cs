@@ -43,8 +43,6 @@ namespace UXLib.UI
             this.VisibleJoin = objectVisibleJoin;
         }
 
-        public ushort NumberOfItems { get; protected set; }
-
         public void SetTabAsSelected(uint index)
         {
             foreach (UISmartObjectButton button in this.Buttons)

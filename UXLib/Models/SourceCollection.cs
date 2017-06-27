@@ -64,11 +64,11 @@ namespace UXLib.Models
 
         public SourceCollection GetSingleSources()
         {
-            List<Source> singleSources = new List<Source>();
+            var singleSources = new List<Source>();
 
             foreach (Source source in this)
             {
-                if (this.SourcesInGroup(source.GroupName).Count <= 1)
+                if (SourcesInGroup(source.GroupName).Count <= 1)
                 {
                     singleSources.Add(source);
                 }
@@ -116,19 +116,18 @@ namespace UXLib.Models
             return base.IndexOf(source);
         }
 
-        public ReadOnlyCollection<string> GroupNames()
+        public IEnumerable<string> GroupNames()
         {
-            return this.GroupNames(false);
+            return GroupNames(false);
         }
 
-        public ReadOnlyCollection<string> GroupNames(bool ofSourcesInGroupsOfMoreThanOne)
+        public IEnumerable<string> GroupNames(bool ofSourcesInGroupsOfMoreThanOne)
         {
-            UXCollection<string> r = new UXCollection<string>();
-            List<string> results = new List<string>();
+            var results = new List<string>();
 
-            foreach (Source source in this)
+            foreach (var source in this)
             {
-                if ((this.SourcesInGroup(source.GroupName).Count > 1 || !ofSourcesInGroupsOfMoreThanOne) && !results.Contains(source.GroupName))
+                if ((SourcesInGroup(source.GroupName).Count > 1 || !ofSourcesInGroupsOfMoreThanOne) && !results.Contains(source.GroupName))
                 {
                     results.Add(source.GroupName);
                 }
@@ -159,14 +158,5 @@ namespace UXLib.Models
                 return new SourceCollection(InternalDictionary.Values.Where(s => s.Room == room || s.Room == null));
             return new SourceCollection(InternalDictionary.Values.Where(s => s.Room == room));
         }
-
-        #region IEnumerable Members
-
-        public new IEnumerator GetEnumerator()
-        {
-            return base.GetEnumerator();
-        }
-
-        #endregion
     }
 }

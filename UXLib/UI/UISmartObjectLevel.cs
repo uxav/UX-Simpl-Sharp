@@ -54,6 +54,7 @@ namespace UXLib.UI
         /// <param name="itemIndex">index of the object</param>
         /// <param name="smartObject">The SmartObject used</param>
         /// <param name="analogFeedbackJoinName">The analog input signal join</param>
+        /// <param name="analogTouchJoinName"></param>
         /// <param name="pressDigitalJoinName">The analog 'touch' output signal join</param>
         /// <param name="enableDigitalJoinName">The digital enable join</param>
         /// <param name="visibleDigitalJoinName">The digital visible join</param>

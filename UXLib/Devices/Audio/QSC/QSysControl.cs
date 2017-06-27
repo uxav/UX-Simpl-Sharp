@@ -240,7 +240,7 @@ namespace UXLib.Devices.Audio.QSC
                     if (this.Initialized == false)
                         this.Initialized = true;
                 }
-                catch (Exception e)
+                catch
                 {
                     ErrorLog.Error("Error in QSysControl Rx: \"{0}\", args Count = {1}", args.DataString, args.Arguments.Count);
                 }

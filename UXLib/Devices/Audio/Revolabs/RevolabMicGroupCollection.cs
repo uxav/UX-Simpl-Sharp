@@ -47,10 +47,5 @@ namespace UXLib.Devices.Audio.Revolabs
                 base[groupName] = value;
             }
         }
-
-        public IEnumerator<RevolabMicCollection> GetEnumerator()
-        {
-            return base.InternalDictionary.Values.GetEnumerator();
-        }
     }
 }

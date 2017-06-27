@@ -52,10 +52,10 @@ namespace UXLib.Devices.Audio.Revolabs
             }
             internal set
             {
-                foreach (RevolabMicCollection group in this.Controller.Groups)
+                foreach (KeyValuePair<string, RevolabMicCollection> group in this.Controller.Groups)
                 {
-                    if (group != this && group.Contains(value))
-                        group.Remove(value.ChannelNumber);
+                    if (group.Value.Contains(value))
+                        group.Value.Remove(value.ChannelNumber);
                 }
                 base[channelNumber] = value;
             }

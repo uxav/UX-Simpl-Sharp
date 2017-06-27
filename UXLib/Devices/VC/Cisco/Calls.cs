@@ -110,7 +110,7 @@ namespace UXLib.Devices.VC.Cisco
                             this.Codec.Logger.Log("Dialed call with API - Result ok - Call ID: {0}", callID);
                         }
                     }
-                    catch (Exception e)
+                    catch
                     {
                         ErrorLog.Error("Could not write to Codec.Logger in Codec.Call.Dial()");
                     }
@@ -166,9 +166,9 @@ namespace UXLib.Devices.VC.Cisco
                 if (CallStatusChange != null && !call.Ghost)
                     CallStatusChange(Codec, new CodecCallInfoChangeEventArgs(call, source));
             }
-            catch (Exception e)
+            catch(Exception e)
             {
-                ErrorLog.Error("Error calling event in {0}.OnCallStatusChange", this.GetType());
+                ErrorLog.Exception("Error calling event at OnCallStatusChange", e);
             }
 
 #if DEBUG

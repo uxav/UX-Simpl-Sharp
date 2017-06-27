@@ -29,7 +29,6 @@ namespace UXLib.UI
                     item++;
                 }
 
-                this.MaxNumberOfItems = (ushort)(item - 1);
                 this.NumberOfItems = 0;
             }
             catch (Exception e)
@@ -39,23 +38,6 @@ namespace UXLib.UI
         }
         
         protected ListData Data { get; set; }
-
-        public ushort MaxNumberOfItems { get; protected set; }
-
-        public ushort NumberOfItems
-        {
-            set
-            {
-                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
-                    this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue = value;
-            }
-            get
-            {
-                if (this.DeviceSmartObject.UShortInput.Contains("Set Number of Items"))
-                    return this.DeviceSmartObject.UShortInput["Set Number of Items"].UShortValue;
-                return this.MaxNumberOfItems;
-            }
-        }
 
         public ushort SelectedItem
         {

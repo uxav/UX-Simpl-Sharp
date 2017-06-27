@@ -200,25 +200,6 @@ namespace UXLib.Devices.Displays.Samsung
             throw new IndexOutOfRangeException("Input not supported on this device");
         }
 
-        #region ICommDevice Members
-
-        bool DeviceCommunicating
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        void Send(string stringToSend)
-        {
-            
-        }
-
-        void OnReceive(string receivedString)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
         #region IVolumeDevice Members
 
 

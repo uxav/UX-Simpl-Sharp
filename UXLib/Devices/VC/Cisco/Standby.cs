@@ -96,7 +96,7 @@ namespace UXLib.Devices.VC.Cisco
     /// Event handler for the codec standby change event
     /// </summary>
     /// <param name="codec">The instance of the Codec</param>
-    /// <param name="StandbyActive">Current standby state</param>
+    /// <param name="args"></param>
     public delegate void CodecStandbyChangeEventHandler(CiscoCodec codec, CodecStandbyChangeEventArgs args);
 
     /// <summary>

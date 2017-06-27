@@ -274,7 +274,7 @@ namespace UXLib.Devices.VC.Cisco
 
 #if DEBUG
                         CrestronConsole.PrintLine("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
-                        ErrorLog.Notice("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
+                        //ErrorLog.Notice("Received {0} Update from {1} for path /{2}", xml.Root.XName.LocalName, productID, path);
                         //CrestronConsole.PrintLine("{0}\r\n", element.ToString());
 #endif
                         if (ReceivedData != null)

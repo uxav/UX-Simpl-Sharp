@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro;
 
 namespace UXLib.Models
 {
-    public class UXReadOnlyCollection<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable
+    public abstract class UXReadOnlyCollection<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     {
         internal UXReadOnlyCollection()
         {
@@ -55,22 +55,14 @@ namespace UXLib.Models
 
         public int Count { get { return InternalDictionary.Count; } }
 
-        #region IEnumerable<KeyValuePair<TKey,TValue>> Members
-
         public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return InternalDictionary.GetEnumerator();
         }
 
-        #endregion
-
-        #region IEnumerable Members
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
-
-        #endregion
     }
 }

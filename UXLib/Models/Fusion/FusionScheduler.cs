@@ -458,9 +458,9 @@ namespace UXLib.Models.Fusion
              fusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue =
                 xmlstring;
           }
-          catch (Exception ex)
+          catch(Exception e)
           {
-
+              ErrorLog.Warn("Could not create meeting in {0}.CreateMeeting(), {1}", GetType().Name, e.Message);
           }
 
        }
