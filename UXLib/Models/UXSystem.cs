@@ -45,6 +45,11 @@ namespace UXLib.Models
                 room.Initialize();
             }
 
+            foreach (var source in Sources)
+            {
+                source.Initialize();
+            }
+
             CrestronConsole.AddNewConsoleCommand(ConsoleGetRoomName,
                 "GetRoomName", "Get room name for Room ID", ConsoleAccessLevelEnum.AccessOperator);
         }

@@ -261,6 +261,7 @@ namespace UXLib.Devices.Displays
         SVideo,
         MagicInfo,
         TV,
-        HDBaseT
+        HDBaseT,
+        BuiltIn
     }
 }

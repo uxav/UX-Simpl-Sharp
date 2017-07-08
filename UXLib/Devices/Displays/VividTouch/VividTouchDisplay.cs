@@ -25,35 +25,23 @@
 using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using UXLib.Models;
 using UXLib.Sockets;
 
 namespace UXLib.Devices.Displays.VividTouch
 {
-    public class VividTouchDisplay : DisplayDevice
+    public class VividTouchDisplay : DisplayDevice, IVolumeDevice
     {
-        private VividTouchComPortHandler _comPortHandler;
+        private readonly VividTouchComPortHandler _comPortHandler;
 
         public VividTouchDisplay(ComPort comPort, string name)
         {
-            this.Name = name;
+            Name = name;
             _comPortHandler = new VividTouchComPortHandler(comPort);
             _comPortHandler.ReceivedData += ComPortHandlerOnReceivedData;
         }
 
-        private CTimer pollTimer { get; set; }
-
-        private void Socket_SocketConnectionEvent(SimpleClientSocket socket,
-            Crestron.SimplSharp.CrestronSockets.SocketStatus status)
-        {
-            if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED)
-            {
-                pollTimer = new CTimer(PollPower, null, 1000, 10000);
-            }
-            else if (pollTimer != null)
-            {
-                pollTimer.Dispose();
-            }
-        }
+        private CTimer _pollTimer;
 
         public void Send(VividTouchMessageType messageType, byte[] bytes)
         {
@@ -67,7 +55,7 @@ namespace UXLib.Devices.Displays.VividTouch
             if (bytes[3] == 0x50 && bytes[4] == 0x4f && bytes[5] == 0x57)
             {
 #if DEBUG
-                //CrestronConsole.PrintLine("Power = {0}", Convert.ToBoolean(bytes[6]));
+                CrestronConsole.PrintLine("Power = {0}", Convert.ToBoolean(bytes[6]));
 #endif
                 switch (Convert.ToBoolean(bytes[6]))
                 {
@@ -94,7 +82,7 @@ namespace UXLib.Devices.Displays.VividTouch
             else if (bytes[3] == 0x4d && bytes[4] == 0x49 && bytes[5] == 0x4e)
             {
 #if DEBUG
-                //CrestronConsole.PrintLine("Actual input = {0}, requested input = {1}", bytes[6], requestedInput);
+                CrestronConsole.PrintLine("Actual input = {0}, requested input = {1}", bytes[6], requestedInput);
 #endif
 
                 if (requestedInput != 0xff && requestedInput != bytes[6])
@@ -103,10 +91,12 @@ namespace UXLib.Devices.Displays.VividTouch
 
             else if (bytes[3] == 0x56 && bytes[4] == 0x4f && bytes[5] == 0x4c)
             {
-                if (_volume != Convert.ToUInt32(bytes[6]) && !volumeOK)
-                    Volume = _volume;
-                else if (_volume == Convert.ToUInt32(bytes[6]) && !volumeOK)
-                    volumeOK = true;
+                var v = Convert.ToUInt32(bytes[6]);
+                if (!_volume.Equals(v))
+                {
+                    _volume = v;
+                    OnVolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
+                }
             }
         }
 
@@ -115,21 +105,22 @@ namespace UXLib.Devices.Displays.VividTouch
             OnReceive(receivedData);
         }
 
-        private void PollPower(object callBackObject)
+        private void PollPower()
         {
-            Send(VividTouchMessageType.Read, new byte[] {0x50, 0x4f, 0x57});
-            if (PowerStatus == DevicePowerStatus.PowerOn)
-                new CTimer(PollInput, null, 100);
+            Send(VividTouchMessageType.Read, new byte[] { 0x50, 0x4f, 0x57 });
         }
 
-        private void PollInput(object callBackObject)
+        private void PollPCPower()
+        {
+            Send(VividTouchMessageType.Read, new byte[] { 0x49, 0x50, 0x43 });
+        }
+
+        private void PollInput()
         {
             Send(VividTouchMessageType.Read, new byte[] {0x4d, 0x49, 0x4e});
-            if (PowerStatus == DevicePowerStatus.PowerOn)
-                new CTimer(PollVolume, null, 100);
         }
 
-        private void PollVolume(object callBackObject)
+        private void PollVolume()
         {
             Send(VividTouchMessageType.Read, new byte[] {0x56, 0x4f, 0x4c});
         }
@@ -184,6 +175,8 @@ namespace UXLib.Devices.Displays.VividTouch
                     return 0x0c;
                 case DisplayDeviceInput.DisplayPort:
                     return 0x0d;
+                case DisplayDeviceInput.BuiltIn:
+                    return 0x0e;
                 case DisplayDeviceInput.VGA:
                     return 0x00;
                 default:
@@ -192,7 +185,6 @@ namespace UXLib.Devices.Displays.VividTouch
         }
 
         private uint _volume;
-        private bool volumeOK = true;
 
         public uint Volume
         {
@@ -200,21 +192,95 @@ namespace UXLib.Devices.Displays.VividTouch
             set
             {
                 _volume = value;
-                volumeOK = false;
                 Send(VividTouchMessageType.Write, new byte[] {0x56, 0x4f, 0x4c, (byte) _volume});
             }
         }
 
-        #region ICommDevice Members
-
         public override void Initialize()
         {
-            
+            _pollTimer = new CTimer(PollDisplayStep, null, 1000, 1000);
+            CrestronEnvironment.ProgramStatusEventHandler += type =>
+            {
+                if (type != eProgramStatusEventType.Stopping) return;
+                _pollTimer.Stop();
+                _pollTimer.Dispose();
+            };
+        }
+
+        private int _pollCount;
+
+        private void PollDisplayStep(object userSpecific)
+        {
+            _pollCount ++;
+
+            switch (_pollCount)
+            {
+                case 1:
+                    PollPower();
+                    break;
+                case 2:
+                    PollPCPower();
+                    break;
+                case 3:
+                    if (PowerStatus == DevicePowerStatus.PowerOn)
+                    {
+                        PollInput();
+                        PollVolume();
+                    }
+                    else
+                    {
+                        _pollCount = 0;
+                    }
+                    break;
+            }
+
+            if (_pollCount > 9)
+                _pollCount = 0;
         }
 
         public override CommDeviceType CommunicationType
         {
             get { return CommDeviceType.Serial; }
+        }
+
+        #region Implementation of IVolumeDevice
+
+        /// <summary>
+        /// Set or Get the volume level
+        /// </summary>
+        public ushort VolumeLevel
+        {
+            get { return (ushort) Tools.ScaleRange(_volume, 0, 100, ushort.MinValue, ushort.MaxValue); }
+            set { Volume = (uint) Tools.ScaleRange(value, ushort.MinValue, ushort.MaxValue, 0, 100); }
+        }
+
+        /// <summary>
+        /// Set or Get the mute
+        /// </summary>
+        public bool VolumeMute { get; set; }
+
+        /// <summary>
+        /// Return true if this supports Mute control
+        /// </summary>
+        public bool SupportsVolumeMute
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Returns true id this supports Level control
+        /// </summary>
+        public bool SupportsVolumeLevel
+        {
+            get { return true; }
+        }
+
+        public event VolumeDeviceChangeEventHandler VolumeChanged;
+
+        protected virtual void OnVolumeChanged(IVolumeDevice device, VolumeChangeEventArgs args)
+        {
+            var handler = VolumeChanged;
+            if (handler != null) handler(device, args);
         }
 
         #endregion

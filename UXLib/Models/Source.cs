@@ -116,6 +116,11 @@ namespace UXLib.Models
                 return false;
             }
         }
+
+        public virtual void Initialize()
+        {
+            
+        }
     }
 
     public enum SourceType

@@ -34,7 +34,7 @@ namespace UXLib.Devices.Displays.VividTouch
     {
         private readonly ComPort _comPort;
         private readonly CrestronQueue<byte> _rxQueue = new CrestronQueue<byte>(1000);
-        private readonly Thread _rxThread;
+        private Thread _rxThread;
         private bool _programStopping;
 
         public VividTouchComPortHandler(ComPort comPort)
@@ -52,13 +52,6 @@ namespace UXLib.Devices.Displays.VividTouch
                 ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone, false);
 
             _comPort.SerialDataReceived += ComPortOnSerialDataReceived;
-
-            _rxThread = new Thread(RxThread, null)
-            {
-                Name = string.Format("{0} Rx Handler", GetType().Name),
-                Priority = Thread.eThreadPriority.HighPriority
-            };
-
             CrestronEnvironment.ProgramStatusEventHandler += type =>
             {
                 if (type != eProgramStatusEventType.Stopping) return;
@@ -81,7 +74,7 @@ namespace UXLib.Devices.Displays.VividTouch
             Byte[] bytes = new Byte[1000];
             int byteIndex = 0;
 
-            while (_programStopping)
+            while (!_programStopping)
             {
                 CrestronEnvironment.AllowOtherAppsToRun();
                 Thread.Sleep(0);
@@ -92,13 +85,14 @@ namespace UXLib.Devices.Displays.VividTouch
 
                     if (byteIndex == 7 && b == 0x08)
                     {
-                        Byte[] copiedBytes = new Byte[byteIndex + 1];
+                        bytes[byteIndex] = b;
+                        var copiedBytes = new Byte[byteIndex + 1];
                         Array.Copy(bytes, copiedBytes, byteIndex + 1);
 
                         byteIndex = 0;
 #if DEBUG
-                        //CrestronConsole.PrintLine("VT Board Rx: ");
-                        //UXLib.Tools.PrintBytes(copiedBytes, copiedBytes.Length);
+                        CrestronConsole.PrintLine("VT Board Rx: ");
+                        Tools.PrintBytes(copiedBytes, copiedBytes.Length, true);
 #endif
                         OnReceivedData(copiedBytes);
                     }
@@ -122,10 +116,24 @@ namespace UXLib.Devices.Displays.VividTouch
 
         private void ComPortOnSerialDataReceived(ComPort receivingComPort, ComPortSerialDataEventArgs args)
         {
+#if DEBUG
+            //CrestronConsole.PrintLine("VT Board Rx: ");
+#endif
             foreach (var b in args.SerialData.ToByteArray())
             {
+#if DEBUG
+                //CrestronConsole.Print(@"\x" + b.ToString("X2"));
+#endif
                 _rxQueue.Enqueue(b);
             }
+
+            if (_rxThread != null && _rxThread.ThreadState == Thread.eThreadStates.ThreadRunning) return;
+            
+            _rxThread = new Thread(RxThread, null)
+            {
+                Name = string.Format("{0} Rx Handler", GetType().Name),
+                Priority = Thread.eThreadPriority.HighPriority
+            };
         }
 
         public void Send(uint id, VividTouchMessageType messageType, byte[] bytes)
@@ -140,8 +148,8 @@ namespace UXLib.Devices.Displays.VividTouch
             message[bytes.Length + 4] = 0x0d;
 
 #if DEBUG
-            //CrestronConsole.PrintLine("VT Board Tx: ");
-            //UXLib.Tools.PrintBytes(message, message.Length);
+            CrestronConsole.PrintLine("VT Board Tx: ");
+            Tools.PrintBytes(message, message.Length, true);
 #endif
 
             _comPort.Send(message, message.Length);
