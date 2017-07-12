@@ -249,8 +249,8 @@ namespace UXLib.Devices.Displays.VividTouch
         /// </summary>
         public ushort VolumeLevel
         {
-            get { return (ushort) Tools.ScaleRange(_volume, 0, 100, ushort.MinValue, ushort.MaxValue); }
-            set { Volume = (uint) Tools.ScaleRange(value, ushort.MinValue, ushort.MaxValue, 0, 100); }
+            get { return (ushort) Tools.ScaleRange(_volume, 0, 70, ushort.MinValue, ushort.MaxValue); }
+            set { Volume = (uint) Tools.ScaleRange(value, ushort.MinValue, ushort.MaxValue, 0, 70); }
         }
 
         /// <summary>
