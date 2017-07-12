@@ -34,7 +34,9 @@ namespace UXLib.Devices.Displays.VividTouch
     {
         private readonly ComPort _comPort;
         private readonly CrestronQueue<byte> _rxQueue = new CrestronQueue<byte>(1000);
+        private readonly CrestronQueue<byte[]> _txQueue = new CrestronQueue<byte[]>(100);
         private Thread _rxThread;
+        private Thread _txThread;
         private bool _programStopping;
 
         public VividTouchComPortHandler(ComPort comPort)
@@ -138,7 +140,7 @@ namespace UXLib.Devices.Displays.VividTouch
 
         public void Send(uint id, VividTouchMessageType messageType, byte[] bytes)
         {
-            byte[] message = new byte[bytes.Length + 5];
+            var message = new byte[bytes.Length + 5];
 
             message[0] = 0x07;
             message[1] = (byte)id;
@@ -151,8 +153,30 @@ namespace UXLib.Devices.Displays.VividTouch
             CrestronConsole.PrintLine("VT Board Tx: ");
             Tools.PrintBytes(message, message.Length, true);
 #endif
+            _txQueue.Enqueue(message);
 
-            _comPort.Send(message, message.Length);
+            if(_txThread == null || _txThread.ThreadState != Thread.eThreadStates.ThreadRunning)
+            {
+                _txThread = new Thread(specific =>
+                {
+                    while (!_txQueue.IsEmpty)
+                    {
+                        var m = _txQueue.Dequeue();
+                        _comPort.Send(m, m.Length);
+                        Thread.Sleep(200);
+                    }
+                    return null;
+                }, null)
+                {
+                    Name = string.Format("{0} Tx Handler", GetType().Name),
+                    Priority = Thread.eThreadPriority.MediumPriority
+                };
+            }
+        }
+
+        public bool TxBusy
+        {
+            get { return !_txQueue.IsEmpty; }
         }
     }
 

@@ -92,11 +92,9 @@ namespace UXLib.Devices.Displays.VividTouch
             else if (bytes[3] == 0x56 && bytes[4] == 0x4f && bytes[5] == 0x4c)
             {
                 var v = Convert.ToUInt32(bytes[6]);
-                if (!_volume.Equals(v))
-                {
-                    _volume = v;
-                    OnVolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
-                }
+                if (_volume.Equals(v)) return;
+                _volume = v;
+                //OnVolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
             }
         }
 
@@ -193,6 +191,7 @@ namespace UXLib.Devices.Displays.VividTouch
             {
                 _volume = value;
                 Send(VividTouchMessageType.Write, new byte[] {0x56, 0x4f, 0x4c, (byte) _volume});
+                OnVolumeChanged(this, new VolumeChangeEventArgs(VolumeLevelChangeEventType.LevelChanged));
             }
         }
 
