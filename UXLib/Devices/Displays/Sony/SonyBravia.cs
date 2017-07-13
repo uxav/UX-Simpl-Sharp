@@ -81,6 +81,11 @@ namespace UXLib.Devices.Displays.Sony
             return null;
         }
 
+        public override string DeviceManufacturer
+        {
+            get { return "Sony"; }
+        }
+
         private string _deviceSerialNumber;
         public override string DeviceSerialNumber
         {
@@ -118,9 +123,7 @@ namespace UXLib.Devices.Displays.Sony
         {
             try
             {
-                _client = new HttpClient();
-                _client.KeepAlive = true;
-                _client.UseConnectionPooling = true;
+                _client = new HttpClient {KeepAlive = true, UseConnectionPooling = true};
 
                 var systemInfo = Request("system", "getSystemInformation", GetNextID(), "1.0");
 
