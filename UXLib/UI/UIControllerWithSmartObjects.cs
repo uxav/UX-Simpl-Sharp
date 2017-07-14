@@ -26,18 +26,20 @@ namespace UXLib.UI
         public void LoadSmartObjects(string sgdFilePath)
         {
             Device.LoadSmartObjects(sgdFilePath);
-#if DEBUG
+
             foreach (var o in Device.SmartObjects)
             {
                 o.Value.SigChange += ValueOnSigChange;
             }
-#endif
         }
 
         private void ValueOnSigChange(GenericBase currentDevice, SmartObjectEventArgs args)
         {
+#if DEBUG
             CrestronConsole.PrintLine("{0}.SmartObject[{3}].SigChange ID 0x{1:X2} {2}", currentDevice.GetType().Name,
                 currentDevice.ID, args.Sig.ToString(), args.SmartObjectArgs.ID);
+#endif
+            OnPanelActivity(this, new UIControllerActivityEventArgs(args.Sig, args.Event));
         }
 
         public void LoadSmartObjects(ISmartObject deviceWithSmartObjects)

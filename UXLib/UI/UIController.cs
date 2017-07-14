@@ -18,9 +18,6 @@ namespace UXLib.UI
         {
             this.ID = id;
             this.Device = device;
-#if DEBUG
-            device.SigChange += DebugSigChange;
-#endif
 
             if (this.Device != null)
             {
@@ -56,11 +53,23 @@ namespace UXLib.UI
                 {
                     ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
                 }
+
+                device.SigChange += DeviceOnSigChange;
             }
             else
             {
                 ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
             }
+        }
+
+        private void DeviceOnSigChange(BasicTriList currentDevice, SigEventArgs args)
+        {
+#if DEBUG
+            CrestronConsole.PrintLine("{0}.SigChange ID 0x{1:X2} {2}", currentDevice.GetType().Name,
+                currentDevice.ID, args.Sig.ToString());
+#endif
+
+            OnPanelActivity(this, new UIControllerActivityEventArgs(args.Sig, args.Event));
         }
 
         public virtual void DeviceOnlineStatusChanged(GenericBase currentDevice, OnlineOfflineEventArgs args)
@@ -238,6 +247,14 @@ namespace UXLib.UI
 
         }
 
+        public event UIControllerActivityEventHandler PanelActivity;
+
+        protected virtual void OnPanelActivity(UIController uicontroller, UIControllerActivityEventArgs args)
+        {
+            var handler = PanelActivity;
+            if (handler != null) handler(uicontroller, args);
+        }
+
         public void Debug(DateTime startTime, string message, params object[] args)
         {
             string formattedMessage = string.Format(message, args);
@@ -266,13 +283,7 @@ namespace UXLib.UI
             if (this.SystemReservedSigs != null)
                 this.SystemReservedSigs.BacklightOff();
         }
-#if DEBUG
-        static void DebugSigChange(BasicTriList currentDevice, SigEventArgs args)
-        {
-            CrestronConsole.PrintLine("{0}.SigChange ID 0x{1:X2} {2}", currentDevice.GetType().Name,
-                currentDevice.ID, args.Sig.ToString());
-        }
-#endif
+
         #region IFusionStaticAsset Members
 
         public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset
@@ -348,5 +359,19 @@ namespace UXLib.UI
     {
         WillChange,
         HasChanged
+    }
+
+    public delegate void UIControllerActivityEventHandler(UIController uiController, UIControllerActivityEventArgs args);
+
+    public class UIControllerActivityEventArgs : EventArgs
+    {
+        internal UIControllerActivityEventArgs(Sig sig, eSigEvent sigEvent)
+        {
+            Sig = sig;
+            Event = sigEvent;
+        }
+
+        public Sig Sig { get; private set; }
+        public eSigEvent Event { get; private set; }
     }
 }

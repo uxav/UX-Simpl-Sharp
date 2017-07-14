@@ -295,12 +295,16 @@ namespace UXLib.UI
                         UIButtonEventType.Held, this.CurrentHoldTime));
         }
 
+        private bool _pressState;
+
         /// <summary>
         /// Called once a button has been pressed and invokes any notifications
         /// and starts timers for holds etc
         /// </summary>
         protected virtual void OnPress()
         {
+            _pressState = true;
+
             if (HoldTime > 0 && holdTimer == null || holdTimer.Disposed)
             {
                 this.CurrentHoldTime = 0;
@@ -324,6 +328,8 @@ namespace UXLib.UI
         /// </summary>
         protected virtual void OnRelease()
         {
+            _pressState = false;
+
             if (holdTimer != null)
             {
                 holdTimer.Stop();
@@ -413,6 +419,9 @@ namespace UXLib.UI
         {
             if (subscribed)
             {
+                if(_pressState)
+                    OnRelease();
+
                 if(this.SmartObject != null)
                     this.SmartObject.SigChange -= new SmartObjectSigChangeEventHandler(OnSigChange);
                 else

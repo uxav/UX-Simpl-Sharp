@@ -242,6 +242,21 @@ namespace UXLib.Devices.Displays.VividTouch
             get { return CommDeviceType.Serial; }
         }
 
+        public override string DeviceManufacturer
+        {
+            get { return "Avocor"; }
+        }
+
+        public override string DeviceModel
+        {
+            get { return "Interactive Display"; }
+        }
+
+        public override string DeviceSerialNumber
+        {
+            get { return ""; }
+        }
+
         #region Implementation of IVolumeDevice
 
         /// <summary>
