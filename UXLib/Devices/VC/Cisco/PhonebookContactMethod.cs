@@ -40,7 +40,12 @@ namespace UXLib.Devices.VC.Cisco
 
         public DialResult Dial()
         {
-            return this.Contact.Dial(this);
+            return Contact.Dial(this);
+        }
+
+        public DialResult Dial(CallType callType)
+        {
+            return Contact.Dial(this, callType);
         }
     }
 }

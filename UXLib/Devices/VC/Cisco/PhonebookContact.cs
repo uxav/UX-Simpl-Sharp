@@ -47,9 +47,21 @@ namespace UXLib.Devices.VC.Cisco
             return new DialResult(0, "Contact has no methods");
         }
 
+        public DialResult Dial(CallType callType)
+        {
+            if (Methods.Count > 0)
+                return Methods.First().Dial(callType);
+            return new DialResult(0, "Contact has no methods");
+        }
+
         public DialResult Dial(PhonebookContactMethod method)
         {
             return Codec.Calls.Dial(method.Number);
+        }
+
+        public DialResult Dial(PhonebookContactMethod method, CallType callType)
+        {
+            return Codec.Calls.Dial(method.Number, callType);
         }
 
         public void AddMethods(IEnumerable<PhonebookContactMethod> methods)
