@@ -4,11 +4,13 @@ using System.Linq;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.Fusion;
 using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharpPro.DeviceSupport;
 using UXLib.Devices;
 using UXLib.Models;
 using UXLib.Models.Fusion;
+using Room = UXLib.Models.Room;
 
 namespace UXLib.UI
 {
@@ -16,10 +18,10 @@ namespace UXLib.UI
     {
         public UIController(uint id, BasicTriList device)
         {
-            this.ID = id;
-            this.Device = device;
+            ID = id;
+            Device = device;
 
-            if (this.Device != null)
+            if (Device != null)
             {
                 CrestronConsole.PrintLine("Registering UI Device \'{0}\'", device.GetType().ToString());
                 CrestronConsole.PrintLine("UI Device \'{0}\' parent is {1}", device.GetType().Name, device.Parent.GetType().Name);
@@ -40,25 +42,25 @@ namespace UXLib.UI
 
                 try
                 {
-                    this.Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
+                    Device.IpInformationChange += new IpInformationChangeEventHandler(Device_IpInformationChange);
                 }
                 catch
                 {
                     // Probably not an Ethernet device
                 }
                 
-                this.Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(DeviceOnlineStatusChanged);
+                Device.OnlineStatusChange += new OnlineStatusChangeEventHandler(DeviceOnlineStatusChanged);
 
-                if (this.Device.Parent is CrestronControlSystem && this.Device.Register() != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+                if (Device.Parent is CrestronControlSystem && Device.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
                 {
-                    ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", this.ID, this.Device.ID);
+                    ErrorLog.Error("Could not register User Interface device with ID: {0}, ipID: {1}", ID, Device.ID);
                 }
 
                 device.SigChange += DeviceOnSigChange;
             }
             else
             {
-                ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", this.ID);
+                ErrorLog.Error("Cannot register User Interface device with ID: {0} as device is null", ID);
             }
         }
 
@@ -77,7 +79,7 @@ namespace UXLib.UI
             
         }
 
-        public UIController(uint id, BasicTriList device, UXLib.Models.Room defaultRoom)
+        public UIController(uint id, BasicTriList device, Room defaultRoom)
             : this(id, device)
         {
             if (defaultRoom != null)
@@ -93,14 +95,14 @@ namespace UXLib.UI
         public string Name { get; set; }
         public BasicTriList Device { get; protected set; }
         public TswFtSystemReservedSigs SystemReservedSigs { get; protected set; }
-        private UXLib.Models.Room _defaultRoom;
-        public UXLib.Models.Room DefaultRoom
+        private Room _defaultRoom;
+        public Room DefaultRoom
         {
             get { return _defaultRoom; }
         }
 
-        UXLib.Models.Room _room;
-        public UXLib.Models.Room Room
+        Room _room;
+        public Room Room
         {
             set
             {
@@ -109,8 +111,8 @@ namespace UXLib.UI
                     if (_room != null)
                     {
                         // Unsubscribe from existing room events
-                        this.Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-                        this.Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
+                        Room.RoomDetailsChange -= new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                        Room.SourceChange -= new RoomSourceChangeEventHandler(Room_SourceChange);
 
                         RoomWillChange(value);
                     }
@@ -132,8 +134,8 @@ namespace UXLib.UI
                     if (_room != null)
                     {
                         // Subscribe to new rooms events
-                        this.Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
-                        this.Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
+                        Room.RoomDetailsChange += new RoomDetailsChangeEventHandler(Room_RoomDetailsChange);
+                        Room.SourceChange += new RoomSourceChangeEventHandler(Room_SourceChange);
                     }
 
                     OnRoomChange(value);
@@ -149,12 +151,12 @@ namespace UXLib.UI
         {
             get
             {
-                return this.Room.Source;
+                return Room.Source;
             }
             set
             {
-                if (this.Room.Source != value)
-                    this.Room.Source = value;
+                if (Room.Source != value)
+                    Room.Source = value;
                 else if (value != null)
                     UIShouldShowSourceControl(value);
             }
@@ -172,11 +174,11 @@ namespace UXLib.UI
 #endif 
         }
 
-        void Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)
+        void Room_SourceChange(Room room, RoomSourceChangeEventArgs args)
         {
             try
             {
-                if (this.Room == room)
+                if (Room == room)
                 {
                     OnSourceChange(args.PreviousSource, args.NewSource);
                 }
@@ -184,7 +186,7 @@ namespace UXLib.UI
             catch (Exception e)
             {
                 ErrorLog.Exception(string.Format("Error in {0}.Room_SourceChange(UXLib.Models.Room room, RoomSourceChangeEventArgs args)",
-                    this.GetType().Name), e);
+                    GetType().Name), e);
             }
         }
 
@@ -203,22 +205,23 @@ namespace UXLib.UI
                     ErrorLog.Notice("UI Device {0} with ID {1} is offline with IP Address {2}", currentDevice.GetType().Name, currentDevice.ID.ToString("X2"),
                         args.DeviceIpAddress);
             }
+            FusionUpdate();
         }
 
-        void Room_RoomDetailsChange(UXLib.Models.Room room, RoomDetailsChangeEventArgs args)
+        void Room_RoomDetailsChange(Room room, RoomDetailsChangeEventArgs args)
         {
             OnRoomDetailsChange();
         }
 
         public event RoomChangeEventHandler RoomChanged;
 
-        protected virtual void RoomWillChange(UXLib.Models.Room newRoom)
+        protected virtual void RoomWillChange(Room newRoom)
         {
             if (RoomChanged != null)
                 RoomChanged(this, new RoomChangeEventArgs(newRoom, RoomChangeEventType.WillChange));
         }
 
-        protected virtual void OnRoomChange(UXLib.Models.Room newRoom)
+        protected virtual void OnRoomChange(Room newRoom)
         {
             if (RoomChanged != null)
                 RoomChanged(this, new RoomChangeEventArgs(newRoom, RoomChangeEventType.HasChanged));
@@ -238,7 +241,7 @@ namespace UXLib.UI
             }
             catch (Exception e)
             {
-                ErrorLog.Exception(string.Format("Error in {0}.OnSourceChange(Source previousSource, Source newSource)", this.GetType().Name), e);
+                ErrorLog.Exception(string.Format("Error in {0}.OnSourceChange(Source previousSource, Source newSource)", GetType().Name), e);
             }
         }
 
@@ -260,7 +263,7 @@ namespace UXLib.UI
             string formattedMessage = string.Format(message, args);
             TimeSpan ts = DateTime.Now - startTime;
             CrestronConsole.PrintLine("{0} - {1}",
-                string.Format("{0} ({1}) {2:00}:{3:0000}", this.GetType().Name, this.ID, ts.Seconds, ts.Milliseconds),
+                string.Format("{0} ({1}) {2:00}:{3:0000}", GetType().Name, ID, ts.Seconds, ts.Milliseconds),
                 formattedMessage);
         }
 
@@ -268,51 +271,69 @@ namespace UXLib.UI
         {
             string formattedMessage = string.Format(message, args);
             CrestronConsole.PrintLine("{0} - {1}",
-                string.Format("{0} ({1})", this.GetType().Name, this.ID),
+                string.Format("{0} ({1})", GetType().Name, ID),
                 formattedMessage);
         }
 
         public void Wake()
         {
-            if (this.SystemReservedSigs != null)
-                this.SystemReservedSigs.BacklightOn();
+            if (SystemReservedSigs != null)
+                SystemReservedSigs.BacklightOn();
         }
 
         public void Sleep()
         {
-            if (this.SystemReservedSigs != null)
-                this.SystemReservedSigs.BacklightOff();
+            if (SystemReservedSigs != null)
+                SystemReservedSigs.BacklightOff();
         }
 
         #region IFusionStaticAsset Members
 
-        public Crestron.SimplSharpPro.Fusion.FusionStaticAsset FusionAsset
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public FusionStaticAsset FusionAsset { get; protected set; }
 
         #endregion
 
         #region IFusionAsset Members
 
-        public AssetTypeName AssetTypeName
+        public virtual AssetTypeName AssetTypeName
         {
-            get { throw new NotImplementedException(); }
+            get { return AssetTypeName.TouchPanel; }
         }
 
-        public void AssignFusionAsset(FusionController fusionInstance, Crestron.SimplSharpPro.Fusion.FusionAssetBase asset)
+        public virtual void AssignFusionAsset(FusionController fusionInstance, FusionAssetBase asset)
         {
-            throw new NotImplementedException();
+            if (!(asset is FusionStaticAsset)) return;
+            FusionAsset = asset as FusionStaticAsset;
+
+            fusionInstance.FusionRoom.OnlineStatusChange += FusionRoom_OnlineStatusChange;
+
+            FusionAsset.AddSig(eSigType.String, 1, "Device Info", eSigIoMask.InputSigOnly);
         }
 
-        public void FusionUpdate()
+        void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
-            throw new NotImplementedException();
+            if (args.DeviceOnLine)
+                FusionUpdate();
         }
 
-        public void FusionError(string errorDetails)
+        public virtual void FusionUpdate()
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (FusionAsset == null) return;
+                FusionAsset.PowerOn.InputSig.BoolValue = Device.IsOnline;
+                FusionAsset.Connected.InputSig.BoolValue = Device.IsOnline;
+                FusionAsset.FusionGenericAssetSerialsAsset3.StringInput[1].StringValue = Device.ToString();
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Error("Error in {0}.FusionUpdate(), {1}", GetType(), e.Message);
+            }
+        }
+
+        public virtual void FusionError(string errorDetails)
+        {
+            
         }
 
         #endregion
@@ -345,13 +366,13 @@ namespace UXLib.UI
 
     public class RoomChangeEventArgs : EventArgs
     {
-        public RoomChangeEventArgs(UXLib.Models.Room newRoom, RoomChangeEventType eventType)
+        public RoomChangeEventArgs(Room newRoom, RoomChangeEventType eventType)
         {
             NewRoom = newRoom;
             EventType = eventType;
         }
 
-        public UXLib.Models.Room NewRoom { get; protected set; }
+        public Room NewRoom { get; protected set; }
         public RoomChangeEventType EventType { get; protected set; }
     }
 
