@@ -10,50 +10,32 @@ using UXLib.Sockets;
 
 namespace UXLib.Devices.Audio.QSC
 {
-    internal class QSysSocket : TCPSocketClient
+    internal class QSysSocket : TCPSocketClient, IQSysCommsHandler
     {
         public QSysSocket(string address)
             : base(address, 1702, 1000)
         { }
 
-        private CTimer PollTimer;
+        private CTimer _pollTimer;
 
         protected override void OnConnect(TCPClient client)
         {
             base.OnConnect(client);
-            PollTimer = new CTimer(GetStatus, null, 1000, 30000);
+            _pollTimer = new CTimer(specific => Send("sg"), null, 1000, 30000);
+            if (CommsStatusChange != null)
+                CommsStatusChange(this, true);
         }
 
         protected override void OnDisconnect(TCPClient client)
         {
-            if (PollTimer != null)
+            if (_pollTimer != null)
             {
-                PollTimer.Stop();
-                PollTimer.Dispose();
+                _pollTimer.Stop();
+                _pollTimer.Dispose();
             }
             base.OnDisconnect(client);
-        }
-
-        public static List<string> ElementsFromString(string str)
-        {
-            List<string> elements = new List<string>();
-
-            Regex r = new Regex("(['\"])((?:\\\\\\1|.)*?)\\1|([^\\s\"']+)");
-
-            foreach (Match m in r.Matches(str))
-            {
-                if (m.Groups[1].Length > 0)
-                    elements.Add(m.Groups[2].Value);
-                else
-                    elements.Add(m.Groups[3].Value);
-            }
-
-            return elements;
-        }
-
-        void GetStatus(object o)
-        {
-            this.Send("sg");
+            if (CommsStatusChange != null)
+                CommsStatusChange(this, false);
         }
 
         public override void Send(string str)
@@ -61,6 +43,12 @@ namespace UXLib.Devices.Audio.QSC
             str = str + "\x0a";
 
             base.Send(str);
+        }
+
+        public void Initialize()
+        {
+            if (!Connected)
+                Connect();
         }
 
         public override event TCPSocketReceivedDataEventHandler ReceivedData;
@@ -88,10 +76,13 @@ namespace UXLib.Devices.Audio.QSC
 
                     index = 0;
 
+                    if (ReceivedData != null)
+                        ReceivedData(this, copiedBytes);
+
                     if (Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length) != "cgpa")
                     {
-                        if (ReceivedData != null)
-                            ReceivedData(this, copiedBytes);
+                        if (ReceivedControlResponse != null)
+                            ReceivedControlResponse(this, copiedBytes);
 #if DEBUG
                         CrestronConsole.PrintLine("{0} Processed reply: {1}", this.GetType().Name, Encoding.ASCII.GetString(copiedBytes, 0, copiedBytes.Length));
 #endif
@@ -126,5 +117,13 @@ namespace UXLib.Devices.Audio.QSC
 #endif
             return null;
         }
+
+        #region IQSysCommsHandler Members
+
+        public event IQSysCommsReceiveHandler ReceivedControlResponse;
+
+        public event IQSysCommsStartedHandler CommsStatusChange;
+
+        #endregion
     }
 }
