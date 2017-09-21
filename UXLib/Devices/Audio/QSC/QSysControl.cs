@@ -20,7 +20,7 @@ namespace UXLib.Devices.Audio.QSC
             QSys.DataReceived += new QSysReceivedDataEventHandler(QSys_DataReceived);
 
             if (QSys.Connected)
-                this.Poll();
+                Poll();
         }
 
         internal QSysControl(QSys device, string controlId, QSysControlType type, int changeGroupID)
@@ -30,7 +30,7 @@ namespace UXLib.Devices.Audio.QSC
 
             if (QSys.Connected && ChangeGroupID > 0)
             {
-                this.Send(string.Format("cga {0} \"{1}\"", ChangeGroupID, this.Name));
+                Send(string.Format("cga {0} \"{1}\"", ChangeGroupID, Name));
             }
         }
 
@@ -157,7 +157,7 @@ namespace UXLib.Devices.Audio.QSC
             ThreadTimer.Start();
             CrestronConsole.PrintLine("QSys Control \"{0}\" Poll - {1}", this.Name, this.ThreadTimer.Elapsed);
 #endif
-            if (this.QSys.Connected)
+            if (QSys.Connected)
             {
                 Thread pollThread = new Thread(PollThreadProcess, null, Thread.eThreadStartOptions.CreateSuspended);
                 pollThread.Priority = Thread.eThreadPriority.HighPriority;

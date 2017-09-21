@@ -122,11 +122,13 @@
     <Compile Include="Devices\Audio\Polycom\VoipLine.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipLineCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipOutChannel.cs" />
+    <Compile Include="Devices\Audio\QSC\IQSysCommsHandler.cs" />
     <Compile Include="Devices\Audio\QSC\QSysPhoneCollection.cs" />
     <Compile Include="Devices\Audio\QSC\QSys.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControl.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControlCollection.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
+    <Compile Include="Devices\Audio\QSC\QSysSerialPort.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSoftPhone.cs" />
     <Compile Include="Devices\Audio\Revolabs\RevolabMic.cs" />

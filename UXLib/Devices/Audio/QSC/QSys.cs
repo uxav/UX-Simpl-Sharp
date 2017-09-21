@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronSockets;
+using Crestron.SimplSharpPro;
 using UXLib.Devices;
 using UXLib.Sockets;
 
@@ -12,22 +15,37 @@ namespace UXLib.Devices.Audio.QSC
     /// QSys Remote Control API for QSC Core Device
     /// </summary>
     /// <remarks>Tested on CORE 110f</remarks>
-    public class QSys : ISocketDevice, IDevice
+    public class QSys : IDevice
     {
         /// <summary>
-        /// Contructor for QSys device
+        /// Contructor for QSys device using IP control
         /// </summary>
         /// <param name="address">The IP Address or HostName</param>
         public QSys(string address)
         {
-            Socket = new QSysSocket(address);
+            var handler = new QSysSocket(address);
             Controls = new QSysControlCollection(this);
             Phones = new QSysPhoneCollection(this);
-            this.Socket.StatusChanged += new TCPSocketStatusChangeEventHandler(Socket_StatusChanged);
-            this.Socket.ReceivedData += new TCPSocketReceivedDataEventHandler(Socket_ReceivedData);
+            handler.CommsStatusChange += HandlerOnCommsStatusChange;
+            handler.ReceivedControlResponse += HandlerOnReceivedControlResponse;
+            _commsHandler = handler;
         }
 
-        QSysSocket Socket { get; set; }
+        /// <summary>
+        /// Contructor for QSys device using serial
+        /// </summary>
+        /// <param name="comPort">Comport to use for serial</param>
+        public QSys(ComPort comPort)
+        {
+            var handler = new QSysSerialPort(comPort);
+            Controls = new QSysControlCollection(this);
+            Phones = new QSysPhoneCollection(this);
+            handler.CommsStatusChange += HandlerOnCommsStatusChange;
+            handler.ReceivedControlResponse += HandlerOnReceivedControlResponse;
+            _commsHandler = handler;
+        }
+
+        private readonly IQSysCommsHandler _commsHandler;
 
         /// <summary>
         /// Collection of QSysControls
@@ -41,9 +59,10 @@ namespace UXLib.Devices.Audio.QSC
         /// <remarks>You need to register phones by using the Register method</remarks>
         public QSysPhoneCollection Phones { get; internal set; }
 
-        void Socket_StatusChanged(TCPSocketClient client, Crestron.SimplSharp.CrestronSockets.SocketStatus status)
+        private void HandlerOnCommsStatusChange(IQSysCommsHandler handler, bool connected)
         {
-            if (status == Crestron.SimplSharp.CrestronSockets.SocketStatus.SOCKET_STATUS_CONNECTED && HasConnected != null)
+            _connected = connected;
+            if (_connected && HasConnected != null)
                 HasConnected(this);
         }
 
@@ -56,10 +75,10 @@ namespace UXLib.Devices.Audio.QSC
         /// Event raised when the system receives data on the socket
         /// </summary>
         public event QSysReceivedDataEventHandler DataReceived;
-
-        void Socket_ReceivedData(TCPSocketClient client, byte[] data)
+        
+        private void HandlerOnReceivedControlResponse(IQSysCommsHandler handler, byte[] receivedData)
         {
-            this.OnReceive(Encoding.Default.GetString(data, 0, data.Length));
+            OnReceive(Encoding.Default.GetString(receivedData, 0, receivedData.Length));
         }
 
         /// <summary>
@@ -68,6 +87,7 @@ namespace UXLib.Devices.Audio.QSC
         public string DesignName { get; private set; }
 
         private string _DesignID = "";
+
         /// <summary>
         /// The unique design ID of the config
         /// </summary>
@@ -85,30 +105,11 @@ namespace UXLib.Devices.Audio.QSC
             }
         }
 
-        #region ISocketDevice Members
-
-        public void Connect()
-        {
-            ErrorLog.Notice("{0}.Connect() called", this.GetType().Name);
-            Socket.Connect();
-        }
-
+        private bool _connected;
         public bool Connected
         {
-            get { return Socket.Connected; }
+            get { return _connected; }
         }
-
-        public void Disconnect()
-        {
-            Socket.Disconnect();
-        }
-
-        public string HostAddress
-        {
-            get { return Socket.HostAddress; }
-        }
-
-        #endregion
 
         #region ICommDevice Members
 
@@ -125,31 +126,34 @@ namespace UXLib.Devices.Audio.QSC
             CrestronConsole.PrintLine("QSys Rx: {0} ", receivedString);
 #endif
 
-            List<string> elements = QSysSocket.ElementsFromString(receivedString);
+            List<string> elements = ElementsFromString(receivedString);
 
-            if (elements.First() == "sr")
+            switch (elements.First())
             {
-                this.DesignName = elements[1];
-                this.DesignID = elements[2];
-            }
-            else if (elements.First() == "bad_id")
-            {
-                ErrorLog.Error("Received bad_id notification from QSys control \"{0}\"", elements[1]);
-            }
-            else if (DataReceived != null)
-            {
-                List<string> arguments = new List<string>(elements);
-                arguments.RemoveAt(0);
-                DataReceived(this, new QSysReceivedDataEventArgs(elements.First(), arguments, receivedString));
+                case "sr":
+                    DesignName = elements[1];
+                    DesignID = elements[2];
+                    break;
+                case "bad_id":
+                    ErrorLog.Error("Received bad_id notification from QSys control \"{0}\"", elements[1]);
+                    break;
+                case "login_required":
+                    ErrorLog.Error("QSys requires login!! - Remove security on port");
+                    break;
+                default:
+                    if (DataReceived != null)
+                    {
+                        var arguments = new List<string>(elements);
+                        arguments.RemoveAt(0);
+                        DataReceived(this, new QSysReceivedDataEventArgs(elements.First(), arguments, receivedString));
+                    }
+                    break;
             }
         }
 
         public void Send(string stringToSend)
         {
-            if (Socket.Connected)
-                Socket.Send(stringToSend);
-            else
-                ErrorLog.Error("Could not send command \"{0}\", Socket not connected!", stringToSend);
+            _commsHandler.Send(stringToSend);
         }
 
         #endregion
@@ -188,16 +192,34 @@ namespace UXLib.Devices.Audio.QSC
         public void Initialize()
         {
             ErrorLog.Notice("{0}.Initialize() called", this.GetType().Name);
-            if (!this.Connected)
-            {
-                ErrorLog.Notice("{0} not connected ... will now connect", this.GetType().Name);
-                this.Connect();
-            }
+            _commsHandler.Initialize();
         }
 
         public CommDeviceType CommunicationType
         {
-            get { return CommDeviceType.IP; }
+            get
+            {
+                if(_commsHandler is QSysSocket)
+                    return CommDeviceType.IP;
+                return CommDeviceType.Serial;
+            }
+        }
+
+        public static List<string> ElementsFromString(string str)
+        {
+            List<string> elements = new List<string>();
+
+            Regex r = new Regex("(['\"])((?:\\\\\\1|.)*?)\\1|([^\\s\"']+)");
+
+            foreach (Match m in r.Matches(str))
+            {
+                if (m.Groups[1].Length > 0)
+                    elements.Add(m.Groups[2].Value);
+                else
+                    elements.Add(m.Groups[3].Value);
+            }
+
+            return elements;
         }
     }
 
