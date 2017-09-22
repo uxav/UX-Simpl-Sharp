@@ -25,7 +25,7 @@ namespace UXLib
 
         private StreamWriter GetLog()
         {
-            DirectoryInfo dir = new DirectoryInfo(this.LogPath);
+            var dir = new DirectoryInfo(this.LogPath);
 
             if (dir.GetFiles("*" + this.Name + "*.log").Length > 0)
             {
@@ -65,12 +65,12 @@ namespace UXLib
 
         public void Log(string message)
         {
-            this.Write(message);
+            Write(message);
         }
 
         public void Log(string format, params object[] args)
         {
-            this.Write(string.Format(format, args));
+            Write(string.Format(format, args));
         }
     }
 }

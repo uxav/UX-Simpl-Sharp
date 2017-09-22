@@ -12,14 +12,13 @@ namespace UXLib.Devices.Displays
     {
         protected ElectricScreen(UpDownRelays relays)
         {
-            this.relays = relays;
+            _relays = relays;
         }
 
-        protected ElectricScreen(UpDownRelays relays, DisplayDevice display)
+        protected ElectricScreen(UpDownRelays relays, IDeviceWithPower display)
             : this(relays)
         {
-            this.display = display;
-            this.display.PowerStatusChange += new DevicePowerStatusEventHandler(display_PowerStatusChange);
+            display.PowerStatusChange += display_PowerStatusChange;
         }
 
         void display_PowerStatusChange(IDeviceWithPower device, DevicePowerStatusEventArgs args)
@@ -27,28 +26,27 @@ namespace UXLib.Devices.Displays
             if (args.PreviousPowerStatus == DevicePowerStatus.PowerOff && (
                 args.NewPowerStatus == DevicePowerStatus.PowerOn || args.NewPowerStatus == DevicePowerStatus.PowerWarming))
             {
-                this.Down();
+                Down();
             }
             else if (args.PreviousPowerStatus == DevicePowerStatus.PowerOn && (
                 args.NewPowerStatus == DevicePowerStatus.PowerOff || args.NewPowerStatus == DevicePowerStatus.PowerCooling))
             {
-                this.Up();
+                Up();
             }
         }
 
-        UpDownRelays relays;
-        DisplayDevice display;
+        private readonly UpDownRelays _relays;
 
         public void Up()
         {
-            this.relays.Up();
-            this.CurrentPosition = HoistDevicePosition.Up;
+            _relays.Up();
+            CurrentPosition = HoistDevicePosition.Up;
         }
 
         public void Down()
         {
-            this.relays.Down();
-            this.CurrentPosition = HoistDevicePosition.Down;
+            _relays.Down();
+            CurrentPosition = HoistDevicePosition.Down;
         }
 
         public HoistDevicePosition CurrentPosition { get; protected set; }
