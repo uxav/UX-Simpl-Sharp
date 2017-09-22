@@ -47,10 +47,29 @@ namespace UXLib.Devices.Audio.QSC
         public QSysSoftPhone Register(string idOffHookLED, string idRingingLED, string idConnect, string idDisconnect,
             string idDialString, string idDND, string idProgress, string idKeypadBaseName, int changeGroupID)
         {
-            int id = Phones.Count + 1;
+            var id = Phones.Count + 1;
             Phones[id] = new QSysSoftPhone(this.QSys, id, idOffHookLED, idRingingLED, idConnect, idDisconnect,
                 idDialString, idDND, idProgress, idKeypadBaseName, changeGroupID);
             return this[id];
+        }
+
+        /// <summary>
+        /// Register a softphone to control
+        /// </summary>
+        /// <param name="softphoneBaseName"></param>
+        /// <param name="changeGroupID"></param>
+        /// <returns></returns>
+        public QSysSoftPhone Register(string softphoneBaseName, int changeGroupID)
+        {
+            return Register(
+                softphoneBaseName + "CallStatusOffHook",
+                softphoneBaseName + "CallStatusRinging(state)",
+                softphoneBaseName + "CallControlConnect",
+                softphoneBaseName + "CallControlDisconnect",
+                softphoneBaseName + "CallControlDialString",
+                softphoneBaseName + "CallControlDoNotDisturb",
+                softphoneBaseName + "CallStatusProgress",
+                softphoneBaseName + "PinPad", changeGroupID);
         }
 
         #region IEnumerable<QSysSoftPhone> Members

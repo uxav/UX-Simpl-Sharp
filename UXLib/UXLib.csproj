@@ -48,6 +48,7 @@
     <NoConfig>true</NoConfig>
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
     <DocumentationFile>bin\Release\UXLib.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Crestron.SimplSharpPro.CrestronConnected, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -122,11 +123,13 @@
     <Compile Include="Devices\Audio\Polycom\VoipLine.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipLineCollection.cs" />
     <Compile Include="Devices\Audio\Polycom\VoipOutChannel.cs" />
+    <Compile Include="Devices\Audio\QSC\IQSysCommsHandler.cs" />
     <Compile Include="Devices\Audio\QSC\QSysPhoneCollection.cs" />
     <Compile Include="Devices\Audio\QSC\QSys.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControl.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControlCollection.cs" />
     <Compile Include="Devices\Audio\QSC\QSysControlPair.cs" />
+    <Compile Include="Devices\Audio\QSC\QSysSerialPort.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSocket.cs" />
     <Compile Include="Devices\Audio\QSC\QSysSoftPhone.cs" />
     <Compile Include="Devices\Audio\Revolabs\RevolabMic.cs" />
@@ -222,6 +225,7 @@
     <Compile Include="Models\UXSystem.cs" />
     <Compile Include="Models\VolumeLevel.cs" />
     <Compile Include="Models\VolumeLevelCollection.cs" />
+    <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Devices\Relays\UpDownRelays.cs" />
     <Compile Include="Devices\Relays\Relay.cs" />
@@ -278,6 +282,6 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>rem S# Pro preparation will execute after these operations</PostBuildEvent>
+    <PostBuildEvent>if /I "$(ConfigurationName)" == "Release" Eazfuscator.NET.exe "$(TargetPath)" --msbuild-project-path "$(ProjectPath)" --msbuild-project-configuration "$(ConfigurationName)" --msbuild-project-platform "$(PlatformName)" --msbuild-solution-path "$(SolutionPath)" -n --newline-flush -v 4.7 "--configuration-file=$(ProjectDir)ObfuscationSettings.cs"</PostBuildEvent>
   </PropertyGroup>
 </Project>
