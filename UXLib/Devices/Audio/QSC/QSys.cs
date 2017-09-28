@@ -137,6 +137,9 @@ namespace UXLib.Devices.Audio.QSC
                 case "bad_id":
                     ErrorLog.Error("Received bad_id notification from QSys control \"{0}\"", elements[1]);
                     break;
+                case "login_required":
+                    ErrorLog.Error("QSys requires login!! - Remove security on port");
+                    break;
                 default:
                     if (DataReceived != null)
                     {

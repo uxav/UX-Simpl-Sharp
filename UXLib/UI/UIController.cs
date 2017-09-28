@@ -267,9 +267,9 @@ namespace UXLib.UI
                 formattedMessage);
         }
 
-        public void Debug(string message, params object[] args)
+        public virtual void Debug(string message, params object[] args)
         {
-            string formattedMessage = string.Format(message, args);
+            var formattedMessage = string.Format(message, args);
             CrestronConsole.PrintLine("{0} - {1}",
                 string.Format("{0} ({1})", GetType().Name, ID),
                 formattedMessage);
