@@ -68,11 +68,11 @@ namespace UXLib.Devices.Relays
 
         public void StopUsingPulseBoth()
         {
-            if (waitTimer != null)
-                waitTimer.Stop();
+            if (_waitTimer != null)
+                _waitTimer.Stop();
 
-            UpRelay.Close();
-            DownRelay.Close();
+            _upRelay.Close();
+            _downRelay.Close();
 
             var timer = new CTimer(specific => Stop(), 500);
         }
