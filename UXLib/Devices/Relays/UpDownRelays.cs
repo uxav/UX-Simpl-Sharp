@@ -69,6 +69,17 @@ namespace UXLib.Devices.Relays
             this.State = UpDownRelayState.Unknown;
         }
 
+        public void StopUsingPulseBoth()
+        {
+            if (waitTimer != null)
+                waitTimer.Stop();
+
+            UpRelay.Close();
+            DownRelay.Close();
+
+            var timer = new CTimer(specific => Stop(), 500);
+        }
+
         void RelaySet(object obj)
         {
             if (obj is UXLib.Devices.Relays.Relay)
