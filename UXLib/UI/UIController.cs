@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Text;
-using System.Linq;
-using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
@@ -16,6 +13,8 @@ namespace UXLib.UI
 {
     public class UIController : IFusionStaticAsset, IDevice
     {
+        private readonly UIPageCollection _pages;
+
         public UIController(uint id, BasicTriList device)
         {
             ID = id;
@@ -23,6 +22,8 @@ namespace UXLib.UI
 
             if (Device != null)
             {
+                _pages = new UIPageCollection(this);
+
                 CrestronConsole.PrintLine("Registering UI Device \'{0}\'", device.GetType().ToString());
                 CrestronConsole.PrintLine("UI Device \'{0}\' parent is {1}", device.GetType().Name, device.Parent.GetType().Name);
 
@@ -95,6 +96,12 @@ namespace UXLib.UI
         public string Name { get; set; }
         public BasicTriList Device { get; protected set; }
         public TswFtSystemReservedSigs SystemReservedSigs { get; protected set; }
+
+        public UIPageCollection Pages
+        {
+            get { return _pages; }
+        }
+
         private Room _defaultRoom;
         public Room DefaultRoom
         {

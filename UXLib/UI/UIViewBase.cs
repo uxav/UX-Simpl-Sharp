@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
@@ -12,20 +7,20 @@ namespace UXLib.UI
     {
         public UIViewBase(BoolInputSig visibleDigitalJoin)
         {
-            this.VisibleDigitalJoin = visibleDigitalJoin;
-            this.SubscribeToSigChanges();
+            VisibleDigitalJoin = visibleDigitalJoin;
+            SubscribeToSigChanges();
         }
 
         public UIViewBase(BoolInputSig visibleDigitalJoin, UILabel titleLabel)
             : this(visibleDigitalJoin)
         {
-            this.TitleLabel = titleLabel;
+            TitleLabel = titleLabel;
         }
 
         public UIViewBase(BoolInputSig visibleDigitalJoin, UILabel titleLabel, UILabel subTitleLabel)
             : this(visibleDigitalJoin, titleLabel)
         {
-            this.SubTitleLabel = subTitleLabel;
+            SubTitleLabel = subTitleLabel;
         }
 
         public UILabel TitleLabel { get; protected set; }
@@ -34,13 +29,13 @@ namespace UXLib.UI
 
         public void SetTitleIcon(UIDynamicIcon icon)
         {
-            this.TitleIcon = icon;
+            TitleIcon = icon;
         }
 
         public void SetTitleIcon(UIDynamicIcon icon, string defaultValue)
         {
-            this.TitleIcon = icon;
-            this.TitleIconName = defaultValue;
+            TitleIcon = icon;
+            TitleIconName = defaultValue;
         }
 
         string _title;
@@ -49,20 +44,20 @@ namespace UXLib.UI
             set
             {
                 // Set the value
-                this._title = value;
+                _title = value;
 
                 // if the page has a serial join sig assigned for the Name:
-                if (this.TitleLabel != null)
+                if (TitleLabel != null)
                 {
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
-                    if (this.Visible)
-                        this.TitleLabel.Text = this._title;
+                    if (Visible)
+                        TitleLabel.Text = _title;
                 }
             }
             get
             {
-                return this._title;
+                return _title;
             }
         }
 
@@ -72,20 +67,20 @@ namespace UXLib.UI
             set
             {
                 // Set the value
-                this._subTitle = value;
+                _subTitle = value;
 
                 // if the page has a serial join sig assigned for the Name:
-                if (this.SubTitleLabel != null)
+                if (SubTitleLabel != null)
                 {
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
-                    if (this.Visible)
-                        this.SubTitleLabel.Text = this._subTitle;
+                    if (Visible)
+                        SubTitleLabel.Text = _subTitle;
                 }
             }
             get
             {
-                return this._subTitle;
+                return _subTitle;
             }
         }
 
@@ -95,20 +90,20 @@ namespace UXLib.UI
             set
             {
                 // Set the value
-                this._titleIconName = value;
+                _titleIconName = value;
 
                 // if the page has a serial join sig assigned for the Name:
-                if (this.TitleIcon != null)
+                if (TitleIcon != null)
                 {
                     // set the string value of the serial join only if the page is showing
                     // this allows for you to use the same serial join number as it sends updates the name when a page is shown
-                    if (this.Visible)
-                        this.TitleIcon.Icon = this._titleIconName;
+                    if (Visible)
+                        TitleIcon.Icon = _titleIconName;
                 }
             }
             get
             {
-                return this._titleIconName;
+                return _titleIconName;
             }
         }
 
@@ -116,7 +111,7 @@ namespace UXLib.UI
         {
             get
             {
-                return this.VisibleDigitalJoin.Number;
+                return VisibleDigitalJoin.Number;
             }
         }
 
@@ -130,13 +125,13 @@ namespace UXLib.UI
             }
             set
             {
-                if (this.Visible != value && !visibleInTransition)
+                if (Visible != value && !visibleInTransition)
                 {
                     visibleInTransition = true;
-                    if (value && this.VisibilityChange != null)
-                        this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
-                    if (!value && this.VisibilityChange != null)
-                        this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
+                    if (value && VisibilityChange != null)
+                        VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
+                    if (!value && VisibilityChange != null)
+                        VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
 
                     base.Visible = value;
                     visibleInTransition = false;
@@ -149,33 +144,33 @@ namespace UXLib.UI
         protected override void OnShow()
         {
             // If the page has a serial join sig then set the value to the name of the page
-            if (this.TitleLabel != null)
-                this.TitleLabel.Text = this.Title;
-            if (this.SubTitleLabel != null)
-                this.SubTitleLabel.Text = this.SubTitle;
-            if (this.TitleIcon != null)
-                this.TitleIcon.Icon = this.TitleIconName;
+            if (TitleLabel != null)
+                TitleLabel.Text = Title;
+            if (SubTitleLabel != null)
+                SubTitleLabel.Text = SubTitle;
+            if (TitleIcon != null)
+                TitleIcon.Icon = TitleIconName;
 
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
         }
 
         protected override void OnHide()
         {
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
         }
 
         public void SetTransitionCompleteJoin(BoolOutputSig transitionCompleteDigitalJoin)
         {
-            this.TransitionCompleteDigitalJoin = transitionCompleteDigitalJoin;
+            TransitionCompleteDigitalJoin = transitionCompleteDigitalJoin;
         }
 
         protected override void OnTransitionComplete()
         {
             base.OnTransitionComplete();
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.TransitionComplete));
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.TransitionComplete));
         }
     }
 
@@ -188,7 +183,7 @@ namespace UXLib.UI
         public UIViewVisibilityEventArgs(eViewEventType eventType)
             : base()
         {
-            this.EventType = eventType;
+            EventType = eventType;
         }
     }
 

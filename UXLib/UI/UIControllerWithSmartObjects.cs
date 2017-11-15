@@ -1,6 +1,4 @@
-﻿using System;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+﻿using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using UXLib.Models;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace UXLib.UI
+﻿namespace UXLib.UI
 {
     public interface IUIVisibleObject
     {

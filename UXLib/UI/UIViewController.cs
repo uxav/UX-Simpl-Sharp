@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 
@@ -19,7 +16,7 @@ namespace UXLib.UI
         public UIViewController(UIViewController ownerViewController, UIViewBase view)
             : this(ownerViewController.UIController, view)
         {
-            this.Owner = ownerViewController;
+            Owner = ownerViewController;
         }
 
         public UIViewController(UIViewController ownerViewController)
@@ -33,21 +30,21 @@ namespace UXLib.UI
         {
             get
             {
-                return this.UIController.Device;
+                return UIController.Device;
             }
         }
 
         void View_VisibilityChange(UIViewBase sender, UIViewVisibilityEventArgs args)
         {
             if (args.EventType == eViewEventType.DidShow)
-                this.OnShow();
+                OnShow();
             else if (args.EventType == eViewEventType.DidHide)
-                this.OnHide();
+                OnHide();
             else if (args.EventType == eViewEventType.WillShow)
             {
                 try
                 {
-                    this.WillShow();
+                    WillShow();
                 }
                 catch(Exception e)
                 {
@@ -55,84 +52,84 @@ namespace UXLib.UI
                 }
             }
             else if (args.EventType == eViewEventType.WillHide)
-                this.WillHide();
+                WillHide();
         }
 
         public string Title
         {
             get
             {
-                return this.View.Title;
+                return View.Title;
             }
             set
             {
-                this.View.Title = value;
+                View.Title = value;
             }
         }
 
         public virtual void Show()
         {
-            this.View.Show();
+            View.Show();
         }
 
         public virtual void Hide()
         {
-            this.View.Hide();
+            View.Hide();
         }
 
         public bool Visible
         {
             get
             {
-                return this.View.Visible;
+                return View.Visible;
             }
             set
             {
-                this.View.Visible = value;
+                View.Visible = value;
             }
         }
 
         protected virtual void OnShow()
         {
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidShow));
         }
 
         protected virtual void OnHide()
         {
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.DidHide));
         }
 
         protected virtual void WillShow()
         {
-            if (this.Owner != null)
-                this.Owner.VisibilityChange += new UIViewControllerEventHandler(Owner_VisibilityChange);
+            if (Owner != null)
+                Owner.VisibilityChange += new UIViewControllerEventHandler(Owner_VisibilityChange);
 
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillShow));
         }
 
         protected virtual void WillHide()
         {
-            if(this.Owner != null)
-                this.Owner.VisibilityChange -= new UIViewControllerEventHandler(Owner_VisibilityChange);
-            if (this.VisibilityChange != null)
-                this.VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
+            if(Owner != null)
+                Owner.VisibilityChange -= new UIViewControllerEventHandler(Owner_VisibilityChange);
+            if (VisibilityChange != null)
+                VisibilityChange(this, new UIViewVisibilityEventArgs(eViewEventType.WillHide));
         }
 
         public uint VisibleJoinNumber
         {
             get
             {
-                return this.View.VisibleJoinNumber;
+                return View.VisibleJoinNumber;
             }
         }
 
         void Owner_VisibilityChange(UIViewController sender, UIViewVisibilityEventArgs args)
         {
-            if (args.EventType == eViewEventType.WillHide && this.View.Visible)
-                this.View.Hide();
+            if (args.EventType == eViewEventType.WillHide && View.Visible)
+                View.Hide();
         }
         
         /// <summary>
@@ -173,7 +170,7 @@ namespace UXLib.UI
                 // Free any other managed objects here.
                 //
 
-                this.View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
+                View.VisibilityChange -= new UIViewBaseVisibitlityEventHandler(View_VisibilityChange);
             }
 
             // Free any unmanaged objects here.
