@@ -1,49 +1,32 @@
 ﻿using System;
-using System.Text;
-using System.Linq;
 using System.Collections.Generic;
-using Crestron.SimplSharp;
+using System.Linq;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace UXLib.UI
 {
     public class UIPage : UIViewBase
     {
-        public UIPage(BoolInputSig visibleDigitalJoin, BoolOutputSig visibleFeedbackJoin)
-            : base(visibleDigitalJoin)
+        private readonly UIController _uiController;
+
+        public UIPage(UIController uiController, uint pageNumber)
+            : base(uiController.Device.BooleanInput[pageNumber])
         {
-            this.VisibleFeedbackJoin = visibleFeedbackJoin;
+            _uiController = uiController;
+            _uiController.Pages.Add(this);
         }
 
-        public UIPage(BoolInputSig visibleDigitalJoin, BoolOutputSig visibleFeedbackJoin, UILabel titleLabel, string title)
-            : base(visibleDigitalJoin, titleLabel)
+        public UIPage(UIController uiController, uint pageNumber, UILabel titleLabel, string title)
+            : base(uiController.Device.BooleanInput[pageNumber], titleLabel)
         {
-            this.VisibleFeedbackJoin = visibleFeedbackJoin;
-            this.Title = title;
+            _uiController = uiController;
+            _uiController.Pages.Add(this);
+            Title = title;
         }
 
-        private new void Hide() { }
-
-        public override void Show()
+        public IEnumerable<UIPage> OtherPages
         {
-#if DEBUG
-            CrestronConsole.PrintLine("UIPage.Show() Visible Join {0}, Current feedback join = {1}",
-                VisibleJoinNumber, VisibleFeedbackJoin);
-#endif
-            base.Show();
+            get { return _uiController.Pages.Where(p => p != this); }
         }
-
-        public UIPage(UIController uiController, uint visibleJoinNumber)
-            : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber]) { }
-
-        public UIPage(UIController uiController, uint visibleJoinNumber, UILabel titleLabel, string title)
-            : this(uiController.Device.BooleanInput[visibleJoinNumber], uiController.Device.BooleanOutput[visibleJoinNumber], titleLabel, title) { }
-
-        public UIPage(UIViewController viewController, uint visibleJoinNumber)
-            : this(viewController.UIController.Device.BooleanInput[visibleJoinNumber], viewController.UIController.Device.BooleanOutput[visibleJoinNumber]) { }
-
-        public UIPage(UIViewController viewController, uint visibleJoinNumber, UILabel titleLabel, string title)
-            : this(viewController.UIController.Device.BooleanInput[visibleJoinNumber], viewController.UIController.Device.BooleanOutput[visibleJoinNumber], titleLabel, title) { }
     }
 }
