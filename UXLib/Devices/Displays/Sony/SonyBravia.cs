@@ -221,6 +221,8 @@ namespace UXLib.Devices.Displays.Sony
                         uriString = string.Format("extInput:hdmi?port={0}", 2); break;
                     case DisplayDeviceInput.HDMI3:
                         uriString = string.Format("extInput:hdmi?port={0}", 3); break;
+                    case DisplayDeviceInput.HDMI4:
+                        uriString = string.Format("extInput:hdmi?port={0}", 4); break;
                 }
                 if (uriString.Length <= 0) return;
                 if (!Power)
