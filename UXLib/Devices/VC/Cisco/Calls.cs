@@ -84,6 +84,15 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
 
+        internal Call GetOrInsert(int callId)
+        {
+            if (!_Calls.ContainsKey(callId))
+            {
+                _Calls[callId] = new Call(Codec, callId);
+            }
+            return _Calls[callId];
+        }
+
         public DialResult Dial(CommandArgs args)
         {
             try
