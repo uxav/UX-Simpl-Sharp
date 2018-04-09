@@ -189,7 +189,7 @@ namespace UXLib.Devices.VC.Cisco
                                                 incomingCallArgs.DisplayNameValue = e.Value;
                                                 break;
                                             case "CallId":
-                                                incomingCallArgs.Call = Codec.Calls[int.Parse(e.Value)];
+                                                incomingCallArgs.Call = Codec.Calls.GetOrInsert(int.Parse(e.Value));
                                                 break;
                                         }
                                     }
