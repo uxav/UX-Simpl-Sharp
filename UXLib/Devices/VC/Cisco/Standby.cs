@@ -120,14 +120,15 @@ namespace UXLib.Devices.VC.Cisco
             }
         }
     }
-
+     
     /// <summary>
     /// The state values for CiscoCodec standby state
     /// </summary>
     public enum StandbyState
     {
         Off,
+        HalfWake,
         EnteringStandby,
         Standby
     }
-}
+}   
