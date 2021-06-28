@@ -45,6 +45,7 @@ namespace UXLib.Devices.VC.Cisco
             SystemUnit.State.SystemStateChange += new SystemUnitStateSystemChangeEventHandler(State_SystemStateChange);
             Audio = new Audio(this);
             Calls = new Calls(this);
+            Bookings = new Bookings(this);
             Conference = new Conference(this);
             Network = new Network(this);
             Phonebook = new Phonebook(this);
@@ -101,6 +102,8 @@ namespace UXLib.Devices.VC.Cisco
         /// Access all Audio functions of the codec including volume and mutes
         /// </summary>
         public Audio Audio { get; private set; }
+
+        public Bookings Bookings { get; private set; }
 
         /// <summary>
         /// For controlling calls on the codec
