@@ -167,6 +167,7 @@
     <Compile Include="Devices\ParitionSensors\IPartitionSensor.cs" />
     <Compile Include="Devices\ParitionSensors\PartitionSensorCollection.cs" />
     <Compile Include="Devices\VC\Cisco\Audio.cs" />
+    <Compile Include="Devices\VC\Cisco\Bookings.cs" />
     <Compile Include="Devices\VC\Cisco\Call.cs" />
     <Compile Include="Devices\VC\Cisco\CallHistory.cs" />
     <Compile Include="Devices\VC\Cisco\CallHistoryItem.cs" />
