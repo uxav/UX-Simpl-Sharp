@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXmlLinq;
 
 namespace UXLib.Devices.VC.Cisco
@@ -17,13 +18,21 @@ namespace UXLib.Devices.VC.Cisco
 
         public BookingResults List()
         {
-            var args = new CommandArgs("Days", 1) {{"DayOffset", 0}};
-            var xml = Codec.SendCommand("Bookings/List", args);
-            var element = xml.Root.Element("BookingsListResult");
-#if DEBUG
-            CrestronConsole.PrintLine(element.ToString());
+            try
+            {
+                var args = new CommandArgs("Days", 1) {{"DayOffset", 0}};
+                var xml = Codec.SendCommand("Bookings/List", args);
+                var element = xml.Root.Element("BookingsListResult");
+#if true
+                CrestronConsole.PrintLine(element.ToString());
 #endif
-            return new BookingResults(_codec, element);
+                return new BookingResults(_codec, element);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception("Error getting bookings", e);
+            }
+            return null;
         }
 
         public CiscoCodec Codec
@@ -73,19 +82,18 @@ namespace UXLib.Devices.VC.Cisco
         internal Booking(CiscoCodec codec, XElement element)
         {
             _codec = codec;
-            BookingId = element.Element("Id").Value;
             Title = element.Element("Title").Value;
             Time = new BookingTime(element.Element("Time"));
+            Organizer = new BookingOrganizer(element.Element("Organizer"));
             Privacy = element.Element("Privacy").Value;
             BookingStatus = element.Element("BookingStatus").Value;
             DialInfo = new BookingDialInfo(element.Element("DialInfo"));
         }
 
-        public string BookingId { get; private set; }
-
         public string Title { get; private set; }
 
         public BookingTime Time { get; private set; }
+        public BookingOrganizer Organizer { get; private set; }
 
         public string Privacy { get; private set; }
 
@@ -93,13 +101,55 @@ namespace UXLib.Devices.VC.Cisco
 
         public BookingDialInfo DialInfo { get; private set; }
 
+        public bool HasDialInfo
+        {
+            get { return DialInfo.Calls.Any(c => !string.IsNullOrEmpty(c.Number)); }
+        }
+
         public bool CanJoin
         {
-            get
+            get { return DateTime.Now >= Time.CanJoinFrom.ToLocalTime() && HasDialInfo && !Time.HasEnded; }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Booking: {0} ({1}) | {2}", Title, Privacy, Time);
+        }
+    }
+
+    public class BookingOrganizer
+    {
+        internal BookingOrganizer(XElement element)
+        {
+            if(element == null) return;
+            FirstName = element.Element("FirstName").Value;
+            LastName = element.Element("LastName").Value;
+            Email = element.Element("Email").Value;
+        }
+
+        public string FirstName { get; private set; }
+        public string LastName { get; private set; }
+        public string Email { get; private set; }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(FirstName) && !string.IsNullOrEmpty(LastName))
             {
-                return DateTime.Now >= Time.CanJoinFrom.ToLocalTime() &&
-                       DialInfo.Calls.Call.Any(c => !string.IsNullOrEmpty(c.Number)) && !Time.HasEnded;
+                return string.Format("{0} {1}", FirstName, LastName);
             }
+            if (!string.IsNullOrEmpty(LastName))
+            {
+                return LastName;
+            }
+            if (!string.IsNullOrEmpty(FirstName))
+            {
+                return FirstName;
+            }
+            if (!string.IsNullOrEmpty(Email))
+            {
+                return Email;
+            }
+            return "Unknown";
         }
     }
 
@@ -135,13 +185,13 @@ namespace UXLib.Devices.VC.Cisco
 
         public bool HasEnded
         {
-            get { return DateTime.Now >= EndTime.ToLocalTime() + TimeSpan.FromSeconds(EndTimeBufferInSeconds); }
+            get { return DateTime.Now >= EndTime.ToLocalTime() + TimeSpan.FromSeconds(EndTimeBuffer); }
         }
 
         public override string ToString()
         {
             var st = StartTime.ToLocalTime();
-            var et = StartTime.ToLocalTime();
+            var et = EndTime.ToLocalTime();
             return string.Format("{0} {1} - {2}", st.ToString("ddd"), st.ToString("t"), et.ToString("t"));
         }
     }
@@ -187,7 +237,10 @@ namespace UXLib.Devices.VC.Cisco
         internal BookingCallInfo(XElement element)
         {
             Number = element.Element("Number").Value;
-            Protocol = element.Element("Protocol").Value;
+            if (element.Element("Protocol") != null)
+            {
+                Protocol = element.Element("Protocol").Value;
+            }
         }
 
         public string Number { get; private set; }
