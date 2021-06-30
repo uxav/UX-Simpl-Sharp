@@ -23,7 +23,7 @@ namespace UXLib.Devices.VC.Cisco
                 var args = new CommandArgs("Days", 1) {{"DayOffset", 0}};
                 var xml = Codec.SendCommand("Bookings/List", args);
                 var element = xml.Root.Element("BookingsListResult");
-#if true
+#if DEBUG
                 CrestronConsole.PrintLine(element.ToString());
 #endif
                 return new BookingResults(_codec, element);
